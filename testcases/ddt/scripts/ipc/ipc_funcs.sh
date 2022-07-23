@@ -32,7 +32,7 @@ setup_firmware()
   local __fw_dst
 
   case $MACHINE in
-      *j721*|*j7200*|*am64xx*|*am62xx*|*am65*|*j784*)
+      *j721*|*j7200*|*am64xx*|*am62*|*am65*|*j784*)
           # K3 devices don't yet support loading the firmware
           return
       ;;
@@ -105,7 +105,8 @@ rm_ipc_mods()
   local __modules=(rpmsg_rpc rpmsg_proto rpmsg_client_sample omap_remoteproc ti_k3_r5_remoteproc keystone_remoteproc remoteproc virtio_rpmsg_bus rpmsg_core)
 
   case $MACHINE in
-    *j721*|*j7200*|*am64xx*|*am62xx*|*am65*|*j784*)
+    *j721*|*j7200*|*am64xx*|*am62*|*am65*|*j784*)
+
       # K3 devices do not yet support module unloading for remote procs because the firmware cannot be reloaded
       return
     ;;
@@ -138,7 +139,7 @@ ins_ipc_mods()
         modprobe ${__mod}
       done
     ;;
-    *j721*|*j7200*|*am64xx*|*am62xx*|*am65*|*j784*)
+    *j721*|*j7200*|*am64xx*|*am62*|*am65*|*j784*)
       # K3 devices do not yet support module loading for remote procs because the firmware cannot be reloaded
       return
     ;;
@@ -277,7 +278,7 @@ start_mpm_daemon()
 get_num_remote_procs()
 {
   case $SOC in
-    *j721*|*j7200*|*am64xx*|*am62xx*|*am65*|*j784*)
+    *j721*|*j7200*|*am64xx*|*am62*|*am65*|*j784*)
       # returns only those procs that have ping-pong
       echo $(cat /sys/class/remoteproc/*/name | grep -iE 'r5f|dsp|m4f' | wc -l)  
       ;;
@@ -919,7 +920,7 @@ rpmsg_client_sample_test()
   local __delay=3
   
   case $SOC in
-    *j721*|*j7200*|*am64xx*|*am62xx*|*am65*|*j784*)
+    *j721*|*j7200*|*am64xx*|*am62*|*am65*|*j784*)
         rpmsg_client_sample_test_k3 $*
         return $?
     ;;
@@ -1119,7 +1120,7 @@ list_rprocs()
     j7200)
       echo "41000000.r5f 5c00000.r5f"
     ;;
-    am64xx|am62xx)
+    am64xx|am62)
       echo "78000000.r5f 78400000.r5f 5000000.m4fss"
     ;;
     am65xx)
