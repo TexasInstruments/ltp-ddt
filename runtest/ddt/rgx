@@ -24,13 +24,13 @@ RGX_M_FUNC_KICKSYNC_VERBOSE_100 source 'common.sh'; output=`rgx_kicksync_test -v
 
 RGX_L_STRESS_KICKSYNC_VERBOSE_1000 source 'common.sh'; output=`rgx_kicksync_test -ver -n 1000`;if [[ $output != *"Test successful"* ]]; then die "$errorMessage";fi
 
-RGX_S_FUNC_KICKSYNC_SYNCCONTEXTLOOP_16_16_1000 source 'common.sh'; output=`rgx_kicksync_test -ver -nsctx 16 -nscmd 16 -n 1000`;if [[ $output != *"Test successful"* ]]; then die "$errorMessage";fi
+RGX_S_FUNC_KICKSYNC_SYNCCONTEXTLOOP_31_13_1000 source 'common.sh'; output=`rgx_kicksync_test -ver -ndvctx 31 -ndvcmd 13 -n 1000`;if [[ $output != *"Test successful"* ]]; then die "$errorMessage";fi
 
-RGX_S_FUNC_KICKSYNC_SYNCCONTEXTLOOP_32_16_100 source 'common.sh'; output=`rgx_kicksync_test -ver -nc 32 -nscmd 16 -n 1 -loop 100`;if [[ $output != *"Test successful"* ]]; then die "$errorMessage";fi
+RGX_S_FUNC_KICKSYNC_SYNCCONTEXTLOOP_32_13_100 source 'common.sh'; output=`rgx_kicksync_test -ver -nc 32 -ndvcmd 13 -n 1 -loop 100`;if [[ $output != *"Test successful"* ]]; then die "$errorMessage";fi
 
-RGX_S_FUNC_KICKSYNC_SYNCCONTEXTLOOP_16_32_32 source 'common.sh'; output=`rgx_kicksync_test -ver -nc 16 -nsctx 32 -nscmd 32 -loop 100 -n 10000 -r -seed 81576`;if [[ $output != *"Test successful"* ]]; then die "$errorMessage";fi
+RGX_S_FUNC_KICKSYNC_SYNCCONTEXTLOOP_16_31_13 source 'common.sh'; output=`rgx_kicksync_test -ver -nc 16 -ndvctx 31 -ndvcmd 13 -loop 100 -n 10000 -r -seed 81576`;if [[ $output != *"Test successful"* ]]; then die "$errorMessage";fi
 
-RGX_S_FUNC_KICKSYNC_SYNCCONTEXTLOOP_32_32_100 source 'common.sh'; output=`rgx_kicksync_test -nsctx 32 -nscmd 32 -n 100`;if [[ $output != *"Test successful"* ]]; then die "$errorMessage";fi
+RGX_S_FUNC_KICKSYNC_SYNCCONTEXTLOOP_31_13_100 source 'common.sh'; output=`rgx_kicksync_test -ndvctx 31 -ndvcmd 13 -n 100`;if [[ $output != *"Test successful"* ]]; then die "$errorMessage";fi
 
 RGX_S_FUNC_KICKSYNC_SYNCCONTEXTLOOP_4_10_100 source 'common.sh'; output=`rgx_kicksync_test -ver -nc 4 -loop 10 -n 100`;if [[ $output != *"Test successful"* ]]; then die "$errorMessage";fi
 
