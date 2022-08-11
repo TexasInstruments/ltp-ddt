@@ -32,7 +32,7 @@ if [[ "$expected_mode" = "" ]]; then
         expected_mode="DDR52";;
       dra7xx-evm | dra72x-evm )
         expected_mode="HS200";;
-      am654x-evm | am654x-idk | j721e* | am62xx*)
+      am654x-evm | am654x-idk | j721e* | am62xx* | am62axx*)
         expected_mode="HS200";;
       am64xx-evm | am64xx-hsevm | j7200* | j721s* | j784*)
         expected_mode="HS400";;
