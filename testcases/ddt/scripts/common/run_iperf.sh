@@ -22,18 +22,49 @@ usage()
 {
 	echo "run_iperf.sh -H <host> [other iperf options (see iperf help)"
 	echo " -H <host>: IP address of Host running iperf in server mode"
+	echo " -v <version>: Use specific iperf version"
 	echo " all other args are passed as-is to iperf"
 	echo " iperf help:"
         echo `iperf -h`
 	exit 1
 }
 
+resolve_iperf_version() 
+{
+	local version=$1
+	echo "Checking for iperf installation version: $version"	
+	case $version in
+		2)
+			if ! [ -x "$(command -v iperf)" ]; then
+		    		echo "[ERROR] iperf version 2 is not installed... exiting"
+				exit 1
+			else
+				IPERF_BIN=`which iperf`	    	
+				echo "[INFO]: iperf binary set to: $IPERF_BIN"
+			fi
+			;;
+		3) if ! [ -x "$(command -v iperf3)" ]; then
+		        echo "[ERROR] iperf version 3 is not installed... exiting"
+                        exit 1
+                   else
+                        IPERF_BIN=`which iperf3`
+                        echo "[INFO]: iperf binary set to: $IPERF_BIN"
+                   fi
+                   ;;
+		*) echo "Iperf version not found... exiting"
+		   exit 1
+		   ;;
+	esac
+}
+
 ################################ CLI Params ####################################
 # Please use getopts
-while getopts  :H:h arg
+IPERF_BIN="iperf"
+while getopts  :H:h:v arg
 do case $arg in
         H)      IPERFHOST="$OPTARG"; shift 2 ;;
         h)      usage;;
+        v)      resolve_iperf_version $OPTARG; shift 2;;
         :)      ;; 
         \?)     ;;
 esac
@@ -74,5 +105,5 @@ dynamically. Please specify it when calling the script. \
 
 test_print_trc "Starting IPERF TEST"
 
-do_cmd "iperf -c ${IPERFHOST} $*"
+do_cmd "${IPERF_BIN} -c ${IPERFHOST} $*"
 
