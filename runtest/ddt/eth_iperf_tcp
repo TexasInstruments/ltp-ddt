@@ -3,33 +3,32 @@
 # Test different window sizes, from 8K to 128K
 # @requires net
 # TODO: don't hardcode eth0 here. may move ethtool command to script
-ETH_S_PERF_IPERF_TCP_8K_1448B source 'common.sh'; run_iperf.sh -m -M 1500 -f M -d -t 60 -w 8K
-ETH_S_PERF_IPERF_TCP_16K_1448B source 'common.sh'; run_iperf.sh -m -f M -d -t 60 -w 16K
-ETH_S_PERF_IPERF_TCP_32K_1448B source 'common.sh'; run_iperf.sh -m -f M -d -t 60 -w 32K
-ETH_S_PERF_IPERF_TCP_64K_1448B source 'common.sh'; run_iperf.sh -m -f M -d -t 60 -w 64K
-ETH_S_PERF_IPERF_TCP_128K_1448B source 'common.sh'; run_iperf.sh -m -f M -d -t 60 -w 128K
-ETH_S_PERF_IPERF_TCP_256K_1448B source 'common.sh'; run_iperf.sh -m -f M -d -t 60 -w 256K
-ETH_M_PERF_IPERF_TCP_256K_1448B source 'common.sh'; run_iperf.sh -m -f M -d -t 3600 -w 256K
-ETH_L_PERF_IPERF_TCP_256K_1448B source 'common.sh'; run_iperf.sh -m -f M -d -t 14400 -w 256K
+ETH_S_PERF_IPERF_TCP_8K_1448B source 'common.sh'; run_iperf.sh -v 3 -m -M 1500 -f M -d -t 60 -w 8K
+ETH_S_PERF_IPERF_TCP_16K_1448B source 'common.sh'; run_iperf.sh -v 3 -m -f M -d -t 60 -w 16K
+ETH_S_PERF_IPERF_TCP_32K_1448B source 'common.sh'; run_iperf.sh -v 3 -m -f M -d -t 60 -w 32K
+ETH_S_PERF_IPERF_TCP_64K_1448B source 'common.sh'; run_iperf.sh -v 3 -m -f M -d -t 60 -w 64K
+ETH_S_PERF_IPERF_TCP_128K_1448B source 'common.sh'; run_iperf.sh -v 3 -m -f M -d -t 60 -w 128K
+ETH_S_PERF_IPERF_TCP_256K_1448B source 'common.sh'; run_iperf.sh -v 3 -m -f M -d -t 60 -w 256K
+ETH_M_PERF_IPERF_TCP_256K_1448B source 'common.sh'; run_iperf.sh -v 3 -m -f M -d -t 3600 -w 256K
+ETH_L_PERF_IPERF_TCP_256K_1448B source 'common.sh'; run_iperf.sh -v 3 -m -f M -d -t 14400 -w 256K
 
-ETH_S_PERF_IPERF_TCP_8K_76B source 'common.sh'; run_iperf.sh -m -M 88 -f M -d -t 60 -w 8K
-ETH_S_PERF_IPERF_TCP_16K_76B source 'common.sh'; run_iperf.sh -m -M 88 -f M -d -t 60 -w 16K
-ETH_S_PERF_IPERF_TCP_32K_76B source 'common.sh'; run_iperf.sh -m -M 88 -f M -d -t 60 -w 32K
-ETH_S_PERF_IPERF_TCP_64K_76B source 'common.sh'; run_iperf.sh -m -M 88 -f M -d -t 60 -w 64K
-ETH_S_PERF_IPERF_TCP_128K_76B source 'common.sh'; run_iperf.sh -m -M 88 -f M -d -t 60 -w 128K
-ETH_S_PERF_IPERF_TCP_256K_76B source 'common.sh'; run_iperf.sh -m -M 88 -f M -d -t 60 -w 256K
+ETH_S_PERF_IPERF_TCP_8K_76B source 'common.sh'; run_iperf.sh -v 3 -m -M 88 -f M -d -t 60 -w 8K
+ETH_S_PERF_IPERF_TCP_16K_76B source 'common.sh'; run_iperf.sh -v 3 -m -M 88 -f M -d -t 60 -w 16K
+ETH_S_PERF_IPERF_TCP_32K_76B source 'common.sh'; run_iperf.sh -v 3 -m -M 88 -f M -d -t 60 -w 32K
+ETH_S_PERF_IPERF_TCP_64K_76B source 'common.sh'; run_iperf.sh -v 3 -m -M 88 -f M -d -t 60 -w 64K
+ETH_S_PERF_IPERF_TCP_128K_76B source 'common.sh'; run_iperf.sh -v 3 -m -M 88 -f M -d -t 60 -w 128K
+ETH_S_PERF_IPERF_TCP_256K_76B source 'common.sh'; run_iperf.sh -v 3 -m -M 88 -f M -d -t 60 -w 256K
 
+ETH_S_PERF_IPERF_TCP_8K_200B source 'common.sh'; run_iperf.sh -v 3 -m -M 212 -f M -d -t 60 -w 8K
+ETH_S_PERF_IPERF_TCP_16K_200B source 'common.sh'; run_iperf.sh -v 3 -m -M 212 -f M -d -t 60 -w 16K
+ETH_S_PERF_IPERF_TCP_32K_200B source 'common.sh'; run_iperf.sh -v 3 -m -M 212 -f M -d -t 60 -w 32K
+ETH_S_PERF_IPERF_TCP_64K_200B source 'common.sh'; run_iperf.sh -v 3 -m -M 212 -f M -d -t 60 -w 64K
+ETH_S_PERF_IPERF_TCP_128K_200B source 'common.sh'; run_iperf.sh -v 3 -m -M 212 -f M -d -t 60 -w 128K
+ETH_S_PERF_IPERF_TCP_256K_200B source 'common.sh'; run_iperf.sh -v 3 -m -M 212 -f M -d -t 60 -w 256K
 
-ETH_S_PERF_IPERF_TCP_8K_200B source 'common.sh'; run_iperf.sh -m -M 212 -f M -d -t 60 -w 8K
-ETH_S_PERF_IPERF_TCP_16K_200B source 'common.sh'; run_iperf.sh -m -M 212 -f M -d -t 60 -w 16K
-ETH_S_PERF_IPERF_TCP_32K_200B source 'common.sh'; run_iperf.sh -m -M 212 -f M -d -t 60 -w 32K
-ETH_S_PERF_IPERF_TCP_64K_200B source 'common.sh'; run_iperf.sh -m -M 212 -f M -d -t 60 -w 64K
-ETH_S_PERF_IPERF_TCP_128K_200B source 'common.sh'; run_iperf.sh -m -M 212 -f M -d -t 60 -w 128K
-ETH_S_PERF_IPERF_TCP_256K_200B source 'common.sh'; run_iperf.sh -m -M 212 -f M -d -t 60 -w 256K
-
-ETH_S_PERF_IPERF_TCP_UNI_8K_1448B source 'common.sh'; run_iperf.sh -m -M 1500 -f M -t 60 -w 8K
-ETH_S_PERF_IPERF_TCP_UNI_16K_1448B source 'common.sh'; run_iperf.sh -m -f M -t 60 -w 16K
-ETH_S_PERF_IPERF_TCP_UNI_32K_1448B source 'common.sh'; run_iperf.sh -m -f M -t 60 -w 32K
-ETH_S_PERF_IPERF_TCP_UNI_64K_1448B source 'common.sh'; run_iperf.sh -m -f M -t 60 -w 64K
-ETH_S_PERF_IPERF_TCP_UNI_128K_1448B source 'common.sh'; run_iperf.sh -m -f M -t 60 -w 128K
-ETH_S_PERF_IPERF_TCP_UNI_256K_1448B source 'common.sh'; run_iperf.sh -m -f M -t 60 -w 256K
+ETH_S_PERF_IPERF_TCP_UNI_8K_1448B source 'common.sh'; run_iperf.sh -v 3 -m -M 1500 -f M -t 60 -w 8K
+ETH_S_PERF_IPERF_TCP_UNI_16K_1448B source 'common.sh'; run_iperf.sh -v 3 -m -f M -t 60 -w 16K
+ETH_S_PERF_IPERF_TCP_UNI_32K_1448B source 'common.sh'; run_iperf.sh -v 3 -m -f M -t 60 -w 32K
+ETH_S_PERF_IPERF_TCP_UNI_64K_1448B source 'common.sh'; run_iperf.sh -v 3 -m -f M -t 60 -w 64K
+ETH_S_PERF_IPERF_TCP_UNI_128K_1448B source 'common.sh'; run_iperf.sh -v 3 -m -f M -t 60 -w 128K
+ETH_S_PERF_IPERF_TCP_UNI_256K_1448B source 'common.sh'; run_iperf.sh -v 3 -m -f M -t 60 -w 256K
