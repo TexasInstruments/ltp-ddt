@@ -167,7 +167,7 @@ TIDEC_S_FUNC_DECODE_SVA_NL1_B.264 source 'ti_codecs.sh'; get_media decoder; F=$(
 
 TIDEC_S_FUNC_DECODE_SVA_NL2_E.264 source 'ti_codecs.sh'; get_media decoder; F=$(mktemp); run_tidec_decode -i /usr/share/ti/tidec-decode/SVA_NL2_E.264 -o $F || die "Decode operation did not complete successfully"; MD5=$(md5sum ${F}_00.raw) ; echo $MD5 | grep 1915d0297b21ebe41a77683b37376bcf || die "decoded file does not match expected md5sum"
 
-TIDEC_S_FUNC_DECODE_Freh1_B.264.264 source 'ti_codecs.sh'; get_media decoder; F=$(mktemp); run_tidec_decode -i /usr/share/ti/tidec-decode/Freh1_B.264.264 -o $F || die "Decode operation did not complete successfully"; MD5=$(md5sum ${F}_00.raw) ; echo $MD5 | grep 948e5007c707782197a3fb51fd00a920 || die "decoded file does not match expected md5sum"
+TIDEC_S_FUNC_DECODE_Freh1_B.264 source 'ti_codecs.sh'; get_media decoder; F=$(mktemp); run_tidec_decode -i /usr/share/ti/tidec-decode/Freh1_B.264 -o $F || die "Decode operation did not complete successfully"; MD5=$(md5sum ${F}_00.raw) ; echo $MD5 | grep 948e5007c707782197a3fb51fd00a920 || die "decoded file does not match expected md5sum"
 
 TIDEC_S_FUNC_DECODE_Freh12_B.264 source 'ti_codecs.sh'; get_media decoder; F=$(mktemp); run_tidec_decode -i /usr/share/ti/tidec-decode/Freh12_B.264 -o $F || die "Decode operation did not complete successfully"; MD5=$(md5sum ${F}_00.raw) ; echo $MD5 | grep 42d8d802956a4c3d81125ebee8451b66 || die "decoded file does not match expected md5sum"
 
