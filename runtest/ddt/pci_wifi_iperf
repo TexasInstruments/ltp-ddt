@@ -8,12 +8,12 @@
 # @requires pcie || pci
 # @setup_requires pciiwlwifi
 
-PCI_S_PERF_IWLWIFI_IPERF_TCP_8K_1448B source 'common.sh'; check_config_options "ym" CONFIG_IWLWIFI; do_cmd "lspci -nn"; run_pci_wifi_test.sh -t ' do_cmd "run_iperf.sh -H $IPERFHOST2 -m -M 1500 -f M -d -t 60 -w 8K" '
-PCI_S_PERF_IWLWIFI_IPERF_TCP_16K_1448B source 'common.sh'; check_config_options "ym" CONFIG_IWLWIFI; do_cmd "lspci -nn"; run_pci_wifi_test.sh -t ' do_cmd "run_iperf.sh -H $IPERFHOST2 -m -f M -d -t 60 -w 16K" '
-PCI_S_PERF_IWLWIFI_IPERF_TCP_32K_1448B source 'common.sh'; check_config_options "ym" CONFIG_IWLWIFI; do_cmd "lspci -nn"; run_pci_wifi_test.sh -t ' do_cmd "run_iperf.sh -H $IPERFHOST2 -m -f M -d -t 60 -w 32K" '
-PCI_S_PERF_IWLWIFI_IPERF_TCP_64K_1448B source 'common.sh'; check_config_options "ym" CONFIG_IWLWIFI; do_cmd "lspci -nn"; run_pci_wifi_test.sh -t ' do_cmd "run_iperf.sh -H $IPERFHOST2 -m -f M -d -t 60 -w 64K" '
-PCI_S_PERF_IWLWIFI_IPERF_TCP_128K_1448B source 'common.sh'; check_config_options "ym" CONFIG_IWLWIFI; do_cmd "lspci -nn"; run_pci_wifi_test.sh -t ' do_cmd "run_iperf.sh -H $IPERFHOST2 -m -f M -d -t 60 -w 128K" '
-PCI_S_PERF_IWLWIFI_IPERF_TCP_256K_1448B source 'common.sh'; check_config_options "ym" CONFIG_IWLWIFI; do_cmd "lspci -nn"; run_pci_wifi_test.sh -t ' do_cmd "run_iperf.sh -H $IPERFHOST2 -m -f M -d -t 60 -w 256K" '
+PCI_S_PERF_IWLWIFI_IPERF_TCP_8K_1448B source 'common.sh'; check_config_options "ym" CONFIG_IWLWIFI; do_cmd "lspci -nn"; run_pci_wifi_test.sh -t ' do_cmd "run_iperf.sh -v 3 -H $IPERFHOST2 -m -M 1500 -f M -d -t 60 -w 8K" '
+PCI_S_PERF_IWLWIFI_IPERF_TCP_16K_1448B source 'common.sh'; check_config_options "ym" CONFIG_IWLWIFI; do_cmd "lspci -nn"; run_pci_wifi_test.sh -t ' do_cmd "run_iperf.sh -v 3 -H $IPERFHOST2 -m -f M -d -t 60 -w 16K" '
+PCI_S_PERF_IWLWIFI_IPERF_TCP_32K_1448B source 'common.sh'; check_config_options "ym" CONFIG_IWLWIFI; do_cmd "lspci -nn"; run_pci_wifi_test.sh -t ' do_cmd "run_iperf.sh -v 3 -H $IPERFHOST2 -m -f M -d -t 60 -w 32K" '
+PCI_S_PERF_IWLWIFI_IPERF_TCP_64K_1448B source 'common.sh'; check_config_options "ym" CONFIG_IWLWIFI; do_cmd "lspci -nn"; run_pci_wifi_test.sh -t ' do_cmd "run_iperf.sh -v 3 -H $IPERFHOST2 -m -f M -d -t 60 -w 64K" '
+PCI_S_PERF_IWLWIFI_IPERF_TCP_128K_1448B source 'common.sh'; check_config_options "ym" CONFIG_IWLWIFI; do_cmd "lspci -nn"; run_pci_wifi_test.sh -t ' do_cmd "run_iperf.sh -v 3 -H $IPERFHOST2 -m -f M -d -t 60 -w 128K" '
+PCI_S_PERF_IWLWIFI_IPERF_TCP_256K_1448B source 'common.sh'; check_config_options "ym" CONFIG_IWLWIFI; do_cmd "lspci -nn"; run_pci_wifi_test.sh -t ' do_cmd "run_iperf.sh -v 3 -H $IPERFHOST2 -m -f M -d -t 60 -w 256K" '
 
 
 
