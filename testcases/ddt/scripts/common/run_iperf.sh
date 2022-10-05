@@ -20,7 +20,7 @@ source "st_log.sh"  # Import log functions such as test_print_trc()
 ############################# Functions #######################################
 usage()
 {
-	echo "run_iperf.sh -H <host> [other iperf options (see iperf help)"
+	echo "run_iperf.sh -v 3 -H <host> [other iperf options (see iperf help)"
 	echo " -H <host>: IP address of Host running iperf in server mode"
 	echo " -v <version>: Use specific iperf version"
 	echo " all other args are passed as-is to iperf"
@@ -99,7 +99,7 @@ esac
 [ -n "$IPERFHOST" ] || IPERFHOST=`get_eth_gateway.sh`
 [ -n "$IPERFHOST" ] || die "IPERF server IP address could not be determined \
 dynamically. Please specify it when calling the script. \
-(i.e. run_iperf.sh -H <host>)"
+(i.e. run_iperf.sh -v 3 -H <host>)"
 
 #IPERFCMD=`echo $* | sed -r s/-H[[:space:]]+[0-9\.]+/-c $IPERFHOST/`
 
