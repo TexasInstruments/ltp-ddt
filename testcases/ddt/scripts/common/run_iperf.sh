@@ -20,7 +20,7 @@ source "st_log.sh"  # Import log functions such as test_print_trc()
 ############################# Functions #######################################
 usage()
 {
-	echo "run_iperf.sh -v 3 -H <host> [other iperf options (see iperf help)"
+	echo "run_iperf.sh -v 3 -H <host> -- [other iperf options (see iperf help)"
 	echo " -H <host>: IP address of Host running iperf in server mode"
 	echo " -v <version>: Use specific iperf version"
 	echo " all other args are passed as-is to iperf"
@@ -64,11 +64,14 @@ while getopts  :H:h:v arg
 do case $arg in
         H)      IPERFHOST="$OPTARG"; shift 2 ;;
         h)      usage;;
-        v)      resolve_iperf_version $OPTARG; shift 2;;
-        :)      ;; 
+        v)      resolve_iperf_version $OPTARG;;
+        *)      ;;
+        :)      ;;
         \?)     ;;
 esac
 done
+shift $(($OPTIND - 1))
+
 # Define default values if possible
 
 ############################ USER-DEFINED Params ###############################
