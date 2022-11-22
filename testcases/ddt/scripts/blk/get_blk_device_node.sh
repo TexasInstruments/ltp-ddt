@@ -132,7 +132,7 @@ case $DEV_TYPE in
         mmc)
           mmc_basenode=`find_mmc_basenode`
           if [ -z "$mmc_basenode" ]; then
-            die "Could not fine mmc basenode"
+            die "Could not find mmc basenode"
           fi
           DEV_NODE=`find_part_with_biggest_size "$mmc_basenode" "mmc"` || die "error getting partition with biggest size: $DEV_NODE"
         ;;

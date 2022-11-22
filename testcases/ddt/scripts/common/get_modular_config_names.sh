@@ -134,6 +134,8 @@ IFS=$IFS_ORIG
 case $SOC in
 esac
 case $MACHINE in
+  j721e-*|7200-*|j721s2-*|j784s4-*)
+    mmc="CONFIG_MMC_SDHCI_AM654:sdhci_am654";;
 	am387x-evm|am389x-evm|dm385-evm)
 		sound='CONFIG_SND_SOC_TLV320AIC3X:snd_soc_tlv320aic3x CONFIG_SND_TI81XX_SOC:snd_soc_davinci CONFIG_SND_DAVINCI_SOC_MCASP:snd_soc_davinci_mcasp CONFIG_SND_SOC:snd_soc_evm';;
 	omap3evm|am37x-evm)
