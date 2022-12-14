@@ -207,7 +207,7 @@ static int st_process_filesystem_test_options(int argc, char **argv)
 	                    st_filesystem_performance_copy_test(&testoptions,
 	                                                         testcaseid);
 		TEST_PRINT_TST_RESULT(result, testcaseid);
-		TEST_PRINT_TST_END(testcaseid);
+		TEST_PRINT_TST_END("%s", testcaseid);
 	}
 	return result;
 }

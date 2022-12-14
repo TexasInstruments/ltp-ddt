@@ -90,7 +90,7 @@ void st_print_filesystem_test_params(struct st_filesystem_testparams
 				     *testoptions, char *test_id)
 {
 	/* Start test case */
-	TEST_PRINT_TST_START(test_id);
+	TEST_PRINT_TST_START("%s", test_id);
 	TEST_PRINT("******** filesystem Testcase  parameters  ******** ");
 	TEST_PRINT_TRC("The file name|%s", testoptions->filename);
 	TEST_PRINT_TRC("The application buffer size in bytes|%d",

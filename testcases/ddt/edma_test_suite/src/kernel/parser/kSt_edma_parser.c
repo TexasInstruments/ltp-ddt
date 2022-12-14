@@ -109,7 +109,7 @@ static int edma_close(struct inode *inode, struct file *filp)
  */ 
 void kSt_print_edma_test_params(struct kSt_edma_info *testoptions) 
 {
-	TEST_PRINT_TST_START(testoptions->testcaseid);
+	TEST_PRINT_TST_START("%s", testoptions->testcaseid);
 	TEST_PRINT_TRC("******** edma Testcase  parameters  ******** ");
 	TEST_PRINT_TRC("Device : %s", testoptions->device);
 	TEST_PRINT_TRC("acnt : %d", testoptions->acnt);
@@ -255,7 +255,7 @@ static int edma_test(struct kSt_edma_info kSt_edma_info)
 
 		}
 	TEST_PRINT_TST_RESULT(result,kSt_edma_info.testcaseid);
-	TEST_PRINT_TST_END(kSt_edma_info.testcaseid);
+	TEST_PRINT_TST_END("%s", kSt_edma_info.testcaseid);
 	return result;
 }
 

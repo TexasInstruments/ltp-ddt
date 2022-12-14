@@ -262,7 +262,7 @@ void st_fbdev_display_test_status(int status, char *test_id)
  */
 void st_print_fbdev_display_show_params(struct fbdev_display_testparams *options)
 {
-	TEST_PRINT_TST_START(options->testcase_id);
+	TEST_PRINT_TST_START("%s", options->testcase_id);
 	TEST_PRINT_TRC("The Test is going to start with following values");
 	TEST_PRINT_TRC("The device node |%s", options->device_name);
 	TEST_PRINT_TRC("Height of the image |%d", options->var.xres);

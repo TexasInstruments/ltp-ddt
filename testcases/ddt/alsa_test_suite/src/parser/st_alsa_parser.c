@@ -193,7 +193,7 @@ int main(int argc, char *argv[])
 	}
 	if (quit == FALSE && error == FALSE) {
 		TEST_PRINT_TST_RESULT(ret, testcaseid);
-		TEST_PRINT_TST_END(testcaseid);
+		TEST_PRINT_TST_END("%s", testcaseid);
 	}
 	return ret;
 }
@@ -506,7 +506,7 @@ void st_alsa_print_test_params(tc_dev_params * test_opt)
 		access = "RW_NONINTERLEAVED";
 		break;
 	}
-	TEST_PRINT_TST_START(testcaseid);
+	TEST_PRINT_TST_START("%s", testcaseid);
 	TEST_PRINT("******** ALSA Testcase  parameters  ******** ");
 	if (play_or_record == OPTION_RECORD) {
 		TEST_PRINT_TRC

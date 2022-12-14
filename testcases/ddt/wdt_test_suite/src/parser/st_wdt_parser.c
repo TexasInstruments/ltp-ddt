@@ -181,7 +181,7 @@ static int st_process_wdt_test_options(int argc, char **argv)
 		if( error == TRUE )
 			result = FAILURE;
 	} else {
-		TEST_PRINT_TST_START(testcaseid);
+		TEST_PRINT_TST_START("%s", testcaseid);
 		st_print_wdt_test_params(&testoptions, testcaseid);
 		fileDesc = st_wdt_open(&testoptions);
 		while (testoptions.loop > loop_count) {
@@ -208,7 +208,7 @@ static int st_process_wdt_test_options(int argc, char **argv)
 		}
 		//result = st_wdt_close(fileDesc);
 		TEST_PRINT_TST_RESULT(result, testcaseid);
-		TEST_PRINT_TST_END(testcaseid);
+		TEST_PRINT_TST_END("%s", testcaseid);
 		ioctl(fileDesc, WDIOC_GETTIMEOUT, &timeout);
 	    	TEST_PRINT_TRC("EVM will be rebooted after %d seconds",timeout);
 		while(1)
