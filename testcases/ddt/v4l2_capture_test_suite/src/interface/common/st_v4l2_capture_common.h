@@ -107,7 +107,7 @@ enum pixfmt{
 	RGB24,
 	RGB32,
 	NV16
-} pixfmt;
+};
 
 enum ioctls{
 	QUERY_CAP,
@@ -125,9 +125,9 @@ enum ioctls{
 	ENQBUF,
 	STREAM_ON_OFF,
 	QUERY_CTRL
-} ioctls;
+};
 
-struct v4l2_capture_testparams testoptions;
+extern struct v4l2_capture_testparams testoptions;
 
 /*Structure for holding the test options */
 struct v4l2_capture_testparams {
