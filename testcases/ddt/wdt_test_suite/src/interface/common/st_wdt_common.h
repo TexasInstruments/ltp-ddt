@@ -65,8 +65,6 @@
 #define ST_TESTCASEID_LEN   100
 #define ST_WDT_IOCTL_NONE   999
 
-int fileDes;
-
 enum st_wdt_iomode {
 	ST_WDT_IOMODE_NONE = 0,
 	ST_WDT_IOMODE_WRITE
