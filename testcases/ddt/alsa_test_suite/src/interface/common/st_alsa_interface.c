@@ -39,6 +39,9 @@
 #include "st_alsa_interface.h"
 #include "st_alsa_common.h"
 
+tc_dev_params testoptions_capture;
+tc_dev_params testoptions_playback;
+
 static snd_pcm_t *handle_playback;
 static snd_pcm_t *handle_capture;
 static snd_pcm_hw_params_t *params_playback;
