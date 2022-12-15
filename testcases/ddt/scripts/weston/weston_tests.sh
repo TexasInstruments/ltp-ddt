@@ -11,6 +11,7 @@ usage()
 	      1 : weston is running
 	      2 : weston is using DRM
 	      3 : weston can run a simple EGL app
+	      4 : weston can run it's ivi shell interface
 	EOF
 	exit 0
 }
@@ -29,6 +30,46 @@ simple_egl_test()
 		kill $PID
 		return $?
 	fi
+}
+
+weston_ivi_test()
+{
+	stop_weston
+	cp /etc/weston.ini /etc/weston.ini.orig
+	if [ -f /usr/lib/weston/hmi-controller.so ] ; then
+		sed -i 's/^\[core\]$/\[core\]\nshell=ivi-shell.so\nmodules=hmi-controller.so/' /etc/weston.ini
+		cat >> /etc/weston.ini << EOF
+[ivi-shell]
+ivi-shell-user-interface=weston-ivi-shell-user-interface
+cursor-theme=default
+cursor-size=32
+base-layer-id=1000
+base-layer-id-offset=10000
+workspace-background-layer-id=2000
+workspace-layer-id=3000
+application-layer-id=4000
+transition-duration=300
+background-id=1001
+panel-id=1002
+surface-id-offset=10
+tiling-id=1003
+sidebyside-id=1004
+fullscreen-id=1005
+random-id=1006
+home-id=1007
+workspace-background-color=0x99000000
+workspace-background-id=2001
+EOF
+	else
+		sed -i 's/^\[core\]$/\[core\]\nshell=ivi-shell.so/' /etc/weston.ini
+	fi
+
+	sleep 15 && pkill weston &
+	weston --tty=8
+	ret=$?
+
+	mv /etc/weston.ini.orig /etc/weston.ini
+	return $ret
 }
 
 ################################ CLI Params ####################################
@@ -53,6 +94,9 @@ case "$TYPE" in
 		;;
 	3)
 		simple_egl_test
+		;;
+	4)
+		weston_ivi_test
 		;;
 	*) die "$TYPE is not a valid test type"
 esac

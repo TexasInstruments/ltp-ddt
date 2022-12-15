@@ -5,4 +5,5 @@
 WESTON_XS_FUNC_RUNNING	source common.sh; weston_tests.sh -t1 && echo "Test Passed" || die "weston not running"
 WESTON_XS_FUNC_DRM	source common.sh; weston_tests.sh -t2 && echo "Test Passed" || die "weston not using wl_drm protocol"
 WESTON_XS_FUNC_EGL 	source common.sh; weston_tests.sh -t3 && echo "Test Passed" || die "weston simple EGL test app failed"
+WESTON_XS_FUNC_IVI_SHELL	source common.sh; weston_tests.sh -t4 && echo "Test Passed" || die "weston ivi shell test failed"
 WESTON_XS_FUNC_USB_MOUSE 	source common.sh; weston_debug.sh; weston-debug scene-graph | grep wl_pointer-cursor && echo "Test Passed" || die "weston usb mouse not detected in weston layers"
