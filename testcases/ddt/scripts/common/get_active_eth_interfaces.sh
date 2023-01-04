@@ -33,6 +33,14 @@ do
 
   # Try to bring each interface up
   ip link set dev $interface up > /dev/null
+done
+
+# Sleep for 5 seconds as it might take the port some time to become up.
+sleep 5
+
+for device in `find /sys/class/net/*eth*`
+do
+  interface=`echo $device | cut -c16-`
 
   if [[ "`cat /sys/class/net/$interface/operstate`" != "down" ]]
   then
