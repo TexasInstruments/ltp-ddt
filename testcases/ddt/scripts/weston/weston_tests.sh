@@ -64,8 +64,11 @@ EOF
 		sed -i 's/^\[core\]$/\[core\]\nshell=ivi-shell.so/' /etc/weston.ini
 	fi
 
-	sleep 15 && pkill weston &
-	weston --tty=8
+	weston --tty=8 &
+	weston_pid=$!
+
+	sleep 15 && kill $weston_pid
+	wait $weston_pid
 	ret=$?
 
 	mv /etc/weston.ini.orig /etc/weston.ini
