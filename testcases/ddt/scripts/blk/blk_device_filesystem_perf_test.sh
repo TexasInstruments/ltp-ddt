@@ -108,10 +108,10 @@ done
 : ${FIO_W_RUNTIME:=60}
 : ${FIO_R_RUNTIME:=60}
 
-echo "ls -al /dev/disk/by-path"
+echo "ls -al /dev/disk/by-id"
 ls -al /dev/disk/by-id
 echo "ls -al /dev/disk/by-path"
-ls -al /dev/disk/by-id
+ls -al /dev/disk/by-path
 
 if [ -z $DEV_NODE ]; then
         DEV_NODE=`get_blk_device_node.sh "$DEVICE_TYPE" "$EXTRA_PARAM"` || die "error while getting device node: $DEV_NODE"
