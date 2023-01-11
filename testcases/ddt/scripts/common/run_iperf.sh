@@ -60,7 +60,7 @@ resolve_iperf_version()
 ################################ CLI Params ####################################
 # Please use getopts
 IPERF_BIN="iperf"
-while getopts  :H:h:v arg
+while getopts  :H:v:h arg
 do case $arg in
         H)      IPERFHOST="$OPTARG"; shift 2 ;;
         h)      usage;;
