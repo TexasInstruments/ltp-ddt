@@ -6,4 +6,5 @@
 DEBUGFS_S_FUNC_DRI find /sys/kernel/debug/dri -type f -print -exec cat {} \; && ls
 DEBUGFS_S_FUNC_OMAPDSS find /sys/kernel/debug/omapdss -type f -print -exec cat {} \; && ls
 DEBUGFS_S_FUNC_REMOTEPROC find /sys/kernel/debug/remoteproc -type f -print -exec cat {} \; && ls
+DEBUGFS_S_FUNC_PINCTRL find /sys/kernel/debug/pinctrl -type f -print -exec cat {} \; && ls
 DEBUGFS_S_FUNC_CLK_SUMMARY source functions.sh; get_clk_summary before_rates; sleep 5; get_clk_summary after_rates; check_array_values before_rates[@] after_rates[@] "-eq"
