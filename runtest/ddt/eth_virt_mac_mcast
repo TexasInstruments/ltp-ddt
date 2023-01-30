@@ -1,0 +1,5 @@
+# @name Ethernet Virtual MAC driver Multicast Filtering Test
+# @desc Verify that the MAC only interface of the Virtual MAC EthFw based driver supports adding and removing Multicast Entries.
+# @requires net.
+
+ETH_XS_FUNC_VIRT_MCAST source "common.sh"; eth_virt_mac_mcast.sh "j721e-cpsw-virt-mac"
