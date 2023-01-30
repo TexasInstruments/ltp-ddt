@@ -1,0 +1,5 @@
+# @name Ethernet Virtual MAC driver Ping test
+# @desc Verify that the MAC only interface of the Virtual MAC EthFw based driver can ping the DHCP server.
+# @requires net.
+
+ETH_XS_FUNC_VIRT_PING source "common.sh"; eth_virt_mac_ping.sh "j721e-cpsw-virt-mac"
