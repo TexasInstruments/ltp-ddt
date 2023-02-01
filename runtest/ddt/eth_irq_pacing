@@ -1,0 +1,5 @@
+# @name Ethernet Interrupt Pacing test
+# @desc Set tx and rx coalesce parameters for interface using ethtool and verify that the configured value is taking effect.
+# #requires net.
+
+ETH_XS_FUNC_VIRT_IRQ_PACING source "common.sh"; eth_irq_pacing.sh "j721e-cpsw-virt-mac"
