@@ -493,6 +493,22 @@ test_1000mbps() {
 	echo $ret;
 }
 
+### Test all speed
+test_all_speed() {
+	iface=$1
+	result_ten=$(test_10mbps $iface);
+	result_hundred=$(test_100mbps $iface);
+	result_thousand=$(test_1000mbps $iface);
+
+	if [[ "$result_ten" == 1 && "$result_hundred" == 1 && "$result_thousand" == 1 ]]
+	then
+		echo 1
+	else
+		echo 0
+	fi
+}
+
+
 ### Verify that IP address can be configured
 ### for an interface.
 test_ip_config () {
@@ -830,6 +846,26 @@ test_drv_1000mbps () {
 		fi
 	done
 	echo 1;
+}
+
+### Verify that all interfaces connected to a driver
+### that are up and running can support 10/100/1000 Mbps
+test_drv_all_speed () {
+        driver=$1
+        interfaces=$(get_eth_list)
+        for iface in $interfaces
+        do
+                if [[ "$driver" == "$(get_if_drv $iface)" ]]
+                then
+                        check=$(test_all_speed $iface)
+                        if [[ $check == 0 ]]
+                        then
+                                echo 0;
+                                return;
+                        fi
+                fi
+        done
+        echo 1;
 }
 
 ### Verify that all interfaces connected to a driver
