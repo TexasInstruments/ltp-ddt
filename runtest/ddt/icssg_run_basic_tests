@@ -1,0 +1,20 @@
+# @name ICSSG dual EMAC driver all basic Tests
+# @desc Verify that interfaces of the ICSSG Ethernet driver supports all basic operations in dual EMAC mode.
+# @requires net.
+
+ETH_XS_FUNC_ICSSG_TESTS_SPEED source "common.sh"; icssg_run_test.sh "icssg-prueth" test_drv_all_speed
+ETH_XS_FUNC_ICSSG_IRQ_PACING source "common.sh"; icssg_run_test.sh "icssg-prueth" test_drv_irq_pacing
+ETH_XS_FUNC_ICSSG_MCAST source "common.sh"; icssg_run_test.sh "icssg-prueth" test_drv_mcast_adddel
+ETH_XS_FUNC_ICSSG_PING source "common.sh"; icssg_run_test.sh "icssg-prueth" test_drv_ping
+ETH_XS_FUNC_ICSSG_PROMISC source "common.sh"; icssg_run_test.sh "icssg-prueth" test_drv_promisc
+ETH_XS_FUNC_ICSSG_PPS source "common.sh"; icssg_run_test.sh "icssg-prueth" test_drv_pps
+ETH_XS_FUNC_ICSSG_PAUSE source "common.sh"; icssg_run_test.sh "icssg-prueth" test_drv_pause
+ETH_XS_FUNC_ICSSG_NWAY source "common.sh"; icssg_run_test.sh "icssg-prueth" test_drv_nway
+ETH_XS_FUNC_ICSSG_10_MBPS source "common.sh"; icssg_run_test.sh "icssg-prueth" test_drv_10mbps
+ETH_XS_FUNC_ICSSG_100_MBPS source "common.sh"; icssg_run_test.sh "icssg-prueth" test_drv_100mbps
+ETH_XS_FUNC_ICSSG_1000_MBPS source "common.sh"; icssg_run_test.sh "icssg-prueth" test_drv_1000mbps
+ETH_XS_FUNC_ICSSG_VLAN source "common.sh"; icssg_run_test.sh "icssg-prueth" test_drv_vlan_adddel
+ETH_XS_FUNC_ICSSG_RX_CONFIG source "common.sh"; icssg_run_test.sh "icssg-prueth" test_drv_rx_chksum_config
+ETH_XS_FUNC_ICSSG_IP_CONFIG source "common.sh"; icssg_run_test.sh "icssg-prueth" test_drv_ip_config
+ETH_XS_FUNC_ICSSG_MAC_CONFIG source "common.sh"; icssg_run_test.sh "icssg-prueth" test_drv_mac_config
+ETH_XS_FUNC_ICSSG_MTU_CONFIG source "common.sh"; icssg_run_test.sh "icssg-prueth" test_drv_mtu_config
