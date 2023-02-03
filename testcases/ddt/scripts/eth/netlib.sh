@@ -53,7 +53,7 @@ get_promisc () {
 set_promisc () {
 	interface=$1;
 	mode=$2;
-	if [ $mode == 1 ]
+	if [[ $mode == 1 ]]
 	then
 		$(/sbin/ifconfig $interface promisc) > /dev/null 2>&1;
 	else
@@ -98,7 +98,7 @@ is_valid() {
 	interfaces=$(get_eth_list)
 	for iface in $interfaces
 	do
-		if [ "$iface" == "$interface" ]
+		if [[ "$iface" == "$interface" ]]
 		then
 			echo 1;
 			return;
@@ -193,7 +193,7 @@ set_tx_pause () {
 ### Get toggled pause option.
 toggle_pause () {
 	pause=$1
-	if [ "on" == "$pause" ]
+	if [[ "on" == "$pause" ]]
 	then
 		echo "off";
 		return;
@@ -206,7 +206,7 @@ is_valid_mcast () {
 	interface=$1
 	addr=$2
 	check=$(/sbin/ip maddr show dev $interface | grep "$addr" | wc -l)
-	if [ $check != 1 ]
+	if [[ $check != 1 ]]
 	then
 		echo 0;
 		return;
@@ -257,12 +257,12 @@ test_pps () {
 	t32=$(echo "$t3-$t2" | bc -l);
 	f1=$(echo "scale=3; $t21/$s21" | bc -l);
 	f2=$(echo "scale=3; $t32/$s32" | bc -l);
-	if [ $f1 != 1.000 ]
+	if [[ $f1 != 1.000 ]]
 	then
 		echo 0;
 		return;
 	fi
-	if [ $f2 != 1.000 ]
+	if [[ $f2 != 1.000 ]]
 	then
 		echo 0;
 		return;
@@ -274,7 +274,7 @@ test_pps () {
 test_promisc () {
 	interface=$1
 	init_mode=$(get_promisc $interface)
-	if [ $init_mode == 1 ]
+	if [[ $init_mode == 1 ]]
 	then
 		$(set_promisc $interface 0)
 	else
@@ -282,7 +282,7 @@ test_promisc () {
 	fi
 	sleep 5;
 	curr_mode=$(get_promisc $interface)
-	if [ $init_mode == $curr_mode ]
+	if [[ $init_mode == $curr_mode ]]
 	then
 		echo 0;
 		return;
@@ -299,14 +299,14 @@ test_vlan_adddel () {
 	vlanif=$(echo "$interface.100")
 	/sbin/ip link add link $interface name $vlanif type vlan id 100
 	check=$(is_valid $vlanif)
-	if [ $check == 0 ]
+	if [[ $check == 0 ]]
 	then
 		echo 0;
 		return;
 	fi
 	/sbin/ip link del $vlanif
 	check=$(is_valid $vlanif)
-	if [ $check == 1 ]
+	if [[ $check == 1 ]]
 	then
 		echo 0;
 		return;
@@ -322,7 +322,7 @@ test_rx_chksum () {
 	# Verify that RX-Checksum can be disabled.
 	/usr/sbin/ethtool -K $interface rx-checksum off;
 	curr_chksum_state=$(get_rx_chksum $interface);
-	if [ "$curr_chksum_state" != "off" ]
+	if [[ "$curr_chksum_state" != "off" ]]
 	then
 		# Restore original checksum state
 		/usr/sbin/ethtool -K $interface rx-checksum $original_chksum_state;
@@ -332,7 +332,7 @@ test_rx_chksum () {
 	# Verify that RX-Checksum can be enabled.
 	/usr/sbin/ethtool -K $interface rx-checksum on;
 	curr_chksum_state=$(get_rx_chksum $interface);
-	if [ "$curr_chksum_state" != "on" ]
+	if [[ "$curr_chksum_state" != "on" ]]
 	then
 		# Restore original checksum state
 		/usr/sbin/ethtool -K $interface rx-checksum $original_chksum_state;
@@ -385,12 +385,12 @@ test_irq_pacing () {
 	# Verify that they have been set
 	curr_tx_usecs=$(get_tx_coal $interface)
 	curr_rx_usecs=$(get_rx_coal $interface)
-	if [ "$curr_tx_usecs" != $test_tx_usecs ]
+	if [[ "$curr_tx_usecs" != $test_tx_usecs ]]
 	then
 		echo 0;
 		return;
 	fi
-	if [ "$curr_rx_usecs" != $test_rx_usecs ]
+	if [[ "$curr_rx_usecs" != $test_rx_usecs ]]
 	then
 		echo 0;
 		return;
@@ -407,14 +407,14 @@ test_nway () {
 	interface=$1
 	interface_state=$(get_state $interface)
 	# Verify that interface is up.
-	if [ "up" == $interface_state ]
+	if [[ "up" == $interface_state ]]
 	then
 		# Restart auto-negotiation
 		/usr/sbin/ethtool -r $interface;
 		# Wait for interface to be up
 		sleep 5;
 		interface_state=$(get_state $interface)
-		if [ "up" != $interface_state ]
+		if [[ "up" != $interface_state ]]
 		then
 			echo 0;
 			return;
@@ -429,7 +429,7 @@ test_pause () {
 	interface=$1
 	interface_state=$(get_state $interface)
 	# Verify that interface is up.
-	if [ "up" == $interface_state ]
+	if [[ "up" == $interface_state ]]
 	then
 		# Store initial pause configuration
 		init_pause=$(get_pause $interface)
@@ -438,7 +438,7 @@ test_pause () {
 		$(set_tx_pause $interface $curr_pause)
 		sleep 5;
 		curr_pause=$(get_pause $interface)
-		if [ "$curr_pause" == "$init_pause" ]
+		if [[ "$curr_pause" == "$init_pause" ]]
 		then
 			echo 0;
 			return;
@@ -456,14 +456,14 @@ test_xmbps () {
 	speed=$2
 	interface_state=$(get_state $interface)
 	# Verify that interface is up.
-	if [ "up" == $interface_state ]
+	if [[ "up" == $interface_state ]]
 	then
 		# Set interface speed to 10 Mbps
 		/usr/sbin/ethtool -s $interface speed $speed;
 		# Wait for interface to be up
 		sleep 5;
 		interface_state=$(get_state $interface)
-		if [ "up" != $interface_state ]
+		if [[ "up" != $interface_state ]]
 		then
 			echo 0;
 			return;
@@ -502,13 +502,13 @@ test_ip_config () {
 	test_ip_2="222.111.222.111"
 
 	# Verify that interface is up.
-	if [ "up" == $interface_state ]
+	if [[ "up" == $interface_state ]]
 	then
 		original_ip=$(get_ip $interface)
 		# Assign test_ip_1 and verify
 		/sbin/ifconfig $interface $test_ip_1;
 		curr_ip=$(get_ip $interface)
-		if [ "$curr_ip" != $test_ip_1 ]
+		if [[ "$curr_ip" != $test_ip_1 ]]
 		then
 			# Restore original IP
 			/sbin/ifconfig $interface $original_ip;
@@ -518,7 +518,7 @@ test_ip_config () {
 		# Assign test_ip_2 and verify
 		/sbin/ifconfig $interface $test_ip_2;
 		curr_ip=$(get_ip $interface)
-		if [ "$curr_ip" != $test_ip_2 ]
+		if [[ "$curr_ip" != $test_ip_2 ]]
 		then
 			# Restore original IP
 			/sbin/ifconfig $interface $original_ip;
@@ -543,12 +543,12 @@ test_mac_config () {
 
 	# Verify that interface is down.
 	interface_state=$(get_state $interface)
-	if [ "down" == $interface_state ]
+	if [[ "down" == $interface_state ]]
 	then
 		# Assign test_mac_1 and verify
 		/sbin/ifconfig $interface hw ether $test_mac_1;
 		curr_mac=$(get_mac $interface)
-		if [ "$curr_mac" != $test_mac_1 ]
+		if [[ "$curr_mac" != $test_mac_1 ]]
 		then
 			# Restore original MAC
 			/sbin/ifconfig $interface hw ether $original_mac;
@@ -561,7 +561,7 @@ test_mac_config () {
 		# Assign test_mac_2 and verify
 		/sbin/ifconfig $interface hw ether $test_mac_2;
 		curr_mac=$(get_mac $interface)
-		if [ "$curr_mac" != $test_mac_2 ]
+		if [[ "$curr_mac" != $test_mac_2 ]]
 		then
 			# Restore original MAC
 			/sbin/ifconfig $interface hw ether $original_mac;
@@ -591,7 +591,7 @@ test_mtu_config () {
 	# Assign test_mtu_1 and verify
 	/sbin/ifconfig $interface mtu $test_mtu_1;
 	curr_mtu=$(get_mtu $interface)
-	if [ "$curr_mtu" != $test_mtu_1 ]
+	if [[ "$curr_mtu" != $test_mtu_1 ]]
 	then
 		# Restore original MTU
 		/sbin/ifconfig $interface mtu $original_mtu;
@@ -601,7 +601,7 @@ test_mtu_config () {
 	# Assign test_mtu_2 and verify
 	/sbin/ifconfig $interface mtu $test_mtu_2;
 	curr_mtu=$(get_mtu $interface)
-	if [ "$curr_mtu" != $test_mtu_2 ]
+	if [[ "$curr_mtu" != $test_mtu_2 ]]
 	then
 		# Restore original MTU
 		/sbin/ifconfig $interface mtu $original_mtu;
@@ -623,7 +623,7 @@ test_mcast_adddel () {
 	# Add first multicast address and verify
 	$(add_mcast $interface $test_mcast_1)
 	check=$(is_valid_mcast $interface $test_mcast_1)
-	if [ $check != 1 ]
+	if [[ $check != 1 ]]
 	then
 		echo 0;
 		return;
@@ -631,7 +631,7 @@ test_mcast_adddel () {
 	# Delete first multicast address and verify
 	$(del_mcast $interface $test_mcast_1)
 	check=$(is_valid_mcast $interface $test_mcast_1)
-	if [ $check != 0 ]
+	if [[ $check != 0 ]]
 	then
 		echo 0;
 		return;
@@ -639,7 +639,7 @@ test_mcast_adddel () {
 	# Add second multicast address and verify
 	$(add_mcast $interface $test_mcast_2)
 	check=$(is_valid_mcast $interface $test_mcast_2)
-	if [ $check != 1 ]
+	if [[ $check != 1 ]]
 	then
 		echo 0;
 		return;
@@ -647,7 +647,7 @@ test_mcast_adddel () {
 	# Delete second multicast address and verify
 	$(del_mcast $interface $test_mcast_2)
 	check=$(is_valid_mcast $interface $test_mcast_2)
-	if [ $check != 0 ]
+	if [[ $check != 0 ]]
 	then
 		echo 0;
 		return;
@@ -666,10 +666,10 @@ test_drv_promisc () {
 	interfaces=$(get_eth_list)
 	for iface in $interfaces
 	do
-		if [ "$driver" == "$(get_if_drv $iface)" ]
+		if [[ "$driver" == "$(get_if_drv $iface)" ]]
 		then
 			check=$(test_promisc $iface)
-			if [ $check == 0 ]
+			if [[ $check == 0 ]]
 			then
 				echo 0;
 				return;
@@ -686,7 +686,7 @@ test_drv_pps () {
 	driver=$1
 	# Find pps sources. No pps sources => Fail.
 	num_pps_sources=$(ls -l /dev/pps* | wc -l)
-	if [ $num_pps_sources == 0 ]
+	if [[ $num_pps_sources == 0 ]]
 	then
 		echo 0;
 		return;
@@ -697,10 +697,10 @@ test_drv_pps () {
 		pps_src=$(echo "pps$index");
 		ptp_dev=$(get_pps_ptp $pps_src);
 		ptp_drv=$(get_ptp_drv $ptp_dev);
-		if [ "$driver" == "$ptp_drv" ]
+		if [[ "$driver" == "$ptp_drv" ]]
 		then
 			check=$(test_pps $ptp_dev $pps_src);
-			if [ $check == 0 ]
+			if [[ $check == 0 ]]
 			then
 				echo 0;
 				return;
@@ -718,10 +718,10 @@ test_drv_irq_pacing () {
 	interfaces=$(get_eth_list)
 	for iface in $interfaces
 	do
-		if [ "$driver" == "$(get_if_drv $iface)" ]
+		if [[ "$driver" == "$(get_if_drv $iface)" ]]
 		then
 			check=$(test_irq_pacing $iface)
-			if [ $check == 0 ]
+			if [[ $check == 0 ]]
 			then
 				echo 0;
 				return;
@@ -738,10 +738,10 @@ test_drv_pause () {
 	interfaces=$(get_eth_list)
 	for iface in $interfaces
 	do
-		if [ "$driver" == "$(get_if_drv $iface)" ]
+		if [[ "$driver" == "$(get_if_drv $iface)" ]]
 		then
 			check=$(test_pause $iface)
-			if [ $check == 0 ]
+			if [[ $check == 0 ]]
 			then
 				echo 0;
 				return;
@@ -759,10 +759,10 @@ test_drv_nway () {
 	interfaces=$(get_eth_list)
 	for iface in $interfaces
 	do
-		if [ "$driver" == "$(get_if_drv $iface)" ]
+		if [[ "$driver" == "$(get_if_drv $iface)" ]]
 		then
 			check=$(test_nway $iface)
-			if [ $check == 0 ]
+			if [[ $check == 0 ]]
 			then
 				echo 0;
 				return;
@@ -779,10 +779,10 @@ test_drv_10mbps () {
 	interfaces=$(get_eth_list)
 	for iface in $interfaces
 	do
-		if [ "$driver" == "$(get_if_drv $iface)" ]
+		if [[ "$driver" == "$(get_if_drv $iface)" ]]
 		then
 			check=$(test_10mbps $iface)
-			if [ $check == 0 ]
+			if [[ $check == 0 ]]
 			then
 				echo 0;
 				return;
@@ -799,10 +799,10 @@ test_drv_100mbps () {
 	interfaces=$(get_eth_list)
 	for iface in $interfaces
 	do
-		if [ "$driver" == "$(get_if_drv $iface)" ]
+		if [[ "$driver" == "$(get_if_drv $iface)" ]]
 		then
 			check=$(test_100mbps $iface)
-			if [ $check == 0 ]
+			if [[ $check == 0 ]]
 			then
 				echo 0;
 				return;
@@ -819,10 +819,10 @@ test_drv_1000mbps () {
 	interfaces=$(get_eth_list)
 	for iface in $interfaces
 	do
-		if [ "$driver" == "$(get_if_drv $iface)" ]
+		if [[ "$driver" == "$(get_if_drv $iface)" ]]
 		then
 			check=$(test_1000mbps $iface)
-			if [ $check == 0 ]
+			if [[ $check == 0 ]]
 			then
 				echo 0;
 				return;
@@ -839,10 +839,10 @@ test_drv_ping () {
 	interfaces=$(get_eth_list)
 	for iface in $interfaces
 	do
-		if [ "$driver" == "$(get_if_drv $iface)" ]
+		if [[ "$driver" == "$(get_if_drv $iface)" ]]
 		then
 			check=$(test_ping $iface)
-			if [ $check == 0 ]
+			if [[ $check == 0 ]]
 			then
 				echo 0;
 				return;
@@ -859,10 +859,10 @@ test_drv_vlan_adddel () {
 	interfaces=$(get_eth_list)
 	for iface in $interfaces
 	do
-		if [ "$driver" == "$(get_if_drv $iface)" ]
+		if [[ "$driver" == "$(get_if_drv $iface)" ]]
 		then
 			check=$(test_vlan_adddel $iface)
-			if [ $check == 0 ]
+			if [[ $check == 0 ]]
 			then
 				echo 0;
 				return;
@@ -879,10 +879,10 @@ test_drv_mcast_adddel () {
 	interfaces=$(get_eth_list)
 	for iface in $interfaces
 	do
-		if [ "$driver" == "$(get_if_drv $iface)" ]
+		if [[ "$driver" == "$(get_if_drv $iface)" ]]
 		then
 			check=$(test_mcast_adddel $iface)
-			if [ $check == 0 ]
+			if [[ $check == 0 ]]
 			then
 				echo 0;
 				return;
@@ -899,10 +899,10 @@ test_drv_rx_chksum_config () {
 	interfaces=$(get_eth_list)
 	for iface in $interfaces
 	do
-		if [ "$driver" == "$(get_if_drv $iface)" ]
+		if [[ "$driver" == "$(get_if_drv $iface)" ]]
 		then
 			check=$(test_rx_chksum $iface)
-			if [ $check == 0 ]
+			if [[ $check == 0 ]]
 			then
 				echo 0;
 				return;
@@ -920,10 +920,10 @@ test_drv_ip_config () {
 	interfaces=$(get_eth_list)
 	for iface in $interfaces
 	do
-		if [ "$driver" == "$(get_if_drv $iface)" ]
+		if [[ "$driver" == "$(get_if_drv $iface)" ]]
 		then
 			check=$(test_ip_config $iface)
-			if [ $check == 0 ]
+			if [[ $check == 0 ]]
 			then
 				echo 0;
 				return;
@@ -940,10 +940,10 @@ test_drv_mac_config () {
 	interfaces=$(get_eth_list)
 	for iface in $interfaces
 	do
-		if [ "$driver" == "$(get_if_drv $iface)" ]
+		if [[ "$driver" == "$(get_if_drv $iface)" ]]
 		then
 			check=$(test_mac_config $iface)
-			if [ $check == 0 ]
+			if [[ $check == 0 ]]
 			then
 				echo 0;
 				return;
@@ -960,10 +960,10 @@ test_drv_mtu_config () {
 	interfaces=$(get_eth_list)
 	for iface in $interfaces
 	do
-		if [ "$driver" == "$(get_if_drv $iface)" ]
+		if [[ "$driver" == "$(get_if_drv $iface)" ]]
 		then
 			check=$(test_mtu_config $iface)
-			if [ $check == 0 ]
+			if [[ $check == 0 ]]
 			then
 				echo 0;
 				return;
