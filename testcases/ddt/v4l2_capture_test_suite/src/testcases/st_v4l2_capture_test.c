@@ -76,7 +76,7 @@ int st_v4l2_capture_test(struct v4l2_capture_testparams *testoptions)
 	struct proc_stat cpuload;
 	struct timeval before, after, result;
 
-	TEST_PRINT_TST_START(testoptions->testcase_id);
+	TEST_PRINT_TST_START("%s", testoptions->testcase_id);
 
 	/* open V4L2 capture device */
 	retVal = st_v4l2_capture_open(testoptions->device_name_cap,
@@ -570,6 +570,6 @@ exit5:
 	TEST_PRINT_TST_RESULT(status, testoptions->testcase_id);
 
 	/* end test case */
-	TEST_PRINT_TST_END(testoptions->testcase_id);
+	TEST_PRINT_TST_END("%s", testoptions->testcase_id);
 	return status;
 }

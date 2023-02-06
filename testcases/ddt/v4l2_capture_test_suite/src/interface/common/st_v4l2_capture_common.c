@@ -39,6 +39,8 @@
 /* V4L2_DISPLAY structs, enums, macros defined */
 #include "st_v4l2_capture_common.h"
 
+struct v4l2_capture_testparams testoptions;
+
 /* Buffers for display */
 static struct buf_info display_buff_info[MAX_BUFFERS];
 static struct buf_info capture_buff_info[MAX_BUFFERS];

@@ -179,7 +179,7 @@ static int st_process_rtc_test_options(int argc, char **argv)
 		if( error == TRUE)
 			result = FAILURE;
 	} else {
-		TEST_PRINT_TST_START(testcaseid);
+		TEST_PRINT_TST_START("%s", testcaseid);
 		st_print_rtc_test_params(&testoptions, testcaseid);
 		while (testoptions.loop > loop_count) {
 			ret_val = st_rtc_ioctl_test(&testoptions, testcaseid);
@@ -190,7 +190,7 @@ static int st_process_rtc_test_options(int argc, char **argv)
 			loop_count++;
 		}
 		TEST_PRINT_TST_RESULT(result, testcaseid);
-		TEST_PRINT_TST_END(testcaseid);
+		TEST_PRINT_TST_END("%s", testcaseid);
 	}
 	return result;
 }

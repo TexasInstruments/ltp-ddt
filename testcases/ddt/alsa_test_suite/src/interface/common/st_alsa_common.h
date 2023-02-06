@@ -144,8 +144,8 @@ typedef enum {
 	MONO = 1,
 	STEREO = 2
 } channels;
-tc_dev_params testoptions_capture;
-tc_dev_params testoptions_playback;
+extern tc_dev_params testoptions_capture;
+extern tc_dev_params testoptions_playback;
 void st_audio_capture_hw_params(void);
 int st_audio_read(char *buffer, int access_type);
 int st_audio_capture_prepare(void);

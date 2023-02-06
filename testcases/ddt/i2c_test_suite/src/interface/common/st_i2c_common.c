@@ -121,7 +121,7 @@ void st_print_i2c_test_params(struct st_i2c_testparams
 			      *testoptions, char *test_id)
 {
 
-	TEST_PRINT_TST_START(test_id);
+	TEST_PRINT_TST_START("%s", test_id);
 	TEST_PRINT("******** I2C Testcase  parameters  ******** ");
 
 	if (testoptions->iomode == 'w') {

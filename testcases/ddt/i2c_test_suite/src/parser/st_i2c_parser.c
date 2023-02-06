@@ -201,7 +201,7 @@ static int st_process_i2c_test_options(int argc, char **argv)
 		else
 			result = st_i2c_eeprom_write_test(&testoptions, testcaseid);
 		TEST_PRINT_TST_RESULT(result, testcaseid);
-		TEST_PRINT_TST_END(testcaseid);
+		TEST_PRINT_TST_END("%s", testcaseid);
 	}
 	return result;
 }

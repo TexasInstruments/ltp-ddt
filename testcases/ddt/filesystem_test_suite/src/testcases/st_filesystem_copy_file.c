@@ -89,7 +89,7 @@ int st_filesystem_performance_copy_test(struct st_filesystem_testparams *info,
 			srcfileopenflag = 1;
 			goto free_mem;
 		}
-		dstfdes = open((const char *)dstfile_ptr, (O_WRONLY | O_CREAT));
+		dstfdes = open((const char *)dstfile_ptr, (O_WRONLY | O_CREAT), 0777);
 		if (-1 == dstfdes) {
 			perror("\n open");
 			TEST_PRINT_ERR("dst file open failed ");

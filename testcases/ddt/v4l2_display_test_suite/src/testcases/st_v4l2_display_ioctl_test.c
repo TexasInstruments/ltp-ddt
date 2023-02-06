@@ -49,7 +49,7 @@ int st_v4l2_display_ioctl_test(struct v4l2_display_testparams *testoptions)
 	unsigned int cpu_load;
 	struct proc_stat cpuload;
 	
-	TEST_PRINT_TST_START(testoptions->testcase_id);
+	TEST_PRINT_TST_START("%s", testoptions->testcase_id);
 
 	/* open V4L2 display device */
 	retVal = st_v4l2_display_open(testoptions->device_name,
@@ -537,6 +537,6 @@ exit3:
 	TEST_PRINT_TST_RESULT(status, testoptions->testcase_id);
 
 	/* end test case */
-	TEST_PRINT_TST_END(testoptions->testcase_id);
+	TEST_PRINT_TST_END("%s", testoptions->testcase_id);
 	return status;
 }

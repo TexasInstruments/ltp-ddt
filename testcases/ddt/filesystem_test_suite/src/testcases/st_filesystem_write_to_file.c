@@ -89,7 +89,7 @@ int st_filesystem_performance_write_test(struct st_filesystem_testparams *info,
 	}
 	TEST_PRINT_TRC("mmap srcfile ");
 
-	fdes = open((const char *)file_ptr, O_WRONLY | O_CREAT);
+	fdes = open((const char *)file_ptr, O_WRONLY | O_CREAT, 0777);
 	if (-1 == fdes) {
 		perror("\n open");
 		TEST_PRINT_ERR("file open failed ");

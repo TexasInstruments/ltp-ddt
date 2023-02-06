@@ -78,7 +78,7 @@ exit:
 	st_fbdev_display_test_status(ret, params->testcase_id);
 
 	/* end test case */
-	TEST_PRINT_TST_END(params->testcase_id);
+	TEST_PRINT_TST_END("%s", params->testcase_id);
 
 	return ret;
 }
@@ -144,7 +144,7 @@ exit:
 	st_fbdev_display_test_status(ret, params->testcase_id);
 
 	/* end test case */
-	TEST_PRINT_TST_END(params->testcase_id);
+	TEST_PRINT_TST_END("%s", params->testcase_id);
 
 	return ret;
 }
@@ -214,7 +214,7 @@ exit:
 	st_fbdev_display_test_status(ret, params->testcase_id);
 
 	/* end test case */
-	TEST_PRINT_TST_END(params->testcase_id);
+	TEST_PRINT_TST_END("%s", params->testcase_id);
 
 	return ret;
 }
@@ -265,7 +265,7 @@ exit:
 	st_fbdev_display_test_status(ret, params->testcase_id);
 
 	/* end test case */
-	TEST_PRINT_TST_END(params->testcase_id);
+	TEST_PRINT_TST_END("%s", params->testcase_id);
 
 	return ret;
 }
@@ -318,7 +318,7 @@ exit:
 	st_fbdev_display_test_status(ret, params->testcase_id);
 
 	/* end test case */
-	TEST_PRINT_TST_END(params->testcase_id);
+	TEST_PRINT_TST_END("%s", params->testcase_id);
 
 	return ret;
 }
@@ -401,7 +401,7 @@ exit:
 	st_fbdev_display_test_status(ret, params->testcase_id);
 
 	/* end test case */
-	TEST_PRINT_TST_END(params->testcase_id);
+	TEST_PRINT_TST_END("%s", params->testcase_id);
 
 	return ret;
 }

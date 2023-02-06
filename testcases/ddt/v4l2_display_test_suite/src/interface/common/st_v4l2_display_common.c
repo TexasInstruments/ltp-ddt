@@ -39,6 +39,8 @@
 /* V4L2_DISPLAY structs, enums, macros defined */
 #include "st_v4l2_display_common.h"
 
+struct v4l2_display_testparams testoptions;
+
 /* Buffers for display */
 static struct buf_info display_buff_info[MAX_BUFFERS];
 static unsigned long buffer_addr[MAX_BUFFERS];

@@ -83,7 +83,7 @@ int st_audio_file_capture(tc_dev_params * pcm_param)
 	loops = total_size / size;
 
 	fd_audio =
-	    open((const char *)(pcm_param->file_name), O_WRONLY | O_CREAT);
+	    open((const char *)(pcm_param->file_name), O_WRONLY | O_CREAT, 0777);
 	if (-1 == fd_audio) {
 		TEST_PRINT_ERR("file open failed ");
 		rc = FAILURE;
