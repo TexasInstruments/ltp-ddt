@@ -1,6 +1,5 @@
 armv8
-am62axx
-am62axx-sk
+am62xx_lp_sk-fs
 adc/tscadc
 crypto/sa2ul
 crypto/sa2ul/3des
@@ -9,13 +8,18 @@ crypto/sa2ul/sha1
 crypto/sa2ul/sha256
 crypto/sa2ul/sha512
 gpio
+graphics/
 hwrng
+hyperflash/mtd
 i2c
 mmc_host/mmc/sdhci_am654
 mmc_host/sd/sdhci_am654
 mmc_host/sdhc/sdhci_am654
 mmc_host/sdxc/sdhci_am654
 emmc
+nand
+ubifs
+jffs2
 kms
 net/ti_cpsw
 net/eth10M/ti_am65_cpsw_nuss
@@ -39,9 +43,12 @@ sound/playback/alsa/hisamplingrate
 spi_master/mtd
 tidec
 tienc
+touchscreen
+ufs
 usb/host/msc/xhci-hcd
 usb/host/hid/xhci-hcd
 usb/host/iso/xhci-hcd
+usb/host/superspeed
 usb/slave/usbslave_ether
 usb/slave/usbslave_zero
 usb/slave/usbslave_ncm
@@ -55,4 +62,5 @@ video/capture/*/v4l2
 hwspinlock
 mailbox
 displayport
+cpsw9g
 watchdog
