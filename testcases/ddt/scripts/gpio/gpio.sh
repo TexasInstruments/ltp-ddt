@@ -127,6 +127,9 @@ case $MACHINE in
   j720*|j721s*)
     gpio_nums="322,355,391"                  
   ;;
+  am68*)
+    gpio_nums="420,450"
+  ;;
   k2g-evm)
     gpio_nums="346,281,484"
     if [[ "$MACHINE" == "k2g-evm" ]]; then
