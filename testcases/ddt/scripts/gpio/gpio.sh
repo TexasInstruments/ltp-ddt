@@ -127,7 +127,7 @@ case $MACHINE in
   j720*|j721s*)
     gpio_nums="322,355,391"                  
   ;;
-  am68*)
+  am68*|am69*)
     gpio_nums="420,450"
   ;;
   k2g-evm)
