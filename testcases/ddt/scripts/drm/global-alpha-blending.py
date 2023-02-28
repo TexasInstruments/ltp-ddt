@@ -67,7 +67,7 @@ for i in range(len(planes)):
         
     }
 
-    if re.match("am65.*|j721.*|j784.*", platform, re.I):
+    if re.match("am65.*|j721.*|j784.*|am68.*|am69.*", platform, re.I):
         p_props["zpos"] = i
         p_props["alpha"] = 128
     else:
