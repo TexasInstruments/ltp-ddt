@@ -1,0 +1,19 @@
+# @name am65-cpsw-nuss-test-suite
+# @desc Test suite for all am65-cpsw-nuss driver related tests
+# @requires net.
+
+ETH_XS_FUNC_PING_CPSWnG_NATIVE eth_drv_tester.sh "test_drv_ping" "am65-cpsw-nuss"
+ETH_XS_FUNC_SPEED_10_CPSWnG_NATIVE eth_drv_tester.sh "test_drv_10mbps" "am65-cpsw-nuss"
+ETH_XS_FUNC_SPEED_100_CPSWnG_NATIVE eth_drv_tester.sh "test_drv_100mbps" "am65-cpsw-nuss"
+ETH_XS_FUNC_SPEED_1000_CPSWnG_NATIVE eth_drv_tester.sh "test_drv_1000mbps" "am65-cpsw-nuss"
+ETH_XS_FUNC_MTU_CONFIG_CPSWnG_NATIVE eth_drv_tester.sh "test_drv_mtu_config" "am65-cpsw-nuss"
+ETH_XS_FUNC_IP_CONFIG_CPSWnG_NATIVE eth_drv_tester.sh "test_drv_ip_config" "am65-cpsw-nuss"
+ETH_XS_FUNC_MAC_CONFIG_CPSWnG_NATIVE eth_drv_tester.sh "test_drv_mac_config" "am65-cpsw-nuss"
+ETH_XS_FUNC_MCAST_ADDDEL_CPSWnG_NATIVE eth_drv_tester.sh "test_drv_mcast_adddel" "am65-cpsw-nuss"
+ETH_XS_FUNC_VLAN_ADDDEL_CPSWnG_NATIVE eth_drv_tester.sh "test_drv_vlan_adddel" "am65-cpsw-nuss"
+ETH_XS_FUNC_RX_CHKSUM_CONFIG_CPSWnG_NATIVE eth_drv_tester.sh "test_drv_rx_chksum_config" "am65-cpsw-nuss"
+ETH_XS_FUNC_NWAY_ANEG_CPSWnG_NATIVE eth_drv_tester.sh "test_drv_nway" "am65-cpsw-nuss"
+ETH_XS_FUNC_PAUSE_CPSWnG_NATIVE eth_drv_tester.sh "test_drv_pause" "am65-cpsw-nuss"
+ETH_XS_FUNC_IRQ_PACING_CPSWnG_NATIVE eth_drv_tester.sh "test_drv_irq_pacing" "am65-cpsw-nuss"
+ETH_XS_FUNC_PPS_CPSWnG_NATIVE eth_drv_tester.sh "test_drv_pps" "am65-cpsw-nuss"
+ETH_XS_FUNC_PROMISC_CPSWnG_NATIVE eth_drv_tester.sh "test_drv_promisc" "am65-cpsw-nuss"
