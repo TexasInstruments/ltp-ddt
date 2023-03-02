@@ -262,6 +262,17 @@ del_mcast () {
 	/sbin/ip maddr del $addr dev $interface
 }
 
+### Dump ALE entries in a sorted manner with pre-processing
+### for a given interface. This is useful when comparing the
+### ALE entries. The entries are output to the file that is
+### passed as a parameter.
+dump_ale_sorted () {
+	interface=$1
+	filename=$2
+	echo "${FUNCNAME[0]}: For $interface: Dumping ALE entries to $filename" >&2;
+	switch-config -I $interface -d | tail -n +3 | cut -d":" -f2- | sort > $filename;
+}
+
 #########################################################################################
 ##### INTERFACE LEVEL TESTS #############################################################
 #########################################################################################
