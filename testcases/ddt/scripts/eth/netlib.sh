@@ -127,7 +127,7 @@ is_valid() {
 get_pps_ptp () {
 	pps_src=$1
 	ptp_dev=$(cat /sys/class/pps/$pps_src/name);
-	echo "${FUNCNAME[0]}: For PPS Source: $ppr_src, PTP Dev is: $ptp_dev" >&2;
+	echo "${FUNCNAME[0]}: For PPS Source: $pps_src, PTP Dev is: $ptp_dev" >&2;
 	echo $ptp_dev;
 }
 
