@@ -417,6 +417,12 @@ test_rx_chksum () {
 }
 
 ### Verify that interface can ping.
+### Three ways to verify ping:
+### 1. Try pinging the IPERF server if IPERFHOST variable is exported by host.
+### 2. Try pinging the DHCP server if journalctl log captures IP of DHCP server.
+### 3. Try broadcast ping.
+### The test involves verifying ping through any of the three ways in the order
+### listed above, until one of them works.
 test_ping () {
 	interface=$1
 	interface_state=$(get_state $interface)
@@ -424,17 +430,28 @@ test_ping () {
 	# Verify that interface is up.
 	if [[ "up" == $interface_state || "unknown" == $interface_state ]]
 	then
-		echo "${FUNCNAME[0]}: Fetching Server IP" >&2;
-		server_ip=$(get_server_ip $interface)
-		if [[ $server_ip == "0.0.0.0" ]]
+		### Try pinging the IPERF server if IP is exported by host.
+		if [[ -n "$IPERFHOST" ]]
 		then
-			echo "${FUNCNAME[0]}: Failed to get Server IP" >&2;
-			echo 0;
-			return;
+			echo "${FUNCNAME[0]}: IPERF server's IP Address is: $IPERFHOST" >&2;
+			dest_ip=$IPERFHOST;
+		else
+			### IPERF server IP is not exported by host.
+			### Try pinging the DHCP server if journalctl log captures its IP.
+			dhcp_server_ip=$(get_dhcp_server_ip $interface);
+			if [[ -n "$dhcp_server_ip" ]]
+			then
+				echo "${FUNCNAME[0]}: DHCP server's IP Address is: $dhcp_server_ip" >&2;
+				dest_ip=$dhcp_server_ip;
+			else
+				### Journalctl log did not capture DHCP server's IP.
+				### Try broadcast ping as a last resort.
+				dest_ip=$(get_broadcast_ip $interface);
+				echo "${FUNCNAME[0]}: Attempting broadcast ping to : $dest_ip" >&2;
+			fi
 		fi
-		echo "${FUNCNAME[0]}: Pinging $server_ip" >&2;
-		ping_result=$(/bin/ping -I $interface -c 5 $server_ip 2>&1 | grep "100% packet loss" | wc -l)
-		if [[ $ping_result == 1 ]]
+		ping_result=$(/bin/ping -I $interface -c 5 $dest_ip 2>&1 | grep "0% packet loss" | wc -l)
+		if [[ $ping_result != 1 ]]
 		then
 			echo "${FUNCNAME[0]}: Ping Failed" >&2;
 			echo 0;
