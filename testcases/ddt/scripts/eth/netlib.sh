@@ -207,6 +207,14 @@ get_dhcp_server_ip () {
 	echo $dhcp_server_ip;
 }
 
+### Get Broadcast IP for a given interface
+get_broadcast_ip () {
+	interface=$1;
+	broadcast_ip=$(/sbin/ifconfig $interface | grep "broadcast" | awk '{print $NF}')
+	echo "${FUNCNAME[0]}: For $interface: Broadcast IP Address is: $broadcast_ip" >&2;
+	echo $broadcast_ip;
+}
+
 ### Get TX pause option of interface (Same as RX pause)
 get_pause () {
 	interface=$1
