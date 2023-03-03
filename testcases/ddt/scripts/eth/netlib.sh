@@ -188,18 +188,23 @@ set_rx_coal () {
 }
 
 ### Get DHCP Server IP
-get_server_ip () {
+get_dhcp_server_ip () {
 	interface=$1
 	check=$(/sbin/udhcpc -n -i $interface 2>&1 | grep "no lease" | wc -l)
 	if [[ $check == 1 ]]
 	then
-		echo "${FUNCNAME[0]}: For $interface: DHCP Server IP NOT found!!!" >&2;
-		echo "0.0.0.0"
+		echo "${FUNCNAME[0]}: For $interface: DHCP server's IP Address NOT found!!!" >&2;
+		echo "";
 		return;
 	fi
-	server_ip=$(journalctl | grep DHCP | grep $interface | grep via | tail -1 | awk '{ print $NF }')
-	echo "${FUNCNAME[0]}: For $interface: DHCP Server IP is: $server_ip" >&2;
-	echo $server_ip;
+	dhcp_server_ip=$(journalctl | grep DHCP | grep $interface | grep via | tail -1 | awk '{ print $NF }')
+	if [[ -n "$dhcp_server_ip" ]]
+	then
+		echo "${FUNCNAME[0]}: For $interface: DHCP server's IP Address is: $dhcp_server_ip" >&2;
+	else
+		echo "${FUNCNAME[0]}: For $interface: Journalctl log did not capture DHCP server's IP Address" >&2;
+	fi
+	echo $dhcp_server_ip;
 }
 
 ### Get TX pause option of interface (Same as RX pause)
