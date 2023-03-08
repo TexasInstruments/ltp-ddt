@@ -127,7 +127,7 @@ is_valid() {
 get_pps_ptp () {
 	pps_src=$1
 	ptp_dev=$(cat /sys/class/pps/$pps_src/name);
-	echo "${FUNCNAME[0]}: For PPS Source: $ppr_src, PTP Dev is: $ptp_dev" >&2;
+	echo "${FUNCNAME[0]}: For PPS Source: $pps_src, PTP Dev is: $ptp_dev" >&2;
 	echo $ptp_dev;
 }
 
@@ -188,18 +188,31 @@ set_rx_coal () {
 }
 
 ### Get DHCP Server IP
-get_server_ip () {
+get_dhcp_server_ip () {
 	interface=$1
 	check=$(/sbin/udhcpc -n -i $interface 2>&1 | grep "no lease" | wc -l)
 	if [[ $check == 1 ]]
 	then
-		echo "${FUNCNAME[0]}: For $interface: DHCP Server IP NOT found!!!" >&2;
-		echo "0.0.0.0"
+		echo "${FUNCNAME[0]}: For $interface: DHCP server's IP Address NOT found!!!" >&2;
+		echo "";
 		return;
 	fi
-	server_ip=$(journalctl | grep DHCP | grep $interface | grep via | tail -1 | awk '{ print $NF }')
-	echo "${FUNCNAME[0]}: For $interface: DHCP Server IP is: $server_ip" >&2;
-	echo $server_ip;
+	dhcp_server_ip=$(journalctl | grep DHCP | grep $interface | grep via | tail -1 | awk '{ print $NF }')
+	if [[ -n "$dhcp_server_ip" ]]
+	then
+		echo "${FUNCNAME[0]}: For $interface: DHCP server's IP Address is: $dhcp_server_ip" >&2;
+	else
+		echo "${FUNCNAME[0]}: For $interface: Journalctl log did not capture DHCP server's IP Address" >&2;
+	fi
+	echo $dhcp_server_ip;
+}
+
+### Get Broadcast IP for a given interface
+get_broadcast_ip () {
+	interface=$1;
+	broadcast_ip=$(/sbin/ifconfig $interface | grep "broadcast" | awk '{print $NF}')
+	echo "${FUNCNAME[0]}: For $interface: Broadcast IP Address is: $broadcast_ip" >&2;
+	echo $broadcast_ip;
 }
 
 ### Get TX pause option of interface (Same as RX pause)
@@ -260,6 +273,17 @@ del_mcast () {
 	addr=$2
 	echo "${FUNCNAME[0]}: For $interface: Deleting Multicast MAC address $addr" >&2;
 	/sbin/ip maddr del $addr dev $interface
+}
+
+### Dump ALE entries in a sorted manner with pre-processing
+### for a given interface. This is useful when comparing the
+### ALE entries. The entries are output to the file that is
+### passed as a parameter.
+dump_ale_sorted () {
+	interface=$1
+	filename=$2
+	echo "${FUNCNAME[0]}: For $interface: Dumping ALE entries to $filename" >&2;
+	switch-config -I $interface -d | tail -n +3 | cut -d":" -f2- | sort > $filename;
 }
 
 #########################################################################################
@@ -393,6 +417,12 @@ test_rx_chksum () {
 }
 
 ### Verify that interface can ping.
+### Three ways to verify ping:
+### 1. Try pinging the IPERF server if IPERFHOST variable is exported by host.
+### 2. Try pinging the DHCP server if journalctl log captures IP of DHCP server.
+### 3. Try broadcast ping.
+### The test involves verifying ping through any of the three ways in the order
+### listed above, until one of them works.
 test_ping () {
 	interface=$1
 	interface_state=$(get_state $interface)
@@ -400,17 +430,28 @@ test_ping () {
 	# Verify that interface is up.
 	if [[ "up" == $interface_state || "unknown" == $interface_state ]]
 	then
-		echo "${FUNCNAME[0]}: Fetching Server IP" >&2;
-		server_ip=$(get_server_ip $interface)
-		if [[ $server_ip == "0.0.0.0" ]]
+		### Try pinging the IPERF server if IP is exported by host.
+		if [[ -n "$IPERFHOST" ]]
 		then
-			echo "${FUNCNAME[0]}: Failed to get Server IP" >&2;
-			echo 0;
-			return;
+			echo "${FUNCNAME[0]}: IPERF server's IP Address is: $IPERFHOST" >&2;
+			dest_ip=$IPERFHOST;
+		else
+			### IPERF server IP is not exported by host.
+			### Try pinging the DHCP server if journalctl log captures its IP.
+			dhcp_server_ip=$(get_dhcp_server_ip $interface);
+			if [[ -n "$dhcp_server_ip" ]]
+			then
+				echo "${FUNCNAME[0]}: DHCP server's IP Address is: $dhcp_server_ip" >&2;
+				dest_ip=$dhcp_server_ip;
+			else
+				### Journalctl log did not capture DHCP server's IP.
+				### Try broadcast ping as a last resort.
+				dest_ip=$(get_broadcast_ip $interface);
+				echo "${FUNCNAME[0]}: Attempting broadcast ping to : $dest_ip" >&2;
+			fi
 		fi
-		echo "${FUNCNAME[0]}: Pinging $server_ip" >&2;
-		ping_result=$(/bin/ping -I $interface -c 5 $server_ip 2>&1 | grep "100% packet loss" | wc -l)
-		if [[ $ping_result == 1 ]]
+		ping_result=$(/bin/ping -I $interface -c 5 $dest_ip 2>&1 | grep "0% packet loss" | wc -l)
+		if [[ $ping_result != 1 ]]
 		then
 			echo "${FUNCNAME[0]}: Ping Failed" >&2;
 			echo 0;
