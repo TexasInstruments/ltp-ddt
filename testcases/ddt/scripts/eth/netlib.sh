@@ -297,6 +297,8 @@ test_pps () {
 	# Request pps generation
 	echo "${FUNCNAME[0]}: PTP DEV: $ptp_dev PPS SOURCE: $pps_src" >&2;
 	echo 1 > /sys/class/ptp/$ptp_dev/pps_enable;
+	# Wait for PPS signal to be enabled.
+	sleep 2;
 	# Sample at 1 second intervals and compare
 	# timestamps and sequences.
 	r1=$(cat /sys/class/pps/$pps_src/assert)
