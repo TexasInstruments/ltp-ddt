@@ -1,13 +1,18 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /*
  * Copyright (c) 2020 FUJITSU LIMITED. All rights reserved.
+ * Copyright (c) Linux Test Project, 2020-2022
  * Author: Yang Xu <xuyang2018.jy@cn.jujitsu.com>
+ */
+
+/*\
+ * [Description]
  *
- * This is a basic ioctl test about loopdevice.
+ * Tests ioctl() on loopdevice with LOOP_SET_DIRECT_IO flag.
  *
- * It is designed to test LOOP_SET_DIRECT_IO can update a live
- * loop device dio mode. It needs the backing file also supports
- * dio mode and the lo_offset is aligned with the logical block size.
+ * Tests whether LOOP_SET_DIRECT_IO can update a live loop device dio mode.
+ * It requires the backing file also supports dio mode and the lo_offset is
+ * aligned with the logical block size.
  *
  * The direct I/O error handling is a bit messy on Linux, some filesystems
  * return error when it coudln't be enabled, some silently fall back to regular
@@ -32,7 +37,7 @@
 #define DIO_MESSAGE "In dio mode"
 #define NON_DIO_MESSAGE "In non dio mode"
 
-static char dev_path[1024], sys_loop_diopath[1024], backing_file_path[1024];;
+static char dev_path[1024], sys_loop_diopath[1024], backing_file_path[1024];
 static int dev_num, dev_fd, block_devfd, attach_flag, logical_block_size;
 
 static void check_dio_value(int flag)
