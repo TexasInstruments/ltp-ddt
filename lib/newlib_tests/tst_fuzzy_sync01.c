@@ -3,7 +3,7 @@
  * Copyright (c) 2021 Richard Palethorpe <rpalethorpe@suse.com>
  */
 /*\
- * [DESCRIPTION]
+ * [Description]
  *
  * This verifies Fuzzy Sync's basic ability to reproduce a particular
  * outcome to a data race when the critical sections are not aligned.
@@ -182,15 +182,10 @@ static void *worker(void *v)
 static void run(unsigned int i)
 {
 	const struct window a = races[i].a;
-	struct tst_fzsync_run_thread wrap_run_b = {
-		.func = worker,
-		.arg = &i,
-	};
 	int cs, ct, r, too_early = 0, critical = 0, too_late = 0;
 
 	tst_fzsync_pair_reset(&pair, NULL);
-	SAFE_PTHREAD_CREATE(&pair.thread_b, 0, tst_fzsync_thread_wrapper,
-			    &wrap_run_b);
+	SAFE_PTHREAD_CREATE(&pair.thread_b, 0, worker, &i);
 
 	while (tst_fzsync_run_a(&pair)) {
 
@@ -232,4 +227,5 @@ static struct tst_test test = {
 	.test = run,
 	.setup = setup,
 	.cleanup = cleanup,
+	.max_runtime = 150,
 };

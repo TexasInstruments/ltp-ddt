@@ -1,28 +1,6 @@
-/*****************************************************************************/
-/*                                                                           */
-/*  Copyright (c) 2010 Mohamed Naufal Basheer                                */
-/*                                                                           */
-/*  This program is free software;  you can redistribute it and/or modify    */
-/*  it under the terms of the GNU General Public License as published by     */
-/*  the Free Software Foundation; either version 2 of the License, or        */
-/*  (at your option) any later version.                                      */
-/*                                                                           */
-/*  This program is distributed in the hope that it will be useful,          */
-/*  but WITHOUT ANY WARRANTY;  without even the implied warranty of          */
-/*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See                */
-/*  the GNU General Public License for more details.                         */
-/*                                                                           */
-/*  You should have received a copy of the GNU General Public License        */
-/*  along with this program;  if not, write to the Free Software             */
-/*  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA  */
-/*                                                                           */
-/*  File:    mem_process.c                                                   */
-/*                                                                           */
-/*  Purpose: act as a memory hog for the memcg_control tests                 */
-/*                                                                           */
-/*  Author:  Mohamed Naufal Basheer <naufal11@gmail.com >                    */
-/*                                                                           */
-/*****************************************************************************/
+// SPDX-License-Identifier: GPL-2.0-or-later
+// Copyright (c) 2010 Mohamed Naufal Basheer
+// Author: Mohamed Naufal Basheer
 
 #include <sys/types.h>
 #include <sys/mman.h>
@@ -101,18 +79,12 @@ void mem_map(void)
 /*
  * done: retrieve instructions from the named pipe
  */
-char action(void)
+char action(int fd)
 {
 	char ch;
-	int fd;
-
-	if ((fd = open(STATUS_PIPE, O_RDONLY)) == -1)
-		err(6, "Error opening named pipe");
 
 	if (read(fd, &ch, 1) == -1)
 		err(7, "Error reading named pipe");
-
-	close(fd);
 
 	return ch;
 }
@@ -120,6 +92,7 @@ char action(void)
 int main(int argc, char **argv)
 {
 	int ret;
+	int fd;
 	char ch;
 
 	process_options(argc, argv);
@@ -129,12 +102,17 @@ int main(int argc, char **argv)
 	if (ret == -1 && errno != EEXIST)
 		errx(1, "Error creating named pipe");
 
+	if ((fd = open(STATUS_PIPE, O_RDONLY)) == -1)
+		err(6, "Error opening named pipe");
+
 	do {
-		ch = action();
+		ch = action(fd);
 
 		if (ch == 'm')
 			mem_map();
 	} while (ch != 'x');
+
+	close(fd);
 
 	remove(STATUS_PIPE);
 
