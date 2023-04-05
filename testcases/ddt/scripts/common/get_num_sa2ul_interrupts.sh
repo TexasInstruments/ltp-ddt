@@ -54,7 +54,7 @@ INT_CHAN=`cat /proc/interrupts | grep -i "Level" | grep -c "dma-controller"`
 ((INT_CHAN=INT_CHAN-1))
 for i in $(seq 0 $INT_CHAN)
 do
-   IRQ_NUM=`cat /proc/interrupts | grep -i "dma-controller" | grep "chan$i" | head -n 1 | tail -n 1| cut -d':' -f 1`
+   IRQ_NUM=`cat /proc/interrupts | grep -i "Level" | grep -i "dma-controller" | head -n $i | tail -n 1| cut -d':' -f 1`
    if [ $IRQ_NUM ]
    then
      interrupts=`cat /proc/interrupts | grep "${IRQ_NUM}:" | cut -d':' -f 2`
