@@ -2,6 +2,7 @@ armv8
 j721s2
 j721s2-evm
 adc/tscadc
+can
 crypto/sa2ul
 crypto/sa2ul/3des
 crypto/sa2ul/aes
