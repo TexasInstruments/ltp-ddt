@@ -1,0 +1,9 @@
+# @name OSPI read write test using dd with ubifs plus suspend-resume
+# @desc Perform ospi eraseall first, then do read write and then compare
+#	The partition number is specified in get_mtd_partition_number.sh
+#	and also perform suspend/resume
+# @requires ospi_master/mtd
+# @setup_requires ospi
+
+POWERMGR_S_FUNC_OSPI_DD_RW_ERASESIZE_UBIFS_SUSPEND source "common.sh"; run_processes.sh -c " /opt/ltp/runltp -f ddt/ospi_mtd_dd_rw_ubifs -P $PLATFORM -s 'OSPI_S_FUNC_DD_RW_ERASESIZE_UBIFS' # /opt/ltp/runltp -P $PLATFORM -f ddt/powermgr_suspend -s 'POWERMGR_S_FUNC_SIMPLE_SUSPEND ' "
+
