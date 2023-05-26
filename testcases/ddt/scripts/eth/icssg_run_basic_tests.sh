@@ -23,7 +23,7 @@ do
                 then
                         down_interfaces=$(($down_interfaces+1));
                         echo "Trying to bring interface $iface up" >&2;
-                        /sbin/ifconfig $iface up;
+                        ifconfig $iface up;
                 fi
         fi
 done

@@ -28,7 +28,7 @@ get_mac () {
 ### Get IPv4 address of interface.
 get_ip () {
 	interface=$1;
-	ip=$(/sbin/ifconfig $interface | grep "inet " | awk '{print $2}')
+	ip=$(ifconfig $interface | grep "inet " | awk '{print $2}')
 	echo "${FUNCNAME[0]}: IP: $ip" >&2;
 	echo $ip;
 }
@@ -51,7 +51,7 @@ get_rx_chksum () {
 ### Get promiscuous mode state of interface.
 get_promisc () {
 	interface=$1;
-	promisc=$(/sbin/ip -d link | grep $interface | grep "PROMISC" | wc -l)
+	promisc=$(ip -d link | grep $interface | grep "PROMISC" | wc -l)
 	echo "${FUNCNAME[0]}: Promiscuous state: $promisc" >&2;
 	echo $promisc;
 }
@@ -63,10 +63,10 @@ set_promisc () {
 	if [[ $mode == 1 ]]
 	then
 		echo "${FUNCNAME[0]}: Enabling promiscuous mode" >&2;
-		$(/sbin/ifconfig $interface promisc) > /dev/null 2>&1;
+		$(ifconfig $interface promisc) > /dev/null 2>&1;
 	else
 		echo "${FUNCNAME[0]}: Disabling promiscuous mode" >&2;
-		$(/sbin/ifconfig $interface -promisc) > /dev/null 2>&1;
+		$(ifconfig $interface -promisc) > /dev/null 2>&1;
 	fi
 }
 
@@ -142,7 +142,7 @@ get_ptp_drv () {
 ### Get tx packet count of interface
 get_tx_count () {
 	interface=$1
-	tx_count=$(/sbin/ifconfig $interface | grep "TX packets" | awk '{print $3}')
+	tx_count=$(ifconfig $interface | grep "TX packets" | awk '{print $3}')
 	echo "${FUNCNAME[0]}: For $interface: TX Packet Count is: $tx_count" >&2;
 	echo $tx_count;
 }
@@ -150,7 +150,7 @@ get_tx_count () {
 ### Get rx packet count of interface
 get_rx_count () {
 	interface=$1
-	rx_count=$(/sbin/ifconfig $interface | grep "RX packets" | awk '{print $3}')
+	rx_count=$(ifconfig $interface | grep "RX packets" | awk '{print $3}')
 	echo "${FUNCNAME[0]}: For $interface: RX Packet Count is: $rx_count" >&2;
 	echo $rx_count;
 }
@@ -158,7 +158,7 @@ get_rx_count () {
 ### Get tx coalesce parameter
 get_tx_coal () {
 	interface=$1
-	tx_usecs=$(/usr/sbin/ethtool -c $interface | grep "tx-usecs:" | awk '{print $2}')
+	tx_usecs=$(ethtool -c $interface | grep "tx-usecs:" | awk '{print $2}')
 	echo "${FUNCNAME[0]}: For $interface: tx_usecs is: $tx_usecs" >&2;
 	echo $tx_usecs;
 }
@@ -166,7 +166,7 @@ get_tx_coal () {
 ### Get rx coalesce parameter
 get_rx_coal () {
 	interface=$1
-	rx_usecs=$(/usr/sbin/ethtool -c $interface | grep "rx-usecs:" | awk '{print $2}')
+	rx_usecs=$(ethtool -c $interface | grep "rx-usecs:" | awk '{print $2}')
 	echo "${FUNCNAME[0]}: For $interface: rx_usecs is: $rx_usecs" >&2;
 	echo $rx_usecs;
 }
@@ -176,7 +176,7 @@ set_tx_coal () {
 	interface=$1
 	tx_usecs=$2
 	echo "${FUNCNAME[0]}: For $interface: setting tx_usecs to $tx_usecs" >&2;
-	/usr/sbin/ethtool -C $interface tx-usecs $tx_usecs > /dev/null 2>&1;
+	ethtool -C $interface tx-usecs $tx_usecs > /dev/null 2>&1;
 }
 
 ### Set rx coalesce parameter
@@ -184,13 +184,13 @@ set_rx_coal () {
 	interface=$1
 	rx_usecs=$2
 	echo "${FUNCNAME[0]}: For $interface: setting rx_usecs to $rx_usecs" >&2;
-	/usr/sbin/ethtool -C $interface rx-usecs $rx_usecs > /dev/null 2>&1;
+	ethtool -C $interface rx-usecs $rx_usecs > /dev/null 2>&1;
 }
 
 ### Get DHCP Server IP
 get_dhcp_server_ip () {
 	interface=$1
-	check=$(/sbin/udhcpc -n -i $interface 2>&1 | grep "no lease" | wc -l)
+	check=$(udhcpc -n -i $interface 2>&1 | grep "no lease" | wc -l)
 	if [[ $check == 1 ]]
 	then
 		echo "${FUNCNAME[0]}: For $interface: DHCP server's IP Address NOT found!!!" >&2;
@@ -210,7 +210,7 @@ get_dhcp_server_ip () {
 ### Get Broadcast IP for a given interface
 get_broadcast_ip () {
 	interface=$1;
-	broadcast_ip=$(/sbin/ifconfig $interface | grep "broadcast" | awk '{print $NF}')
+	broadcast_ip=$(ifconfig $interface | grep "broadcast" | awk '{print $NF}')
 	echo "${FUNCNAME[0]}: For $interface: Broadcast IP Address is: $broadcast_ip" >&2;
 	echo $broadcast_ip;
 }
@@ -218,7 +218,7 @@ get_broadcast_ip () {
 ### Get TX pause option of interface (Same as RX pause)
 get_pause () {
 	interface=$1
-	tx_pause=$(/usr/sbin/ethtool -a $interface | grep "TX:" | awk '{print $2}');
+	tx_pause=$(ethtool -a $interface | grep "TX:" | awk '{print $2}');
 	echo "${FUNCNAME[0]}: For $interface: tx_pause is: $tx_pause" >&2;
 	echo $tx_pause;
 }
@@ -228,7 +228,7 @@ set_tx_pause () {
 	interface=$1
 	pause=$2
 	echo "${FUNCNAME[0]}: For $interface: Setting tx_pause to: $pause" >&2;
-	$(/usr/sbin/ethtool -A $interface rx $pause tx $pause);
+	$(ethtool -A $interface rx $pause tx $pause);
 }
 
 ### Get toggled pause option.
@@ -248,7 +248,7 @@ toggle_pause () {
 is_valid_mcast () {
 	interface=$1
 	addr=$2
-	check=$(/sbin/ip maddr show dev $interface | grep "$addr" | wc -l)
+	check=$(ip maddr show dev $interface | grep "$addr" | wc -l)
 	if [[ $check != 1 ]]
 	then
 		echo "${FUNCNAME[0]}: For $interface: Multicast MAC address $addr doesn't exist" >&2;
@@ -264,7 +264,7 @@ add_mcast () {
 	interface=$1
 	addr=$2
 	echo "${FUNCNAME[0]}: For $interface: Adding Multicast MAC address $addr" >&2;
-	/sbin/ip maddr add $addr dev $interface
+	ip maddr add $addr dev $interface
 }
 
 ### Delete Multicast MAC address to an interface.
@@ -272,7 +272,7 @@ del_mcast () {
 	interface=$1
 	addr=$2
 	echo "${FUNCNAME[0]}: For $interface: Deleting Multicast MAC address $addr" >&2;
-	/sbin/ip maddr del $addr dev $interface
+	ip maddr del $addr dev $interface
 }
 
 ### Dump ALE entries in a sorted manner with pre-processing
@@ -366,7 +366,7 @@ test_vlan_adddel () {
 	echo "${FUNCNAME[0]}: Testing VLAN support for $interface" >&2;
 	vlanif=$(echo "$interface.100")
 	echo "${FUNCNAME[0]}: Creating VLAN Interface $vlanif" >&2;
-	/sbin/ip link add link $interface name $vlanif type vlan id 100
+	ip link add link $interface name $vlanif type vlan id 100
 	check=$(is_valid $vlanif)
 	if [[ $check == 0 ]]
 	then
@@ -375,7 +375,7 @@ test_vlan_adddel () {
 		return;
 	fi
 	echo "${FUNCNAME[0]}: Removing VLAN Interface $vlanif" >&2;
-	/sbin/ip link del $vlanif
+	ip link del $vlanif
 	check=$(is_valid $vlanif)
 	if [[ $check == 1 ]]
 	then
@@ -393,27 +393,27 @@ test_rx_chksum () {
 	interface=$1;
 	original_chksum_state=$(get_rx_chksum $interface);
 	# Verify that RX-Checksum can be disabled.
-	/usr/sbin/ethtool -K $interface rx-checksum off;
+	ethtool -K $interface rx-checksum off;
 	curr_chksum_state=$(get_rx_chksum $interface);
 	if [[ "$curr_chksum_state" != "off" ]]
 	then
 		# Restore original checksum state
-		/usr/sbin/ethtool -K $interface rx-checksum $original_chksum_state;
+		ethtool -K $interface rx-checksum $original_chksum_state;
 		echo 0;
 		return;
 	fi
 	# Verify that RX-Checksum can be enabled.
-	/usr/sbin/ethtool -K $interface rx-checksum on;
+	ethtool -K $interface rx-checksum on;
 	curr_chksum_state=$(get_rx_chksum $interface);
 	if [[ "$curr_chksum_state" != "on" ]]
 	then
 		# Restore original checksum state
-		/usr/sbin/ethtool -K $interface rx-checksum $original_chksum_state;
+		ethtool -K $interface rx-checksum $original_chksum_state;
 		echo 0;
 		return;
 	fi
 	# Restore original checksum state
-	/usr/sbin/ethtool -K $interface rx-checksum $original_chksum_state;
+	ethtool -K $interface rx-checksum $original_chksum_state;
 	echo "${FUNCNAME[0]}: TEST PASSED" >&2;
 	echo 1;
 }
@@ -452,7 +452,7 @@ test_ping () {
 				echo "${FUNCNAME[0]}: Attempting broadcast ping to : $dest_ip" >&2;
 			fi
 		fi
-		ping_result=$(/bin/ping -I $interface -c 5 $dest_ip 2>&1 | grep "0% packet loss" | wc -l)
+		ping_result=$(ping -I $interface -c 5 $dest_ip 2>&1 | grep "0% packet loss" | wc -l)
 		if [[ $ping_result != 1 ]]
 		then
 			echo "${FUNCNAME[0]}: Ping Failed" >&2;
@@ -517,7 +517,7 @@ test_nway () {
 	then
 		# Restart auto-negotiation
 		echo "${FUNCNAME[0]}: Restarting auto-negotiation" >&2;
-		/usr/sbin/ethtool -r $interface;
+		ethtool -r $interface;
 		# Wait for interface to be up
 		sleep 5;
 		interface_state=$(get_state $interface)
@@ -580,7 +580,7 @@ test_xmbps () {
 	if [[ "up" == $interface_state ]]
 	then
 		# Set interface speed to X Mbps
-		/usr/sbin/ethtool -s $interface speed $speed;
+		ethtool -s $interface speed $speed;
 		# Wait for interface to be up
 		sleep 5;
 		interface_state=$(get_state $interface)
@@ -657,30 +657,30 @@ test_ip_config () {
 		echo "${FUNCNAME[0]}: $interface original IP: $original_ip" >&2;
 		# Assign test_ip_1 and verify
 		echo "${FUNCNAME[0]}: $interface Setting IP to: $test_ip_1" >&2;
-		/sbin/ifconfig $interface $test_ip_1;
+		ifconfig $interface $test_ip_1;
 		curr_ip=$(get_ip $interface)
 		if [[ "$curr_ip" != $test_ip_1 ]]
 		then
 			echo "${FUNCNAME[0]}: $interface Current IP: $curr_ip" >&2;
 			# Restore original IP
-			/sbin/ifconfig $interface $original_ip;
+			ifconfig $interface $original_ip;
 			echo 0;
 			return;
 		fi
 		# Assign test_ip_2 and verify
 		echo "${FUNCNAME[0]}: $interface Setting IP to: $test_ip_2" >&2;
-		/sbin/ifconfig $interface $test_ip_2;
+		ifconfig $interface $test_ip_2;
 		curr_ip=$(get_ip $interface)
 		if [[ "$curr_ip" != $test_ip_2 ]]
 		then
 			echo "${FUNCNAME[0]}: $interface Current IP: $curr_ip" >&2;
 			# Restore original IP
-			/sbin/ifconfig $interface $original_ip;
+			ifconfig $interface $original_ip;
 			echo 0;
 			return;
 		fi
 		# Restore original IP
-		/sbin/ifconfig $interface $original_ip;
+		ifconfig $interface $original_ip;
 	else
 		echo "${FUNCNAME[0]}: Skipping test as interface is down!" >&2;
 		echo 0;
@@ -698,7 +698,7 @@ test_mac_config () {
 	echo "${FUNCNAME[0]}: $interface: Original MAC: $original_mac" >&2;
 	# Bring interface down
 	echo "${FUNCNAME[0]}: Bringing $interface down" >&2;
-	/sbin/ifconfig $interface down;
+	ifconfig $interface down;
 	test_mac_1="aa:bb:cc:dd:ee:ff"
 	test_mac_2="ee:ff:cc:dd:aa:bb"
 
@@ -708,39 +708,39 @@ test_mac_config () {
 	then
 		# Assign test_mac_1 and verify
 		echo "${FUNCNAME[0]}: $interface Setting IP to: $test_mac_1" >&2;
-		/sbin/ifconfig $interface hw ether $test_mac_1;
+		ifconfig $interface hw ether $test_mac_1;
 		curr_mac=$(get_mac $interface)
 		if [[ "$curr_mac" != $test_mac_1 ]]
 		then
 			echo "${FUNCNAME[0]}: $interface Current MAC: $curr_mac" >&2;
 			# Restore original MAC
-			/sbin/ifconfig $interface hw ether $original_mac;
+			ifconfig $interface hw ether $original_mac;
 			# Bring up interface
-			/sbin/ifconfig $interface up;
+			ifconfig $interface up;
 			sleep 5;
 			echo 0;
 			return;
 		fi
 		# Assign test_mac_2 and verify
 		echo "${FUNCNAME[0]}: $interface Setting IP to: $test_mac_2" >&2;
-		/sbin/ifconfig $interface hw ether $test_mac_2;
+		ifconfig $interface hw ether $test_mac_2;
 		curr_mac=$(get_mac $interface)
 		if [[ "$curr_mac" != $test_mac_2 ]]
 		then
 			echo "${FUNCNAME[0]}: $interface Current MAC: $curr_mac" >&2;
 			# Restore original MAC
-			/sbin/ifconfig $interface hw ether $original_mac;
+			ifconfig $interface hw ether $original_mac;
 			# Bring up interface
-			/sbin/ifconfig $interface up;
+			ifconfig $interface up;
 			sleep 5;
 			echo 0;
 			return;
 		fi
 		# Restore original MAC
-		/sbin/ifconfig $interface hw ether $original_mac;
+		ifconfig $interface hw ether $original_mac;
 		# Bring up interface
 		echo "${FUNCNAME[0]}: Bringing $interface up" >&2;
-		/sbin/ifconfig $interface up;
+		ifconfig $interface up;
 		sleep 5;
 	else
 		echo "${FUNCNAME[0]}: Skipping test as interface is up!" >&2;
@@ -762,30 +762,30 @@ test_mtu_config () {
 
 	# Assign test_mtu_1 and verify
 	echo "${FUNCNAME[0]}: $interface Setting MTU to: $test_mtu_1" >&2;
-	/sbin/ifconfig $interface mtu $test_mtu_1;
+	ifconfig $interface mtu $test_mtu_1;
 	curr_mtu=$(get_mtu $interface)
 	if [[ "$curr_mtu" != $test_mtu_1 ]]
 	then
 		echo "${FUNCNAME[0]}: $interface Current MTU: $curr_mtu" >&2;
 		# Restore original MTU
-		/sbin/ifconfig $interface mtu $original_mtu;
+		ifconfig $interface mtu $original_mtu;
 		echo 0;
 		return;
 	fi
 	# Assign test_mtu_2 and verify
 	echo "${FUNCNAME[0]}: $interface Setting MTU to: $test_mtu_2" >&2;
-	/sbin/ifconfig $interface mtu $test_mtu_2;
+	ifconfig $interface mtu $test_mtu_2;
 	curr_mtu=$(get_mtu $interface)
 	if [[ "$curr_mtu" != $test_mtu_2 ]]
 	then
 		echo "${FUNCNAME[0]}: $interface Current MTU: $curr_mtu" >&2;
 		# Restore original MTU
-		/sbin/ifconfig $interface mtu $original_mtu;
+		ifconfig $interface mtu $original_mtu;
 		echo 0;
 		return;
 	fi
 	# Restore original MTU
-	/sbin/ifconfig $interface mtu $original_mtu;
+	ifconfig $interface mtu $original_mtu;
 	echo "${FUNCNAME[0]}: TEST PASSED" >&2;
 	echo 1;
 }
