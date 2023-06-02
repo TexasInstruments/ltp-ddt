@@ -6,13 +6,13 @@ errorMessage="Demo reports failed. Re-run manually to find rootcause."
 
 RGX_S_FUNC_8K_TEXTURE source 'common.sh'; output=`srender_to_tex_test -w 8192 -h 8192 -f 1`;if [[ $output != *"Color match at (10,20)"* ]]; then die "$errorMessage";fi;
 
-RGX_S_FUNC_BLIT source 'common.sh'; ps -ef | grep -i weston | grep -v grep && /etc/init.d/weston stop && sleep 3; output=`rgx_blit_test`;if [[ $output != *"Output matches input file"* ]]; then die "Output and Input do not match";fi; if [[ $output != *"Test PASS"* ]]; then die "$errorMessage";fi;
+RGX_S_FUNC_BLIT source 'common.sh'; service stop weston; output=`rgx_blit_test`;if [[ $output != *"Output matches input file"* ]]; then die "Output and Input do not match";fi; if [[ $output != *"Test PASS"* ]]; then die "$errorMessage";fi;
 
-RGX_S_FUNC_BLIT_BTYPEBLIT source 'common.sh'; ps -ef | grep -i weston | grep -v grep && /etc/init.d/weston stop && sleep 3; output=`rgx_blit_test -btype BLIT`;if [[ $output != *"Output matches input file"* ]]; then die "Output and Input do not match";fi; if [[ $output != *"Test PASS"* ]]; then die "$errorMessage";fi;
+RGX_S_FUNC_BLIT_BTYPEBLIT source 'common.sh'; service stop weston; output=`rgx_blit_test -btype BLIT`;if [[ $output != *"Output matches input file"* ]]; then die "Output and Input do not match";fi; if [[ $output != *"Test PASS"* ]]; then die "$errorMessage";fi;
 
-RGX_S_FUNC_BLIT_BTYPEFILL source 'common.sh'; ps -ef | grep -i weston | grep -v grep && /etc/init.d/weston stop && sleep 3; output=`rgx_blit_test -btype FILL`;if [[ $output != *"Output matches input file"* ]]; then die "Output and Input do not match";fi; if [[ $output != *"Test PASS"* ]]; then die "$errorMessage";fi;
+RGX_S_FUNC_BLIT_BTYPEFILL source 'common.sh'; service stop weston; output=`rgx_blit_test -btype FILL`;if [[ $output != *"Output matches input file"* ]]; then die "Output and Input do not match";fi; if [[ $output != *"Test PASS"* ]]; then die "$errorMessage";fi;
 
-RGX_S_FUNC_BLIT_BTYPECLIP source 'common.sh'; ps -ef | grep -i weston | grep -v grep && /etc/init.d/weston stop && sleep 3; output=`rgx_blit_test -btype CLIP`;if [[ $output != *"Output matches input file"* ]]; then die "Output and Input do not match";fi; if [[ $output != *"Test PASS"* ]]; then die "$errorMessage";fi;
+RGX_S_FUNC_BLIT_BTYPECLIP source 'common.sh'; service stop weston; output=`rgx_blit_test -btype CLIP`;if [[ $output != *"Output matches input file"* ]]; then die "Output and Input do not match";fi; if [[ $output != *"Test PASS"* ]]; then die "$errorMessage";fi;
 
 RGX_S_FUNC_KICKSYNC_1 source 'common.sh'; output=`rgx_kicksync_test -n 1`;if [[ $output != *"Test successful"* ]]; then die "$errorMessage";fi
 
