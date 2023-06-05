@@ -105,23 +105,6 @@ find_scsi_basenode() {
   exit 1
 }
 
-# return: /dev/mmcblk0 etc
-find_emmc_basenode() {
-    emmc_node=`ls /dev/mmcblk* |grep boot |head -1 |sed s'/boot[0-9]*//' `
-    echo $emmc_node
-}
-
-find_mmc_basenode() {
-    emmc_node=`find_emmc_basenode` 
-    if [ -n "$emmc_node" ]; then
-      mmc_node=`ls /dev/mmcblk* |sed s",$emmc_node.*$,,g" |grep -E ".*blk[[:digit:]]+$" |head -1`
-    else
-      mmc_node=`ls /dev/mmcblk* |grep -E ".*blk[[:digit:]]+$" |head -1`
-    fi  
-    echo $mmc_node
-}
-
-
 ############################ Default Params ##############################
 DEV_TYPE=`get_device_type_map.sh "$DEVICE_TYPE"` || die "error getting device type: $DEV_TYPE"
 case $DEV_TYPE in
