@@ -41,17 +41,17 @@ TIDEC_S_FUNC_DECODE_NETFLIX_FOODMARKET_4096X2160_60FPS_IPB_51LEVEL_MAIN_40MBPS.2
 
 TIDEC_M_FUNC_DECODE_BACK_TO_BACK_AKIYO_QCIF source 'ti_codecs.sh'; get_media decoder; F=$(mktemp); for LOOP in 0 1 2 3 4 ; do run_tidec_decode -i /usr/share/ti/tidec-decode/akiyo_qcif_420_hp_lev10_db_BFrame.264 -o $F || die "Decode operation did not complete successfully"; MD5=$(md5sum ${F}_00.raw) ; echo $MD5 | grep 81b9093edd64f47a06ad4e89298ac245 || die "decoded file does not match expected md5sum" ; done
 
-TIDEC_S_FUNC_GST_DECODE_AUD_MW_E.264 source 'ti_codecs.sh'; stop_weston; get_media decoder; insert_video_modules; gst-launch-1.0 filesrc location=/usr/share/ti/tidec-decode/AUD_MW_E.264 ! h264parse ! v4l2h264dec ! video/x-raw,format='(string)'NV12 ! kmssink driver-name=tidss || die "GStreamer operation did not complete successfully"
+TIDEC_S_FUNC_GST_DECODE_AUD_MW_E.264 source 'ti_codecs.sh'; service stop weston; get_media decoder; insert_video_modules; gst-launch-1.0 filesrc location=/usr/share/ti/tidec-decode/AUD_MW_E.264 ! h264parse ! v4l2h264dec ! video/x-raw,format='(string)'NV12 ! kmssink driver-name=tidss || die "GStreamer operation did not complete successfully"
 
-TIDEC_S_FUNC_GST_DECODE_FOREMAN_128X64.h265 source 'ti_codecs.sh'; stop_weston; get_media decoder; insert_video_modules; gst-launch-1.0 playbin uri=file:///usr/share/ti/tidec-decode/foreman_128x64_128x64_8bit_10frames_ctu32_qp32_Inter_SAO_AMP_Debl_NoPCM.h265 video-sink="kmssink driver-name=tidss" || die "GStreamer operation did not complete successfully"
+TIDEC_S_FUNC_GST_DECODE_FOREMAN_128X64.h265 source 'ti_codecs.sh'; service stop weston; get_media decoder; insert_video_modules; gst-launch-1.0 playbin uri=file:///usr/share/ti/tidec-decode/foreman_128x64_128x64_8bit_10frames_ctu32_qp32_Inter_SAO_AMP_Debl_NoPCM.h265 video-sink="kmssink driver-name=tidss" || die "GStreamer operation did not complete successfully"
 
 TIDEC_S_FUNC_GST_DECODE_FAKESINK_AUD_MW_E.264 source 'ti_codecs.sh'; get_media decoder; insert_video_modules; gst-launch-1.0 filesrc location=/usr/share/ti/tidec-decode/AUD_MW_E.264 ! h264parse ! v4l2h264dec ! video/x-raw,format='(string)'NV12 ! fakesink || die "GStreamer operation did not complete successfully"
 
 TIDEC_S_FUNC_GST_DECODE_FILESINK_AUD_MW_E.264 source 'ti_codecs.sh'; get_media decoder; insert_video_modules; gst-launch-1.0 filesrc location=/usr/share/ti/tidec-decode/AUD_MW_E.264 ! h264parse ! v4l2h264dec ! video/x-raw,format='(string)'NV12 ! filesink location=/tmp/AUD_MW_E.yuv || die "GStreamer operation did not complete successfully"
 
-TIDEC_S_FUNC_GST_DECODE_KMSSINK_BA1_FT_C.264 source 'ti_codecs.sh'; stop_weston; get_media decoder; insert_video_modules; gst-launch-1.0 playbin uri=file:///usr/share/ti/tidec-decode/BA1_FT_C.264 video-sink="kmssink driver-name=tidss" || die "GStreamer operation did not complete successfully"
+TIDEC_S_FUNC_GST_DECODE_KMSSINK_BA1_FT_C.264 source 'ti_codecs.sh'; service stop weston; get_media decoder; insert_video_modules; gst-launch-1.0 playbin uri=file:///usr/share/ti/tidec-decode/BA1_FT_C.264 video-sink="kmssink driver-name=tidss" || die "GStreamer operation did not complete successfully"
 
-TIDEC_S_FUNC_GST_DECODE_AV_KMSSINK_BAMQ2_JVC_C.264 source 'ti_codecs.sh'; stop_weston; get_media decoder; insert_video_modules; gst-launch-1.0 filesrc location=/usr/share/ti/tidec-decode/BAMQ2_JVC_C.264 ! h264parse ! v4l2h264dec ! kmssink driver-name=tidss || die "GStreamer operation did not complete successfully"
+TIDEC_S_FUNC_GST_DECODE_AV_KMSSINK_BAMQ2_JVC_C.264 source 'ti_codecs.sh'; service stop weston; get_media decoder; insert_video_modules; gst-launch-1.0 filesrc location=/usr/share/ti/tidec-decode/BAMQ2_JVC_C.264 ! h264parse ! v4l2h264dec ! kmssink driver-name=tidss || die "GStreamer operation did not complete successfully"
 
 TIDEC_S_FUNC_DECODE_NETFLIX_FOODMARKET_HIGH_3840X2160_IPB_40MBPS_5.1.264 source 'ti_codecs.sh'; get_media decoder; F=$(mktemp); run_tidec_decode -i /usr/share/ti/tidec-decode/Netflix_FoodMarket_high_3840x2160_IPB_40mbps_5.1.264 -f 10 -o $F || die "Decode operation did not complete successfully"; MD5=$(md5sum ${F}_00.raw) ; echo $MD5 | grep 32c84759073a8a03140a089c49a600a5 || die "decoded file does not match expected md5sum"
 
@@ -199,13 +199,13 @@ TIDEC_S_FUNC_DECODE_HCAMFF1_HHI.264 source 'ti_codecs.sh'; get_media decoder; F=
 
 TIDEC_S_FUNC_DECODE_Hi422FR10_SONY_B.264 source 'ti_codecs.sh'; get_media decoder; F=$(mktemp); run_tidec_decode -i /usr/share/ti/tidec-decode/Hi422FR10_SONY_B.264 -o $F || die "Decode operation did not complete successfully"; MD5=$(md5sum ${F}_00.raw) ; echo $MD5 | grep d41d8cd98f00b204e9800998ecf8427e || die "decoded file does not match expected md5sum"
 
-TIDEC_S_FUNC_GST_DECODE_AV_KMSSINK_DMA_BAMQ2_JVC_C.264 source 'ti_codecs.sh'; stop_weston; get_media decoder; insert_video_modules; gst-launch-1.0 filesrc location=/usr/share/ti/tidec-decode/BAMQ2_JVC_C.264 ! h264parse ! v4l2h264dec capture-io-mode=5 ! kmssink driver-name=tidss || die "GStreamer operation did not complete successfully"
+TIDEC_S_FUNC_GST_DECODE_AV_KMSSINK_DMA_BAMQ2_JVC_C.264 source 'ti_codecs.sh'; service stop weston; get_media decoder; insert_video_modules; gst-launch-1.0 filesrc location=/usr/share/ti/tidec-decode/BAMQ2_JVC_C.264 ! h264parse ! v4l2h264dec capture-io-mode=5 ! kmssink driver-name=tidss || die "GStreamer operation did not complete successfully"
 
-TIDEC_S_FUNC_GST_DECODE_AV_KMSSINK_DMA_CROWD_RUN.264 source 'ti_codecs.sh'; stop_weston; get_media decoder; insert_video_modules; gst-launch-1.0 filesrc location=/usr/share/ti/tidec-decode/crowd_run_2560x1440_350frame_70mbps_60fps.264 ! h264parse ! v4l2h264dec capture-io-mode=5 ! kmssink driver-name=tidss || die "GStreamer operation did not complete successfully"
+TIDEC_S_FUNC_GST_DECODE_AV_KMSSINK_DMA_CROWD_RUN.264 source 'ti_codecs.sh'; service stop weston; get_media decoder; insert_video_modules; gst-launch-1.0 filesrc location=/usr/share/ti/tidec-decode/crowd_run_2560x1440_350frame_70mbps_60fps.264 ! h264parse ! v4l2h264dec capture-io-mode=5 ! kmssink driver-name=tidss || die "GStreamer operation did not complete successfully"
 
-TIDEC_S_FUNC_GST_DECODE_AV_KMSSINK_DMA_JELLYFISH.264 source 'ti_codecs.sh'; stop_weston; get_media decoder; insert_video_modules; gst-launch-1.0 filesrc location=/usr/share/ti/tidec-decode/jellyfish_1920x1080_H264_HP_Bframes_10sec.264 ! h264parse ! v4l2h264dec capture-io-mode=5 ! kmssink driver-name=tidss || die "GStreamer operation did not complete successfully"
+TIDEC_S_FUNC_GST_DECODE_AV_KMSSINK_DMA_JELLYFISH.264 source 'ti_codecs.sh'; service stop weston; get_media decoder; insert_video_modules; gst-launch-1.0 filesrc location=/usr/share/ti/tidec-decode/jellyfish_1920x1080_H264_HP_Bframes_10sec.264 ! h264parse ! v4l2h264dec capture-io-mode=5 ! kmssink driver-name=tidss || die "GStreamer operation did not complete successfully"
 
-TIDEC_S_FUNC_GST_DECODE_AV_KMSSINK_DMA_NETFLIX_4K.264 source 'ti_codecs.sh'; stop_weston; get_media decoder; insert_video_modules; gst-launch-1.0 filesrc location=/usr/share/ti/tidec-decode/Netflix_FoodMarket_high_4096x2160_IPB_40mbps_5.1.264 ! h264parse ! v4l2h264dec capture-io-mode=5 ! kmssink driver-name=tidss || die "GStreamer operation did not complete successfully"
+TIDEC_S_FUNC_GST_DECODE_AV_KMSSINK_DMA_NETFLIX_4K.264 source 'ti_codecs.sh'; service stop weston; get_media decoder; insert_video_modules; gst-launch-1.0 filesrc location=/usr/share/ti/tidec-decode/Netflix_FoodMarket_high_4096x2160_IPB_40mbps_5.1.264 ! h264parse ! v4l2h264dec capture-io-mode=5 ! kmssink driver-name=tidss || die "GStreamer operation did not complete successfully"
 
 # Section dedicated to AHP Specific Second Instance
 
