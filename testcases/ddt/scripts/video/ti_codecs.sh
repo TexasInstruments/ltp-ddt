@@ -65,9 +65,3 @@ get_media()
 		done
 	fi
 }
-
-# Stop weston
-stop_weston()
-{
-  service stop weston && sleep 3
-}

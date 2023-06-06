@@ -425,10 +425,6 @@ notify_and_wait() {
     sleep $2
 }
 
-stop_weston() {
-  ps -ef | grep -i weston | grep -v grep && /etc/init.d/weston stop && sleep 3
-}
-
 # Generic function for interacting with service files from multiple init
 # systems. Functionality to be expanded as needed.
 

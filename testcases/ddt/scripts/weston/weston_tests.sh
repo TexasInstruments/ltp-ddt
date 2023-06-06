@@ -34,7 +34,7 @@ simple_egl_test()
 
 weston_ivi_test()
 {
-	stop_weston
+	service stop weston
 	cp /etc/weston.ini /etc/weston.ini.orig
 	if [ -f /usr/lib/weston/hmi-controller.so ] ; then
 		sed -i 's/^\[core\]$/\[core\]\nshell=ivi-shell.so\nmodules=hmi-controller.so/' /etc/weston.ini
