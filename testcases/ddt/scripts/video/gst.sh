@@ -93,7 +93,7 @@ else
    fi
 fi
 # Stop Weston to avoid conflicts with gst
-ps -ef | grep -i weston | grep -v grep && /etc/init.d/weston stop && sleep 3
+service stop weston && sleep 3
 do_cmd "$GSTCMD"
 
 

@@ -69,5 +69,5 @@ get_media()
 # Stop weston
 stop_weston()
 {
-  ps -ef | grep -i weston | grep -v grep && /etc/init.d/weston stop && sleep 3
+  service stop weston && sleep 3
 }

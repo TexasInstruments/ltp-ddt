@@ -98,12 +98,12 @@ esac
 
 if [ "$VSINK" == "waylandsink" ]
 then
-    ps -ef | grep -i weston | grep -v grep || /etc/init.d/weston start
-    systemctl stop matrix-gui-2.0
+    service start weston
+    service stop matrix-gui-2.0
     V_CONN=""
     SCALING=""
 else
-    ps -ef | grep -i weston | grep -v grep && /etc/init.d/weston stop
+    service stop weston
 fi
 sleep 3
 
