@@ -425,7 +425,72 @@ notify_and_wait() {
     sleep $2
 }
 
-stop_weston() {
-  ps -ef | grep -i weston | grep -v grep && /etc/init.d/weston stop && sleep 3
+# Generic function for interacting with service files from multiple init
+# systems. Functionality to be expanded as needed.
+
+service() {
+  [ "$#" -eq 2 ] || return 1
+
+  case "$1" in
+    start)
+      ;;
+    stop)
+      ;;
+    status)
+      ;;
+    *)
+      echo "Service command currently not supported!"
+      return 1
+      ;;
+  esac
+
+  if realpath /sbin/init | grep -q -i "systemd"; then
+    systemd_service "$@"
+  else
+    sysvinit_service "$@"
+  fi
+  return $?
 }
 
+# Do not call this function directly. This is for searching for and interacting
+# with systemd services. Use `service` instead.
+
+systemd_service() {
+  local units common_args selected_units
+
+  common_args=('-l' '--no-pager' '--quiet' '--plain' '--type' 'service,timer,socket')
+  selected_units=()
+  units=$(systemctl list-unit-files "${common_args[@]}" | awk '{print $1}')
+  units+=$(systemctl list-units "${common_args[@]}" --all | awk '{print $1}')
+
+  for unit in $units; do
+    if echo "$unit" | grep -q -i "$2"; then
+      selected_units+=("$unit")
+    fi
+  done
+
+  [ -e "${selected_units[*]}" ] && systemctl "$1" "${selected_units[@]}"
+  
+  # the above command may group in services that are not loaded and that's fine
+  # it's not fatal, but it'll return extra codes in those cases so just assume
+  # it was always successful
+  
+  return 0
+}
+
+# Do not call this function directly. This is for searching for and interacting
+# with sysvinit scripts. Use `service` instead.
+
+sysvinit_service() {
+  local units
+
+  units=$(find /etc/init.d/ -executable -type f)
+
+  for unit in $units; do
+    if echo "$unit" | grep -q -i "$2"; then
+      "$unit" "$1" || return 1
+    fi
+  done
+
+  return 0
+}

@@ -2,16 +2,16 @@
 # @desc Running various graphics tests
 # @requires graphics
 
-GFX_XS_FUNC_YUV420_TEXTURE source 'common.sh'; ps -ef | grep -i weston | grep -v grep || /etc/init.d/weston start && sleep 3; gst-launch-1.0 videotestsrc num-buffers=600 ! video/x-raw,format=I420 ! waylandsink || die "Unable to display YUV420 buffers"
+GFX_XS_FUNC_YUV420_TEXTURE source 'common.sh'; service start weston; gst-launch-1.0 videotestsrc num-buffers=600 ! video/x-raw,format=I420 ! waylandsink || die "Unable to display YUV420 buffers"
 
-GFX_XS_FUNC_UYVY_TEXTURE source 'common.sh'; ps -ef | grep -i weston | grep -v grep || /etc/init.d/weston start && sleep 3; gst-launch-1.0 videotestsrc num-buffers=600 ! video/x-raw,format=UYVY ! waylandsink || die "Unable to display UYVY buffers"
+GFX_XS_FUNC_UYVY_TEXTURE source 'common.sh'; service start weston; gst-launch-1.0 videotestsrc num-buffers=600 ! video/x-raw,format=UYVY ! waylandsink || die "Unable to display UYVY buffers"
 
-GFX_XS_FUNC_YUYV_TEXTURE source 'common.sh'; ps -ef | grep -i weston | grep -v grep || /etc/init.d/weston start && sleep 3; gst-launch-1.0 videotestsrc num-buffers=600 ! video/x-raw,format=YUY2 ! waylandsink || die "Unable to display YUYV buffers"
+GFX_XS_FUNC_YUYV_TEXTURE source 'common.sh'; service start weston; gst-launch-1.0 videotestsrc num-buffers=600 ! video/x-raw,format=YUY2 ! waylandsink || die "Unable to display YUYV buffers"
 
-GFX_XS_FUNC_BGRA8888_TEXTURE source 'common.sh'; ps -ef | grep -i weston | grep -v grep || /etc/init.d/weston start && sleep 3; gst-launch-1.0 videotestsrc num-buffers=600 ! video/x-raw,format=BGRA ! waylandsink || die "Unable to display BGRA8888 buffers"
+GFX_XS_FUNC_BGRA8888_TEXTURE source 'common.sh'; service start weston; gst-launch-1.0 videotestsrc num-buffers=600 ! video/x-raw,format=BGRA ! waylandsink || die "Unable to display BGRA8888 buffers"
 
 GFX_XS_FUNC_PVRDBG source 'common.sh'; dmesg -c; pvrdebug -dd; dmesg | grep PVRSRVDumpDebugInfoKM || die "pvrdebug -dd failed"
 
-GFX_XS_FUNC_APM source 'common.sh'; ps -ef | grep -i weston | grep -v grep && /etc/init.d/weston stop && sleep 3; modprobe -r pvrsrvkm ; modprobe pvrsrvkm; echo 1 > /sys/kernel/debug/pvr/apphint/0/EnableAPM; weston --tty=8 --debug --backend=drm-backend.so --idle-time=0 & dmesg -c ; pvrdebug -dd ; dmesg | grep 'Power State:.*APM enabled' || die "Could not enable APM"
+GFX_XS_FUNC_APM source 'common.sh'; service stop weston; modprobe -r pvrsrvkm ; modprobe pvrsrvkm; echo 1 > /sys/kernel/debug/pvr/apphint/0/EnableAPM; weston --tty=8 --debug --backend=drm-backend.so --idle-time=0 & dmesg -c ; pvrdebug -dd ; dmesg | grep 'Power State:.*APM enabled' || die "Could not enable APM"
 
 GFX_XS_FUNC_GPU_MEM2MEM source 'common.sh'; [[ $(srender_to_tex_test -f 1 | grep -i 'Color match at (10,20): 0x80808080' | wc -l) -eq 1 ]] || die "Frame match not detected, check frame*.ppm.ppm files"

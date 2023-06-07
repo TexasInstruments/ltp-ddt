@@ -16,6 +16,8 @@
 # Input: None
 # Output: None
 
+source "common.sh"
+
 usage()
 {
 cat <<-EOF >&2
@@ -53,6 +55,6 @@ while getopts :s: arg
     esac
 done
 
-ps -ef | grep -i weston | grep -v -e grep -e weston_debug && /etc/init.d/weston stop && sleep 3
+service stop weston && sleep 3
 weston --debug ${START_OPTIONS} &
 sleep 3
