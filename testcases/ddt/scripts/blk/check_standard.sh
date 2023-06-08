@@ -51,6 +51,7 @@ done
 
 do_cmd "df -h"
 
+# Emmc Standard Test
 if [[ "$DEVICE_TYPE" = "emmc" ]]; then
   test_print_trc "Performing operations for emmc"
   EMMC_BASENODE=$(find_emmc_basenode) || die "error getting device node for $DEVICE_TYPE: $EMMC_BASENODE"
@@ -66,4 +67,56 @@ if [[ "$DEVICE_TYPE" = "emmc" ]]; then
   echo 
   echo "$emmcver" | head -4
   echo "$emmcver" | grep -i "$STD_MATCH" && echo "The test pass and emmc standard is JESD JEDEC ${STD_MATCH}" || die " emmc standard is not JESD JEDEC ${STD_MATCH}"
+fi
+
+
+# MMC Standard Test
+if [[ "$DEVICE_TYPE" = "mmc" ]]; then
+  test_print_trc "Performing operations for mmc"
+  MMC_BASENODE=$(find_mmc_basenode) || die "error getting device node for $DEVICE_TYPE: $MMC_BASENODE"
+  test_print_trc "MMC Basenode returned is: $MMC_BASENODE"
+  regaddr="";
+  expected_val="";
+
+  # printout mmc ios for mmc test
+  if [[ "$MMC_BASENODE" =~ "mmc" ]]; then
+    do_cmd printout_mmc_ios
+  fi
+
+  ### start mmc version test
+
+  # Get address of MMCSD1_HOST_CONTROLLER_VER
+  case $MACHINE in
+    j7*-evm)
+      regaddr="0x04FB00FE";;
+    *)
+      die "No MMCSD1_HOST_CONTROLLER_VER Register Address is there for this platform";;
+  esac
+
+
+  if [[ "$regaddr" = "" ]]; then
+    die "No MMCSD1_HOST_CONTROLLER_VER Register Address is there for this platform";
+  fi
+
+  # Get Expected Register Value
+  case $MACHINE in
+    j7*-evm)
+      expected_val="4";;
+    *)
+      die "No expected value is specified for MMCSD1_HOST_CONTROLLER_VER Register for this platform";;
+  esac
+
+  if [[ "$expected_val" = "" ]]; then
+    die "No expected value is specified for MMCSD1_HOST_CONTROLLER_VER Register for this platform";
+  fi
+
+  echo "MMCSD1_HOST_CONTROLLER_VER Register Address : ${regaddr}";
+  echo "Expected Value for MMCSD1_HOST_CONTROLLER_VER Register [0:7] : ${expected_val}";
+
+  # Run Test 
+  mmcver=$(devmem2 ${regaddr} b | grep "Read" | cut -d " " -f 7);
+  mmcver=$((mmcver & 7))
+  echo 
+  echo "MMC Version Value in MMCSD1_HOST_CONTROLLER_VER Register is ${mmcver}"
+  echo "$mmcver" | grep -i "$expected_val" && echo "The test pass and mmc standard is SD ${STD_MATCH}" || die " mmc standard is not SD ${STD_MATCH}"
 fi
