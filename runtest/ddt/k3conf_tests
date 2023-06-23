@@ -1,0 +1,1 @@
+K3CONF_SOC_REV_KERNEL_CRASH source "common.sh"; k3conf_test.sh
