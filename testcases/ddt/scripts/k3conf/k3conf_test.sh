@@ -1,0 +1,60 @@
+#! /bin/bash
+#
+# Copyright (C) 2023 Texas Instruments Incorporated - http://www.ti.com/
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation version 2.
+# 
+# This program is distributed "as is" WITHOUT ANY WARRANTY of any
+# kind, whether express or implied; without even the implied warranty
+# of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# k3conf_test.sh
+# Verifies whether few k3conf commands run without any errors
+# Verifies whether silicon revision is reported correctly by k3conf
+# usage:  k3conf_test.sh 
+
+source "common.sh"
+
+check_exec_status_cmds () {
+    cmd_arr=("k3conf --version" "k3conf show hosts" "k3conf show device" "k3conf show clock" "k3conf show processor")
+    for cmd in "${cmd_arr[@]}"
+    do
+        output=$($cmd > /dev/null 2>&1)
+        if [[ $? -eq 0 ]]
+        then
+            echo "Successful execution of \"${cmd}\""
+        else
+            die "Unsuccessful execution of \"${cmd}\""
+        fi
+    done
+}
+
+check_silicon_rev () {
+    output=$(k3conf --version)
+    while IFS= read -r line
+    do
+    if [[ $line == *SoC* ]]
+    then
+            IFS='| '
+            read -a strarr <<< "$line"
+            k3conf_SOC_REV="${strarr[2]} ${strarr[3]}"
+    fi
+    done < <(printf '%s\n' "$output")
+
+    family=$(cat /sys/devices/soc0/family)
+    rev=$(cat /sys/devices/soc0/revision)
+    sys_devices_SOC_REV="$family $rev"
+
+    if [[ "$k3conf_SOC_REV" == "$sys_devices_SOC_REV" ]]
+    then
+        echo "Correct silicon revision is reported"
+    else
+        die "Wrong silicon revision is reported"
+    fi
+}
+
+check_exec_status_cmds
+check_silicon_rev
