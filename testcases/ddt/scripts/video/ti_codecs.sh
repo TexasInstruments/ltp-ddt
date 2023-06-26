@@ -65,3 +65,15 @@ get_media()
 		done
 	fi
 }
+
+remove_media()
+{
+	
+	if [[ "$1" == "encoder" ]]
+	then
+	  rm -rf /usr/share/ti/tienc-encode
+	else
+	  rm -rf /usr/share/ti/tidec-decode
+	fi
+	
+}
