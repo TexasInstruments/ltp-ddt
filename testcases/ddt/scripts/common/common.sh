@@ -469,7 +469,7 @@ systemd_service() {
     fi
   done
 
-  [ -e "${selected_units[*]}" ] && systemctl "$1" "${selected_units[@]}"
+  [ -n "${selected_units[*]}" ] && systemctl "$1" "${selected_units[@]}"
   
   # the above command may group in services that are not loaded and that's fine
   # it's not fatal, but it'll return extra codes in those cases so just assume
