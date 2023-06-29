@@ -3,11 +3,11 @@
 # @requires pcie || pci
 # @setup_requires pciethcard
 
-PCI_XS_FUNC_ETH_PING_E1000E source 'common.sh'; check_config_options "m" CONFIG_E1000E; do_cmd "lspci -nn"; run_pci_eth_test.sh -a ' do_cmd "ping ${host} -c 10" '
+PCI_XS_FUNC_ETH_PING_E1000E source 'common.sh'; check_config_options "ym" CONFIG_E1000E; do_cmd "lspci -nn"; run_pci_eth_test.sh -a ' do_cmd "ping ${host} -c 10" '
 
-PCI_L_STRESS_ETH_PING_E1000E_5HRS source 'common.sh'; check_config_options "m" CONFIG_E1000E; do_cmd "lspci -nn"; run_pci_eth_test.sh -a ' do_cmd "ping ${host} -w 18000" '
+PCI_L_STRESS_ETH_PING_E1000E_5HRS source 'common.sh'; check_config_options "ym" CONFIG_E1000E; do_cmd "lspci -nn"; run_pci_eth_test.sh -a ' do_cmd "ping ${host} -w 18000" '
 
-PCI_XL_STRESS_ETH_PING_E1000E_12HRS source 'common.sh'; check_config_options "m" CONFIG_E1000E; do_cmd "lspci -nn"; run_pci_eth_test.sh -a ' do_cmd "ping ${host} -w 43200" '
+PCI_XL_STRESS_ETH_PING_E1000E_12HRS source 'common.sh'; check_config_options "ym" CONFIG_E1000E; do_cmd "lspci -nn"; run_pci_eth_test.sh -a ' do_cmd "ping ${host} -w 43200" '
 
-PCI_S_FUNC_ETH_PING_E1000E_MULTI-PKT-SIZES source 'common.sh'; check_config_options "m" CONFIG_E1000E; do_cmd "lspci -nn"; run_pci_eth_test.sh -a ' for size in 64 128 512 1024 4096 8192 16384; do do_cmd "ping ${host} -c 10 -s ${size}";done '
+PCI_S_FUNC_ETH_PING_E1000E_MULTI-PKT-SIZES source 'common.sh'; check_config_options "ym" CONFIG_E1000E; do_cmd "lspci -nn"; run_pci_eth_test.sh -a ' for size in 64 128 512 1024 4096 8192 16384; do do_cmd "ping ${host} -c 10 -s ${size}";done '
 
