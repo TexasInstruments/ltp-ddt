@@ -35,10 +35,14 @@ simple_egl_test()
 weston_ivi_test()
 {
 	service stop weston
-	cp /etc/weston.ini /etc/weston.ini.orig
-	if [ -f /usr/lib/weston/hmi-controller.so ] ; then
-		sed -i 's/^\[core\]$/\[core\]\nshell=ivi-shell.so\nmodules=hmi-controller.so/' /etc/weston.ini
-		cat >> /etc/weston.ini << EOF
+	ini_files=$(find /etc -type f -name 'weston.ini')
+
+	# tweak ini files for test
+	for weston_ini in $ini_files; do
+		cp "${weston_ini}" "${weston_ini}.orig"
+		if [ -f /usr/lib/weston/hmi-controller.so ] ; then
+			sed -i 's/^\[core\]$/\[core\]\nshell=ivi-shell.so\nmodules=hmi-controller.so/' "${weston_ini}"
+			cat >> "${weston_ini}" << EOF
 [ivi-shell]
 ivi-shell-user-interface=weston-ivi-shell-user-interface
 cursor-theme=default
@@ -60,9 +64,10 @@ home-id=1007
 workspace-background-color=0x99000000
 workspace-background-id=2001
 EOF
-	else
-		sed -i 's/^\[core\]$/\[core\]\nshell=ivi-shell.so/' /etc/weston.ini
-	fi
+		else
+			sed -i 's/^\[core\]$/\[core\]\nshell=ivi-shell.so/' "${weston_ini}"
+		fi
+	done
 
 	weston --tty=8 &
 	weston_pid=$!
@@ -71,7 +76,11 @@ EOF
 	wait $weston_pid
 	ret=$?
 
-	mv /etc/weston.ini.orig /etc/weston.ini
+	# replace origional ini
+	for weston_ini in $ini_files; do
+		mv "${weston_ini}.orig" "${weston_ini}" 
+	done
+
 	return $ret
 }
 
