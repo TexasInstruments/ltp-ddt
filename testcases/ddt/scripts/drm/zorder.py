@@ -69,7 +69,7 @@ for i in range(len(planes)):
         "CRTC_W": int(w/l_div),
         "CRTC_H": int(h/l_div),
     }
-    if re.match("am65.*|j721.*|j784.*", platform, re.I):
+    if re.match("am65.*|j721.*|j784.*|am68.*|am69.*", platform, re.I):
         p_props["zpos"] = i
     else:
         p_props["zorder"] = i
