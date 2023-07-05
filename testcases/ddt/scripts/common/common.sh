@@ -107,6 +107,7 @@ check_mandatory_inputs() {
 }
 
 die() {
+  swapfile_destroy
   test_print_err "FATAL: $*"
   exit 1
 }
@@ -423,6 +424,43 @@ notify_and_wait() {
     echo ""
     echo $1
     sleep $2
+}
+
+# Swapfile helpers for use with tests with a large memory footprint, such as
+# piglit. Piglit in particular needs a system with ~3GB of memory to opperate
+# correctly, so right now we need at least 1GB of swap.
+
+swapfile_create() {
+  local swap="/ddt-swapfile.img"
+  if [ -e "$swap" ]; then
+    if grep -q "^$swap" /proc/swaps; then
+      printf '%s\n' "Already using swapfile ${swap}, ignoring request"
+      return 0
+    else
+      printf '%s\n' "Attempting to remounting swapfile ${swap}"
+      swapon "$swap"
+      return $?
+    fi
+  else
+    printf '%s\n' "Creating swapfile ${swap}"
+    dd if=/dev/zero of="$swap" bs=4k count=250000 conv=fsync status=progress
+    chmod 0600 "$swap"
+    mkswap "$swap"
+    swapon "$swap"
+    return $?
+  fi
+}
+
+swapfile_destroy() {
+  local swap="/ddt-swapfile.img"
+  if [ -e "$swap" ]; then
+    printf '%s\n' "Destroying swapfile ${swap}"
+    swapoff "$swap" && rm "$swap"
+    return $?
+  else
+    printf '%s\n' "Swapfile ${swap} not found"
+    return 0
+  fi
 }
 
 # Generic function for interacting with service files from multiple init
