@@ -5,6 +5,8 @@
 
 EMMC_S_FUNC_CHECK_SPEED source "common.sh"; do_cmd check_mmc_speed.sh "emmc"
 
+EMMC_S_FUNC_CHECK_SPEED_HS200 source "common.sh"; do_cmd check_mmc_speed.sh "emmc" "HS200"
+
 #EMMC_S_FUNC_CHECK_CQE source "common.sh"; do_cmd "dmesg | grep 'Command Queue Engine enabled' " || die "Command Queue Engine is not enabled"
 EMMC_S_FUNC_CHECK_CQE source "common.sh"; do_cmd check_emmc_cqe.sh "emmc" 
 
