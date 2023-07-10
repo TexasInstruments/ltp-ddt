@@ -2,14 +2,14 @@
 # @desc Run OpenGLES, Vulkan, and OpenCL conformance tests
 # @requires graphics
 
-PIGLIT_L_ARGB_ALL source 'common.sh'; swapfile_create; piglit run deqp_egl deqp_gles31 deqp_vk results -t ".*argb.*"; output=$(piglit summary console results -p); if echo "${output}" | grep -q 'failed$'; then die "${output}"; fi; swapfile_destroy;
+PIGLIT_L_ARGB_ALL source 'common.sh'; swapfile_create; piglit run deqp_egl deqp_gles31 deqp_vk results -t ".*argb.*"; output=$(piglit summary console results -p); if echo "${output}" | grep -q 'failed$'; then die "${output}"; fi
 
-PIGLIT_L_BGRA_ALL source 'common.sh'; swapfile_create; piglit run deqp_egl deqp_gles31 deqp_vk results -t ".*bgra.*"; output=$(piglit summary console results -p); if echo "${output}" | grep -q 'failed$'; then die "${output}"; fi; swapfile_destroy;
+PIGLIT_L_BGRA_ALL source 'common.sh'; swapfile_create; piglit run deqp_egl deqp_gles31 deqp_vk results -t ".*bgra.*"; output=$(piglit summary console results -p); if echo "${output}" | grep -q 'failed$'; then die "${output}"; fi
 
-PIGLIT_L_RGBA_ALL source 'common.sh'; swapfile_create; piglit run deqp_egl deqp_gles31 deqp_vk results -t ".*rgba.*"; output=$(piglit summary console results -p); if echo "${output}" | grep -q 'failed$'; then die "${output}"; fi; swapfile_destroy;
+PIGLIT_L_RGBA_ALL source 'common.sh'; swapfile_create; piglit run deqp_egl deqp_gles31 deqp_vk results -t ".*rgba.*"; output=$(piglit summary console results -p); if echo "${output}" | grep -q 'failed$'; then die "${output}"; fi
 
-PIGLIT_L_RGB565_ALL source 'common.sh'; swapfile_create; piglit run deqp_egl deqp_gles31 deqp_vk results -t ".*rgb565.*"; output=$(piglit summary console results -p); if echo "${output}" | grep -q 'failed$'; then die "${output}"; fi; swapfile_destroy;
+PIGLIT_L_RGB565_ALL source 'common.sh'; swapfile_create; piglit run deqp_egl deqp_gles31 deqp_vk results -t ".*rgb565.*"; output=$(piglit summary console results -p); if echo "${output}" | grep -q 'failed$'; then die "${output}"; fi
 
-PIGLIT_L_SRGB_ALL source 'common.sh'; swapfile_create; piglit run deqp_egl deqp_gles31 deqp_vk results -t ".*srgb.*"; output=$(piglit summary console results -p); if echo "${output}" | grep -q 'failed$'; then die "${output}"; fi; swapfile_destroy;
+PIGLIT_L_SRGB_ALL source 'common.sh'; swapfile_create; piglit run deqp_egl deqp_gles31 deqp_vk results -t ".*srgb.*"; output=$(piglit summary console results -p); if echo "${output}" | grep -q 'failed$'; then die "${output}"; fi
 
-PIGLIT_L_YUV_ALL source 'common.sh'; swapfile_create; piglit run deqp_egl deqp_gles31 deqp_vk results -t ".*yuv.*"; output=$(piglit summary console results -p); if echo "${output}" | grep -q 'failed$'; then die "${output}"; fi; swapfile_destroy;
+PIGLIT_L_YUV_ALL source 'common.sh'; swapfile_create; piglit run deqp_egl deqp_gles31 deqp_vk results -t ".*yuv.*"; output=$(piglit summary console results -p); if echo "${output}" | grep -q 'failed$'; then die "${output}"; fi

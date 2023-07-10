@@ -107,7 +107,6 @@ check_mandatory_inputs() {
 }
 
 die() {
-  swapfile_destroy
   test_print_err "FATAL: $*"
   exit 1
 }
@@ -443,6 +442,7 @@ swapfile_create() {
     fi
   else
     printf '%s\n' "Creating swapfile ${swap}"
+    trap "swapfile_destroy" 0 1 2 3 6
     dd if=/dev/zero of="$swap" bs=4k count=250000 conv=fsync status=progress
     chmod 0600 "$swap"
     mkswap "$swap"
