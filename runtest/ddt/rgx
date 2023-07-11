@@ -59,3 +59,5 @@ RGX_S_FUNC_GLES3 source 'common.sh';  cat /sys/kernel/debug/pvr/version | grep W
 RGX_XS_FUNC_MODULE_LOAD source 'common.sh'; lsmod | grep pvrsrvkm || die "Graphics module pvrsrvkm not detected"
 
 RGX_S_FUNC_COMPUTE source 'common.sh'; output=`rgx_compute_test`;if [[ $output != *"--- End ---"* ]]; then die "$errorMessage";fi
+
+RGX_S_FUNC_APM source 'common.sh'; service stop weston && sleep 1; pre=$(k3conf dump device | grep -i 'gpu'); rgx_compute_test -f 10000 > /dev/null & sleep 1 && post=$(k3conf dump device | grep -i 'gpu'); if wait "$!" && [ "$pre" != "$post" ] ; then printf '%s\n\n' "$pre" "$post" 'Power domain states changed as expected'; else die 'Power domain states did not change when expected!'; fi
