@@ -56,5 +56,6 @@ while getopts :s: arg
 done
 
 service stop weston && sleep 3
+unset WAYLAND_DISPLAY
 weston --debug ${START_OPTIONS} &
 sleep 3

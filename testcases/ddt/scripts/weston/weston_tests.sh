@@ -69,6 +69,7 @@ EOF
 		fi
 	done
 
+	unset WAYLAND_DISPLAY
 	weston --tty=8 &
 	weston_pid=$!
 
