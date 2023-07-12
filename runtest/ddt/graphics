@@ -8,6 +8,8 @@ GFX_XS_FUNC_UYVY_TEXTURE source 'common.sh'; service start weston; gst-launch-1.
 
 GFX_XS_FUNC_YUYV_TEXTURE source 'common.sh'; service start weston; gst-launch-1.0 videotestsrc num-buffers=600 ! video/x-raw,format=YUY2 ! glimagesink || die "Unable to display YUYV buffers"
 
+GFX_XS_FUNC_NV12_TEXTURE source 'common.sh'; service start weston; gst-launch-1.0 videotestsrc num-buffers=600 ! video/x-raw,format=NV12 ! glimagesink || die "Unable to display NV12 buffers"
+
 GFX_XS_FUNC_BGRA8888_TEXTURE source 'common.sh'; service start weston; gst-launch-1.0 videotestsrc num-buffers=600 ! video/x-raw,format=BGRA ! glimagesink || die "Unable to display BGRA8888 buffers"
 
 GFX_XS_FUNC_PVRDBG source 'common.sh'; dmesg -c; pvrdebug -dd; dmesg | grep PVRSRVDumpDebugInfoKM || die "pvrdebug -dd failed"
