@@ -45,25 +45,28 @@ get_media()
 	local __media_url=http://gtopentest-server.gt.design.ti.com/anonymous/common/Multimedia/ti-img-encode-decode-testvecs/$1
 	local __checksums=/tmp/checksums.txt
 	local __media_folder=/usr/share/ti/tidec-decode
+	local __video=$2
 	local __media
 
-  if [[ "$1" == "encoder" ]]
-  then
-    __media_folder=/usr/share/ti/tienc-encode
-  fi
+	if [[ "$1" == "encoder" ]]
+	then
+   		__media_folder=/usr/share/ti/tienc-encode
+   		__video=yuv/$2
+	fi
+
 	ls ${__media_folder} &>/dev/null || mkdir -p ${__media_folder}
 	local __media_checksum=$(md5sum ${__media_folder}/* | awk '{print $1}' | sort -u)
-	Wget ${__media_url}/media_checksums.txt -O ${__checksums} || return 1
+	wget ${__media_url}/media_checksums.txt -O ${__checksums} || return 1
 	local __remote_checksum=$(awk '{print $1}' ${__checksums} | sort -u)
 	local __remote_media=$(awk '{print $2}' ${__checksums} | sort -u)
-	if [[ "$__media_checksum" != "$__remote_checksum" ]]
+
+	for __media in $__remote_media
+	do
+	if [[ $__media == $__video ]]
 	then
-		rm ${__media_folder}/*
-		for __media in $__remote_media
-		do
-		    Wget ${__media_url}/${__media} -O ${__media_folder}/`basename ${__media}` || echo "Could not download  ${__media_url}/${__media}"
-		done
+  		wget ${__media_url}/${__media} -O ${__media_folder}/`basename ${__media}` || echo "Could not download  ${__media_url}/${__media}"
 	fi
+	done
 }
 
 remove_media()

@@ -68,6 +68,7 @@ def ParseCmdLineArgs():
     parser = argparse.ArgumentParser(description='Parser Used to Generate Gstreamer Strings for testing Codecs', add_help=False)
 
     required    = parser.add_argument_group('required arguments')
+    optional    = parser.add_argument_group('optional arguments')
     
     required.add_argument('-t', '--test_file',
                           help="Location of the video under test",
@@ -90,6 +91,12 @@ def ParseCmdLineArgs():
     required.add_argument('-h', '--height',
                           help='''Width of the encoded video file.
                           Parameter is required to ensure sizes are the same.
+                          ''')
+    
+    optional.add_argument('-b', '--num_buffers',
+                          help='''Running into problems where large files are taking
+                          too long to process. Include this parameter in tests that
+                          are too big to increase efficiency.
                           ''')
     
     # Invoke the parser
@@ -149,12 +156,40 @@ def buildPipe(video):
     gstStr += " ! videoconvert ! video/x-raw, format=NV12 ! filesink location="
 
     outName = vidName + ".yuv"
+    gstStr += outName
 
     out = open(outName, 'wb')
-    gstStr += vidName + ".yuv"
 
-    out.close()
     runConversion(gstStr)
+    out.close()
+
+    return outName
+
+def buildPipeWithBufs(video, numBufs):
+    gstStr = "gst-launch-1.0 filesrc location=" + video
+    gstStr += " num-buffers=" + numBufs
+    vidName = getName(video)
+
+    parser = ""
+    decoder = ""
+    if video[-3:] == "264":
+        parser = "h264parse"
+        decoder = "avdec_h264"
+    else:
+        parser = "h265parse"
+        decoder = "avdec_h265"
+
+    gstStr += " ! " + parser + " ! " + decoder
+    gstStr += " ! videoconvert ! video/x-raw, format=NV12 ! filesink location="
+
+    outName = vidName + ".yuv"
+    gstStr += outName
+
+    out = open(outName, 'wb')
+
+    # print(gstStr)
+    runConversion(gstStr)
+    out.close()
 
     return outName
 
@@ -162,8 +197,6 @@ def runConversion(gstStr):
     subprocess.run(gstStr, shell=True)
     time.sleep(1)
 
-def videoCrop():
-    return
 
 def main():
     # Parse command line arguments
@@ -171,6 +204,11 @@ def main():
     underTest = args.test_file
     reference = args.reference_file
     parse     = args.parse_file
+
+    if args.num_buffers:
+        golden = buildPipeWithBufs(reference, args.num_buffers)
+    else:
+        golden = buildPipe(reference) # get the golden video to compare
 
     # get what correct resolution should be given encoded file
     width_ref   = int(args.width)
@@ -191,8 +229,6 @@ def main():
     else:
         width = width_out
         height = height_out
-    
-    golden = buildPipe(reference) # get the golden video to compare
 
     # get the size of the file in order to calculate the number of frames
     # yuv420 frame size is width*height*1.5
