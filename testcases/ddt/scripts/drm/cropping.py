@@ -72,7 +72,7 @@ for i in range(len(planes)):
         "CRTC_W": fb.width,
         "CRTC_H": fb.height,
     }
-    if re.match("am65.*|j721.*|j784.*|am68.*|am69.*", platform, re.I):
+    if re.match("am62.*|am65.*|j721.*|j784.*|am68.*|am69.*", platform, re.I):
         p_props["zpos"] = i
     elif re.match("k2.*", platform, re.I):
         pass
@@ -101,7 +101,7 @@ for i in range(len(planes)):
         "CRTC_W": p_w,
         "CRTC_H": p_h
     }
-    if re.match("am65.*|j721.*|j784.*|am68.*|am69.*", platform, re.I):
+    if re.match("am62.*|am65.*|j721.*|j784.*|am68.*|am69.*", platform, re.I):
         p_props["zpos"] = i
     elif re.match("k2.*", platform, re.I):
         pass
