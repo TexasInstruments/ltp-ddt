@@ -429,36 +429,43 @@ notify_and_wait() {
 # piglit. Piglit in particular needs a system with ~3GB of memory to opperate
 # correctly, so right now we need at least 1GB of swap.
 
+DDT_SWAPFILE=""
 swapfile_create() {
-  local swap="/ddt-swapfile.img"
-  if [ -e "$swap" ]; then
-    if grep -q "^$swap" /proc/swaps; then
-      printf '%s\n' "Already using swapfile ${swap}, ignoring request"
+  local swapdir
+
+  # the root filesystem may sometimes be an nfs mount so instead we will try to
+  # use the 3rd partition on our devices
+
+  swapdir=$(mount | grep "mmcblk0p3" | cut -d' ' -f 3)
+  export DDT_SWAPFILE="$swapdir/ddt-swapfile.img"
+
+  if [ -e "$DDT_SWAPFILE" ]; then
+    if grep -q "^$DDT_SWAPFILE" /proc/swaps; then
+      printf '%s\n' "Already using swapfile ${DDT_SWAPFILE}, ignoring request"
       return 0
     else
-      printf '%s\n' "Attempting to remounting swapfile ${swap}"
-      swapon "$swap"
+      printf '%s\n' "Attempting to remounting swapfile ${DDT_SWAPFILE}"
+      swapon "$DDT_SWAPFILE"
       return $?
     fi
   else
-    printf '%s\n' "Creating swapfile ${swap}"
+    printf '%s\n' "Creating swapfile ${DDT_SWAPFILE}"
     trap "swapfile_destroy" 0 1 2 3 6
-    dd if=/dev/zero of="$swap" bs=4k count=250000 conv=fsync status=progress
-    chmod 0600 "$swap"
-    mkswap "$swap"
-    swapon "$swap"
+    dd if=/dev/zero of="$DDT_SWAPFILE" bs=4k count=250000 conv=fsync status=progress
+    chmod 0600 "$DDT_SWAPFILE"
+    mkswap "$DDT_SWAPFILE"
+    swapon "$DDT_SWAPFILE"
     return $?
   fi
 }
 
 swapfile_destroy() {
-  local swap="/ddt-swapfile.img"
-  if [ -e "$swap" ]; then
-    printf '%s\n' "Destroying swapfile ${swap}"
-    swapoff "$swap" && rm "$swap"
+  if [ -e "$DDT_SWAPFILE" ]; then
+    printf '%s\n' "Destroying swapfile ${DDT_SWAPFILE}"
+    swapoff "$DDT_SWAPFILE" && rm "$DDT_SWAPFILE"
     return $?
   else
-    printf '%s\n' "Swapfile ${swap} not found"
+    printf '%s\n' "Swapfile ${DDT_SWAPFILE} not found"
     return 0
   fi
 }
