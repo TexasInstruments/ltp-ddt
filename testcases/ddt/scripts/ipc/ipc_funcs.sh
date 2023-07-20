@@ -993,7 +993,7 @@ toggle_rprocs()
   local __mbox
 
   case $MACHINE in
-      *j721*|*j7200*|*j784*|*am68*|*am69*)
+      *j721*|*j7200*|*j784*|*am68*|*am69*|*am64xx*|*am62xx*)
           # K3 devices don't yet support toggling the remote proc
           return
       ;;
