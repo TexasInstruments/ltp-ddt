@@ -84,6 +84,36 @@ get_if_drv () {
 	echo $driver;
 }
 
+### Get name of tx interrupt number "index" for interface.
+get_if_tx_irq () {
+	interface=$1
+	index=$2
+	dev_name=$(ethtool -i $interface | grep "bus-info" | awk '{print $2}');
+	tx_irq=$(echo "${dev_name}-tx${index}")
+	echo "${FUNCNAME[0]}: TX IRQ $index: $tx_irq" >&2;
+	echo $tx_irq;
+}
+
+### Check if a specified number of TX IRQs exists for the interface.
+check_if_tx_irqs () {
+	interface=$1
+	num_tx_irqs=$2
+	index=0
+	while [[ $index -ne $num_tx_irqs ]]
+	do
+		irq_name=$(get_if_tx_irq $interface $index);
+		echo "${FUNCNAME[0]}: Checking for $irq_name" >&2;
+		check=$(cat /proc/interrupts | grep "$irq_name" | wc -l);
+		if [[ $check != 1 ]]
+		then
+			echo 0;
+			return;
+		fi
+		index=$(($index+1));
+	done
+	echo 1;
+}
+
 ### Check if interface is MAC-Only interface
 ### for virtual ethernet EthFw driver.
 check_mac_only () {
@@ -1283,6 +1313,64 @@ test_drv_phy_mode () {
 		echo 0;
 		return;
 	fi
+	echo "${FUNCNAME[0]}: TEST PASSED" >&2;
+	echo 1;
+}
+
+### For all interfaces corresponding to the driver, verify that
+### num_tx_irqs number of tx interrupts can be enabled.
+test_drv_multi_dma_tx_irqs () {
+	driver=$1
+	num_tx_irqs=$2
+	echo "${FUNCNAME[0]}: Testing for driver: $driver" >&2;
+	interfaces=$(get_eth_list)
+
+	### First bring down all interfaces corresponding to the driver.
+	for iface in $interfaces
+	do
+		if [[ "$driver" == "$(get_if_drv $iface)" ]]
+		then
+			ifconfig $iface down;
+		fi
+	done
+	sleep 10;
+
+	### Next, enable num_tx_irqs number of channels
+	for iface in $interfaces
+	do
+		if [[ "$driver" == "$(get_if_drv $iface)" ]]
+		then
+			ethtool -L $iface tx $num_tx_irqs;
+		fi
+	done
+
+	### Bring up all interfaces corresponding to the driver.
+	for iface in $interfaces
+	do
+		if [[ "$driver" == "$(get_if_drv $iface)" ]]
+		then
+			ifconfig $iface up;
+		fi
+	done
+	sleep 10;
+
+	### Verify that $num_tx_irqs number of TX interrupts
+	### are present for each of the interfaces in the
+	### output of /proc/interrupts.
+
+	for iface in $interfaces
+	do
+		if [[ "$driver" == "$(get_if_drv $iface)" ]]
+		then
+			echo "${FUNCNAME[0]}: Checking $num_tx_irqs TX IRQs for $iface" >&2;
+			check=$(check_if_tx_irqs $iface $num_tx_irqs);
+			if [[ $check == 0 ]]
+			then
+				echo 0;
+				return;
+			fi
+		fi
+	done
 	echo "${FUNCNAME[0]}: TEST PASSED" >&2;
 	echo 1;
 }
