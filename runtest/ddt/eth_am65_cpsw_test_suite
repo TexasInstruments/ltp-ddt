@@ -22,3 +22,4 @@ ETH_XS_FUNC_RMII_CPSWnG_NATIVE eth_drv_tester.sh "test_drv_phy_mode" "am65-cpsw-
 ETH_XS_FUNC_RGMII_RXID_CPSWnG_NATIVE eth_drv_tester.sh "test_drv_phy_mode" "am65-cpsw-nuss" "rgmii-rxid"
 ETH_XS_FUNC_SGMII_CPSWnG_NATIVE eth_drv_tester.sh "test_drv_phy_mode" "am65-cpsw-nuss" "sgmii"
 ETH_XS_FUNC_USXGMII_CPSWnG_NATIVE eth_drv_tester.sh "test_drv_phy_mode" "am65-cpsw-nuss" "usxgmii"
+ETH_XS_FUNC_8_DMA_TX_IRQs_CPSWnG_NATIVE eth_drv_tester.sh "test_drv_multi_dma_tx_irqs" "am65-cpsw-nuss" "8"
