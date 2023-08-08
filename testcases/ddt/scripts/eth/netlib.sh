@@ -1249,3 +1249,40 @@ test_drv_qsgmii () {
 		return;
 	fi
 }
+
+### Verify that at least one interface in specified mode
+### for the given driver can ping successfully.
+test_drv_phy_mode () {
+	driver=$1
+	phy_mode=$2
+	echo "${FUNCNAME[0]}: Testing for driver: $driver" >&2;
+	interfaces=$(get_eth_list)
+	count=0
+	for iface in $interfaces
+	do
+		if [[ "$driver" == "$(get_if_drv $iface)" ]]
+		then
+			if_mode=$(get_phy_mode $iface)
+			if [[ $if_mode == $phy_mode ]]
+			then
+				echo "${FUNCNAME[0]}: $driver: Found $phy_mode interface: $iface" >&2;
+				# Test that the interface can ping.
+				check=$(test_ping $iface)
+				if [[ $check == 0 ]]
+				then
+					echo 0;
+					return;
+				else
+					count=$(($count+1));
+				fi
+			fi
+		fi
+	done
+	if [[ $count == 0 ]]
+	then
+		echo 0;
+		return;
+	fi
+	echo "${FUNCNAME[0]}: TEST PASSED" >&2;
+	echo 1;
+}
