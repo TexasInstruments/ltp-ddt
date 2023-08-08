@@ -1211,3 +1211,41 @@ test_drv_mtu_config () {
 	echo "${FUNCNAME[0]}: TEST PASSED" >&2;
 	echo 1;
 }
+
+### Verify that 4 interfaces in QSGMII mode
+### for the given driver can ping successfully.
+test_drv_qsgmii () {
+	driver=$1
+	echo "${FUNCNAME[0]}: Testing for driver: $driver" >&2;
+	interfaces=$(get_eth_list)
+	count=0
+	for iface in $interfaces
+	do
+		if [[ "$driver" == "$(get_if_drv $iface)" ]]
+		then
+			if_mode=$(get_phy_mode $iface)
+			if [[ $if_mode == "qsgmii" ]]
+			then
+				echo "${FUNCNAME[0]}: $driver: Found QSGMII interface: $iface" >&2;
+				# Test that the QSGMII interface can ping.
+				check=$(test_ping $iface)
+				if [[ $check == 0 ]]
+				then
+					echo 0;
+					return;
+				else
+					count=$(($count+1));
+				fi
+			fi
+		fi
+	done
+	if [[ $count == 4 ]]
+	then
+		echo "${FUNCNAME[0]}: TEST PASSED" >&2;
+		echo 1;
+		return;
+	else
+		echo 0;
+		return;
+	fi
+}
