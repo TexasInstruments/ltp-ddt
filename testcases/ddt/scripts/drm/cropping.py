@@ -72,7 +72,7 @@ for i in range(len(planes)):
         "CRTC_W": fb.width,
         "CRTC_H": fb.height,
     }
-    if re.match("am62.*|am65.*|j721.*|j784.*|am68.*|am69.*", platform, re.I):
+    if re.match("am62.*|am65.*|j721.*|j784.*|am68.*|am69.*|am62sip.*|am62p.*", platform, re.I):
         p_props["zpos"] = i
     elif re.match("k2.*", platform, re.I):
         pass
