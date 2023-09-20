@@ -1,6 +1,6 @@
 armv8
 am64xx
-am64xx-evm
+am64xx-hsevm
 adc/tscadc
 can
 crypto/sa2ul
