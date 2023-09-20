@@ -124,7 +124,7 @@ case $MACHINE in
   j784*)
     gpio_nums="344,440"
   ;;
-  am64xx*|am62xx*|am62axx*|am62sipxx*|am62pxx*)
+  am64xx*|am62xx*|am62axx*|am62xxsip*|am62pxx*)
     gpio_nums="420,450,325"
   ;;
   j720*|j721s*)
