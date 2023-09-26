@@ -11,7 +11,7 @@ esac
 case $DRIVER in                                                      
 esac                                                              
 case $SOC in                                  
-am64xx|am62xx|am62axx|am62sipxx|am62pxx|am654|j7*)
+am64xx|am62xx|am62axx|am62xxsip|am62pxx|am654|j7*)
 	count=`get_num_sa2ul_interrupts.sh -c 0`
 ;;
 *)
