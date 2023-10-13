@@ -5,7 +5,7 @@ source "netlib.sh"
 
 testname=$1;
 driver=$2;
-optargs=$3;
+optargs=${@:3};
 result=0;
 echo "Executing test: $testname for driver: $driver" >&2;
 if [[ -z "$optargs" ]]
