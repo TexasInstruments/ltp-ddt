@@ -18,6 +18,7 @@ ETH_XS_FUNC_IRQ_PACING_CPSWnG_NATIVE eth_drv_tester.sh "test_drv_irq_pacing" "am
 ETH_XS_FUNC_PPS_CPSWnG_NATIVE eth_drv_tester.sh "test_drv_pps" "am65-cpsw-nuss"
 ETH_XS_FUNC_PROMISC_CPSWnG_NATIVE eth_drv_tester.sh "test_drv_promisc" "am65-cpsw-nuss"
 ETH_XS_FUNC_8_DMA_TX_IRQs_CPSWnG_NATIVE eth_drv_tester.sh "test_drv_multi_dma_tx_irqs" "am65-cpsw-nuss" "8"
+ETH_XS_FUNC_MTU_1518_VERIFICATION eth_drv_tester.sh "test_drv_mtu_size" "am65-cpsw-nuss" "1518" "15"
 
 # PHY-MODE Specific PING Tests
 ETH_XS_FUNC_QSGMII_PING eth_drv_tester.sh "test_drv_phy_mode_ping" "am65-cpsw-nuss" "qsgmii"

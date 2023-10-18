@@ -11,6 +11,12 @@ get_mtu () {
 	echo $mtu;
 }
 
+### Set MTU size for interface.
+set_mtu () {
+	ifconfig $1 mtu $2 > /dev/null;
+	echo "${FUNCNAME[0]}: $1 Setting MTU to: $2" >&2;
+}
+
 ### Get speed of interface.
 get_speed () {
 	speed=$(cat /sys/class/net/$1/speed);
@@ -314,6 +320,34 @@ dump_ale_sorted () {
 	filename=$2
 	echo "${FUNCNAME[0]}: For $interface: Dumping ALE entries to $filename" >&2;
 	switch-config -I $interface -d | tail -n +3 | cut -d":" -f2- | sort > $filename;
+}
+
+
+### Try to get the IP Address to ping for the purpose of checking outgoing packet length
+### Three ways to do that.
+### 1. Try getting the IPERF server if IPERFHOST variable is exported by host.
+### 2. Try getting the DHCP server if journalctl log captures IP of DHCP server.
+### 3. Try broadcast IP Address.
+get_destip () {
+	interface=$1
+	if [[ -n "$IPERFHOST" ]]
+	then
+		echo "${FUNCNAME[0]}: IPERF server's IP Address is: $IPERFHOST" >&2;
+		dest_ip=$IPERFHOST;
+	else
+		### IPERF server IP is not exported by host.
+		dhcp_server_ip=$(get_dhcp_server_ip $interface);
+		if [[ -n "$dhcp_server_ip" ]]
+		then
+			echo "${FUNCNAME[0]}: DHCP server's IP Address is: $dhcp_server_ip" >&2;
+			dest_ip=$dhcp_server_ip;
+		else
+			### Journalctl log did not capture DHCP server's IP.
+			dest_ip=$(get_broadcast_ip $interface);
+			echo "${FUNCNAME[0]}: Attempting broadcast ping to : $dest_ip" >&2;
+		fi
+	fi
+	echo $dest_ip;
 }
 
 #########################################################################################
@@ -872,6 +906,57 @@ test_mcast_adddel () {
 	echo 1;
 }
 
+test_mtu_size () {
+	iface=$1
+	framesize=$2
+	iterations=$3
+	ethernet_hdr=14
+	ip_hdr=20
+	icmp_hdr=8
+	required_mtu=$(($framesize-$ethernet_hdr))
+	payload_size=$(($required_mtu-$icmp_hdr-$ip_hdr))
+	icmp_packet_size=$(($payload_size+$icmp_hdr))
+	echo "${FUNCNAME[0]}: Interface: $iface is $(cat /sys/class/net/$iface/operstate)" >&2;
+	if [[ "$(cat /sys/class/net/$iface/operstate)" == "down" ]]
+	then
+		echo "${FUNCNAME[0]}: Failed as Interface is down" >&2;
+	else
+		dest_ip=$(get_destip $iface)
+		echo "Destination IP: $dest_ip" >&2;
+		if [[ "$dest_ip" == "0" || "$dest_ip" == "" ]]
+		then
+			echo "Dest IP is not available" >&2;
+		else
+			init_mtu=$(get_mtu $iface)
+			iter=0
+			$(set_mtu $iface $required_mtu);
+			ping -I $iface -s $payload_size $dest_ip > /dev/null &
+			while [[ $iter -lt $iterations ]]
+			do
+				size=`tcpdump -c 1 -i $iface -Q out -e icmp and len==$framesize`
+				if [[ "$size" == *"length $framesize"* && "$size" == *"length $icmp_packet_size"* ]]
+				then
+					if [[ "$(ps -aux | grep "ping -I $iface -s $framesize $dest_ip" | awk '{print $2}' | head -1)" != "" ]]
+					then
+						kill -9 $(ps -aux | grep "ping -I $iface -s $framesize $dest_ip" | awk '{print $2}' | head -1)
+					fi
+					set_mtu $iface $init_mtu;
+					echo "${FUNCNAME[0]}: TEST PASSED" >&2;
+					echo 1;
+					return;
+				fi
+				iter=$((iter+1))
+			done
+			if [[ "$(ps -aux | grep "ping -I $iface -s $framesize $dest_ip" | awk '{print $2}' | head -1)" != "" ]]
+			then
+				kill -9 $(ps -aux | grep "ping -I $iface -s $framesize $dest_ip" | awk '{print $2}' | head -1)
+			fi
+			set_mtu $iface $init_mtu;
+		fi
+	fi
+	echo 0;
+}
+
 #########################################################################################
 ##### DRIVER LEVEL TESTS ################################################################
 #########################################################################################
@@ -1325,6 +1410,30 @@ test_drv_multi_dma_tx_irqs () {
 		then
 			echo "${FUNCNAME[0]}: Checking $num_tx_irqs TX IRQs for $iface" >&2;
 			check=$(check_if_tx_irqs $iface $num_tx_irqs);
+			if [[ $check == 0 ]]
+			then
+				echo 0;
+				return;
+			fi
+		fi
+	done
+	echo "${FUNCNAME[0]}: TEST PASSED" >&2;
+	echo 1;
+}
+
+
+### For all ethernet interfaces, verifies the
+### MTU size to be 1518 for all outgoing packets.
+test_drv_mtu_size(){
+	driver=$1
+	parameters=${@:2}
+	echo "${FUNCNAME[0]}: Testing for driver: $driver" >&2;
+	interfaces=$(get_eth_list)
+	for iface in $interfaces
+	do
+		if [[ "$driver" == "$(get_if_drv $iface)" ]]
+		then
+			check=$(test_mtu_size $iface $parameters)
 			if [[ $check == 0 ]]
 			then
 				echo 0;
