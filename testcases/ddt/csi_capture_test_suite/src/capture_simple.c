@@ -47,7 +47,6 @@ struct test_pattern_info
 struct camera_info
 {
     enum camera_type ctype;
-    // char camera_name[SIZE_NAME];
     char *camera_name;
     int width;
     int height;
@@ -72,8 +71,8 @@ static unsigned int n_buffers = 4;
 static int frame_count = 60;
 static int frame_simple_err_count = 0;
 static int frame_direct_err_count = 0;
-struct camera_info OV5640_info={CAMERA_TYPE_OV5640,"OV5640",640,480,5};
-struct camera_info IMX390_info={CAMERA_TYPE_IMX390,"IMX390",1936,1100,5};
+struct camera_info OV5640_info={CAMERA_TYPE_OV5640,"OV5640",640,480,5,{}};
+struct camera_info IMX390_info={CAMERA_TYPE_IMX390,"IMX390",1936,1100,5,{}};
 
 static void errno_exit(const char *s)
 {
@@ -99,7 +98,7 @@ static int xioctl(int fh, int request, void *arg)
  * ignore less than 10  line errors per frame, mainly due
  * to the border lines.
  */
-static void verify_image_simple(const void *p, int size,struct camera_info cam_name_struct)
+static void verify_image_simple(const void *p, struct camera_info cam_name_struct)
 {
     int line;
     int stat1, stat2, errcount = 0;
@@ -150,8 +149,6 @@ static int read_frame(int test_pattern_val,struct camera_info cam_name_struct)
     struct v4l2_buffer buf;
     double oldfps = fps;
 
-    unsigned int i;
-
     CLEAR(buf);
 
     buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
@@ -179,7 +176,7 @@ static int read_frame(int test_pattern_val,struct camera_info cam_name_struct)
     prev_ts.tv_sec = buf.timestamp.tv_sec;
     prev_ts.tv_usec = buf.timestamp.tv_usec;
     if(cam_name_struct.tp[test_pattern_val].simple_check==1)
-        verify_image_simple(buffers[buf.index].start, buf.bytesused,cam_name_struct);
+        verify_image_simple(buffers[buf.index].start, cam_name_struct);
     if(cam_name_struct.tp[test_pattern_val].direct_compare==1)
         direct_compare_images(buffers[buf.index].start,buf.bytesused,cam_name_struct);
     if (-1 == xioctl(fd, VIDIOC_QBUF, &buf))
@@ -360,7 +357,6 @@ static char* get_tp_ref_file(int test_pattern_val)
 static void init_device(char *camera_name,int test_pattern_val)
 {
     struct v4l2_capability cap;
-    unsigned int min;
     if (-1 == xioctl(fd, VIDIOC_QUERYCAP, &cap))
     {
         if (errno == EINVAL)
@@ -457,7 +453,7 @@ static void open_device(void)
     }
 }
 
-static void usage(FILE *fp, int argc, char **argv)
+static void usage(FILE *fp, char **argv)
 {
     fprintf(fp,
             "Usage: %s [options]\n\n"
@@ -504,15 +500,16 @@ int main(int argc, char **argv)
             subdev_name = optarg;
             break;
         case 'h':
-            usage(stdout, argc, argv);
+            usage(stdout, argv);
             exit(EXIT_SUCCESS);
         case 't':
             test_pattern_val = atoi(optarg);
+            break;
         case 'n':
             camera_name = optarg;
             break;
         default:
-            usage(stderr, argc, argv);
+            usage(stderr, argv);
             exit(EXIT_FAILURE);
         }
     }
