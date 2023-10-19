@@ -1,1 +1,1 @@
-V4L2CAP_CID_TESTPATTERN_OV5640 source "common.sh"; IFS=','; read -ra cam_info <<< `setupcamera.sh` ; csi_capture_test -d ${cam_info[0]} -s /dev/v4l-subdev${cam_info[2]} -t 1 -n OV5640
+V4L2CAP_CID_TESTPATTERN_OV5640 source "common.sh"; IFS=','; read -ra cam_info <<< `setupcamera.sh` ; csi_capture_test -d ${cam_info[0]} -s ${cam_info[2]} -t 1 -n OV5640
