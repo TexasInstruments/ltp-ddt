@@ -957,6 +957,68 @@ test_mtu_size () {
 	echo 0;
 }
 
+test_pause_frame_server () {
+	iface=$1
+	interface_state=$(cat /sys/class/net/$iface/operstate)
+	server_ip=25.24.50.1
+	echo "${FUNCNAME[0]}: Interface: $iface is $interface_state" >&2;
+	if [[ "$interface_state" == "down" ]]
+	then
+		echo "${FUNCNAME[0]}: Failed as Interface is down" >&2;
+	else
+		$(ethtool -A $iface rx on tx on)
+		$(ifconfig $iface $server_ip)
+		init_rx_pause_frames=$(ethtool -S $iface | grep pause | head -1 | awk '{print $2}')
+		init_tx_pause_frames=$(ethtool -S $iface | grep pause | tail -1 | awk '{print $2}')
+		echo "$(iperf3 -s -B $server_ip)" >&2;
+		cur_rx_pause_frames=$(ethtool -S $iface | grep pause | head -1 | awk '{print $2}')
+		cur_tx_pause_frames=$(ethtool -S $iface | grep pause | tail -1 | awk '{print $2}')
+		diff_rx=$cur_rx_pause_frames-$init_rx_pause_frames
+		diff_tx=$cur_tx_pause_frames-$init_tx_pause_frames
+		if [[ $diff_rx -gt 0 && $diff_tx -gt 0 ]]
+		then
+			echo "${FUNCNAME[0]}: TEST PASSED" >&2;
+			echo 1;
+			return;
+		fi
+	fi
+	echo 0;
+}
+
+
+test_pause_frame_client () {
+	iface=$1
+	time_interval=$2
+	server_ip=25.24.50.1
+	client_ip=25.24.50.$3
+	interface_state=$(cat /sys/class/net/$iface/operstate)
+	echo "${FUNCNAME[0]}: Interface: $iface is $interface_state" >&2;
+	if [[ "$interface_state" == "down" ]]
+	then
+		echo "${FUNCNAME[0]}: Failed as Interface is down" >&2;
+	else
+		$(ethtool -A $iface rx on tx on);
+		$(ifconfig $iface $client_ip);
+		init_rx_pause_frames=$(ethtool -S $iface | grep pause | head -1 | awk '{print $2}')
+		init_tx_pause_frames=$(ethtool -S $iface | grep pause | tail -1 | awk '{print $2}')
+		echo "$(iperf3 -c $server_ip -B $client_ip -u -b0 -t $time_interval --bidir)" >&2;
+		cur_rx_pause_frames=$(ethtool -S $iface | grep pause | head -1 | awk '{print $2}')
+		cur_tx_pause_frames=$(ethtool -S $iface | grep pause | tail -1 | awk '{print $2}')
+		diff_rx=$cur_rx_pause_frames-$init_rx_pause_frames
+		diff_tx=$cur_tx_pause_frames-$init_tx_pause_frames
+		if [[ $diff_rx -gt 0 && $diff_tx -gt 0 ]]
+		then
+			echo "${FUNCNAME[0]}: TEST PASSED" >&2;
+			echo 1;
+			return;
+		fi
+	fi
+	echo 0;
+}
+
+
+
+
 #########################################################################################
 ##### DRIVER LEVEL TESTS ################################################################
 #########################################################################################
@@ -1444,3 +1506,30 @@ test_drv_mtu_size(){
 	echo "${FUNCNAME[0]}: TEST PASSED" >&2;
 	echo 1;
 }
+
+test_drv_pause_frame(){
+	driver=$1
+	echo "${FUNCNAME[0]}: Testing for driver: $driver " >&2;
+	interfaces=$(get_eth_list)
+	iter=3
+	for iface in $interfaces
+	do
+		if [[ "$driver" == "$(get_if_drv $iface)" ]]
+		then
+			check=0
+			time_interval=$2
+			check=$(test_pause_frame_client $iface $time_interval $iter);
+			if [[ $check == 0 ]]
+			then
+				echo 0;
+				return;
+			fi
+		fi
+		iter=$(($iter+1));
+	done
+	echo "${FUNCNAME[0]}: TEST PASSED" >&2;
+	echo 1;
+}
+
+
+
