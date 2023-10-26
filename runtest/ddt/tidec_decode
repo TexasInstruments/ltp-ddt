@@ -17,6 +17,8 @@ TIDEC_S_FUNC_DECODE_H264_176_144_5_CHROMA2_422_HIGH_25FR.264 source 'ti_codecs.s
 
 TIDEC_S_FUNC_DECODE_CROWDRUN_352X288_P25_CGRLEVELS_SINC_FILTER_SVTDEC05_10BIT_422P_30FR.265 source 'ti_codecs.sh'; service stop weston; get_media decoder SDK_Release_Streams/CrowdRun_352x288_p25_CgrLevels_SINC_FILTER_SVTdec05_10bit_422p_30fr.265; insert_video_modules; F=$(mktemp); gst-launch-1.0 filesrc location=/usr/share/ti/tidec-decode/CrowdRun_352x288_p25_CgrLevels_SINC_FILTER_SVTdec05_10bit_422p_30fr.265 ! h265parse ! v4l2h265dec ! video/x-raw, format=NV16 ! filesink location=$F  || die "GStreamer operation did not complete successfully"; MD5=$(md5sum ${F}) ; echo $MD5 | grep 624b1f15782cc619e95a0274ef2ebb73 || die "decoded file does not match expected md5sum"; remove_media decoder
 
+TIDEC_S_FUNC_DECODE_ITX_AI_CUSTOMER_ERROR.264 source 'ti_codecs.sh'; service stop weston; get_media decoder CustomerErrorStreams/ch3.mp4; insert_video_modules; F=$(mktemp); gst-launch-1.0 filesrc location=/usr/share/ti/tidec-decode/ch3.mp4 ! qtdemux ! h264parse ! v4l2h264dec ! video/x-raw,format=NV12 ! filesink location=$F || die "Decode operation did not complete successfully"; dmesg | grep "MMCO error accured when processing the current frame. May have corruption" && die "GStreamer operation did not complete successfully"; remove_media decoder
+
 # JPEG Decoder Cases
 
 TIDEC_S_FUNC_DECODE_MOTHER_320x240_422_5FR_MJPG source 'ti_codecs.sh'; get_media decoder SDK_Release_Streams/mother_320x240_422_5fr.mjpg; F=$(mktemp); gst-launch-1.0 filesrc location=/usr/share/ti/tidec-decode/mother_320x240_422_5fr.mjpg ! jpegparse ! v4l2jpegdec ! video/x-raw, format=NV16 ! filesink location=$F || die "Decode operation did not complete successfully";
