@@ -1088,6 +1088,49 @@ test_interrupt_pacing_client () {
 	echo 0;
 }
 
+test_dma_rate_limit_server () {
+	iface=$1
+	server_ip=25.24.50.1
+	interface_state=$(cat /sys/class/net/$iface/operstate)
+	echo "${FUNCNAME[0]}: Interface: $iface is $interface_state" >&2;
+	if [[ "$interface_state" == "down" ]]
+	then
+		echo "${FUNCNAME[0]}: Failed as Interface is down" >&2;
+	else
+		echo "$(iperf3 -s)" >&2;
+	fi
+}
+
+
+
+test_dma_rate_limit_client () {
+	iface=$1
+	server_ip=25.24.50.1
+	client_ip=25.24.50.3
+	interface_state=$(cat /sys/class/net/$iface/operstate)
+	echo "${FUNCNAME[0]}: Interface: $iface is $interface_state" >&2;
+	if [[ "$interface_state" == "down" ]]
+	then
+		echo "${FUNCNAME[0]}: Failed as Interface is down" >&2;
+	else
+		echo 0 > /sys/class/net/$iface/queues/tx-0/tx_maxrate
+		init_bandwidth=$(iperf3 -c $server_ip -b0 -t10 --forceflush | awk '/[0-9]]/{sub(/.*]/,"");print $5}' | tail -1)
+		echo "Bandwidth befor DMA Rate Limiting --> $init_bandwidth" >&2;
+		echo 200 > /sys/class/net/eth0/queues/tx-0/tx_maxrate
+		curr_bandwidth=$(iperf3 -c $server_ip -b0 -t10 --forceflush | awk '/[0-9]]/{sub(/.*]/,"");print $5}' | tail -1)
+		echo "Bandwidth after DMA Rate Limiting to 200 Mbits --> $curr_bandwidth" >&2;
+		if [[ $curr_bandwidth -lt 200 ]]
+		then
+			echo 0 > /sys/class/net/$iface/queues/tx-0/tx_maxrate
+			echo "${FUNCNAME[0]}: TEST PASSED" >&2;
+			echo 1;
+			return;
+		fi
+		echo 0 > /sys/class/net/$iface/queues/tx-0/tx_maxrate
+	fi
+	echo 0;
+}
+
 
 #########################################################################################
 ##### DRIVER LEVEL TESTS ################################################################
@@ -1577,6 +1620,9 @@ test_drv_mtu_size(){
 	echo 1;
 }
 
+
+# For all interfaces corresponding to drivers, verifies
+# whether it can send/receive the pause frame or not.
 test_drv_pause_frame(){
 	driver=$1
 	echo "${FUNCNAME[0]}: Testing for driver: $driver " >&2;
@@ -1626,3 +1672,28 @@ test_drv_interrupt_pacing(){
 	echo "${FUNCNAME[0]}: TEST PASSED" >&2;
 	echo 1;
 }
+
+# For all interfaces corresponding to drivers, verifies
+# whether it can limit the bandwidth to 200 Mbps or not.
+test_drv_dma_rate_limit(){
+	driver=$1
+	echo "${FUNCNAME[0]}: Testing for driver: $driver" >&2;
+	interfaces=$(get_eth_list)
+	iter=3
+	for iface in $interfaces
+	do
+		if [[ "$driver" == "$(get_if_drv $iface)" ]]
+		then
+			check=$(test_dma_rate_limit_client $iface $iter)
+			if [[ $check == 0 ]]
+			then
+				echo 0;
+				return;
+			fi
+		fi
+		iter=$(($iter+1));
+	done
+	echo "${FUNCNAME[0]}: TEST PASSED" >&2;
+	echo 1;
+}
+
