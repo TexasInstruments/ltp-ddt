@@ -1016,7 +1016,77 @@ test_pause_frame_client () {
 	echo 0;
 }
 
+test_interrupt_pacing_server () {
+	iface=$1
+	server_ip=25.24.50.1
+	interface_state=$(cat /sys/class/net/$iface/operstate)
+	echo "${FUNCNAME[0]}: Interface: $iface is $interface_state" >&2;
+	if [[ "$interface_state" == "down" ]]
+	then
+		echo "${FUNCNAME[0]}: Failed as Interface is down" >&2;
+	else
+		$(ifconfig $iface $server_ip)
+		port1=8001
+		port2=8002
+		echo "$(iperf3 -s -p $port1 & iperf3 -s -p $port2)" >&2;
+		echo 1;
+	fi
+}
 
+test_interrupt_pacing_client () {
+	iface=$1
+	server_ip=25.24.50.1
+	client_ip=25.24.50.$2
+	interface_state=$(cat /sys/class/net/$iface/operstate)
+	echo "${FUNCNAME[0]}: Interface: $iface is $interface_state" >&2;
+	if [[ "$interface_state" == "down" ]]
+	then
+		echo "${FUNCNAME[0]}: Failed as Interface is down" >&2;
+	else
+		$(ifconfig $iface $client_ip)
+		port1=8001
+		port2=8002
+		$(ethtool -C $iface tx-usecs 0 rx-usecs 0)
+		iperf3 -c $server_ip -p $port1 -u -b0 > /dev/null &
+		val1=$(mpstat -A -P ALL 1 10 | grep "%idle" -A 1 | grep -v "%idle" | grep -v '^\d*$' | awk '{print $11}')
+		val1="${val1//$'\n'/ }"
+		val1="${val1//  / }"
+		IFS=' ' read -r -a array <<< "$val1"
+		res1=101
+		for element in "${array[@]}"
+		do
+			if [[ "$(echo "$element < $res1" | bc)" -eq 1 ]]
+			then
+				res1=$element
+			fi
+		done
+		echo "CPU idle % without interrupt pacing $res1" >&2;
+		sleep 2
+		$(ethtool -C $iface tx-usecs 250 rx-usecs 250)
+		iperf3 -c $server_ip -p $port2 -u -b0 > /dev/null &
+		val2=$(mpstat -A -P ALL 1 10 | grep "%idle" -A 1 | grep -v "%idle" | grep -v '^\d*$' | awk '{print $11}')
+		val2="${val2//$'\n'/ }"
+		val2="${val2//  / }"
+		IFS=' ' read -r -a array <<< "$val2"
+		res2=101
+		for element in "${array[@]}"
+		do
+			if [[ "$(echo "$element < $res2" | bc)" -eq 1 ]]
+			then
+				res2=$element
+			fi
+		done
+		echo "CPU idle % with interrupt pacing $res2" >&2;
+		$(ethtool -C $iface tx-usecs 0 rx-usecs 0)
+		if [[ $res1 < $res2 ]]
+		then
+			echo "${FUNCNAME[0]}: TEST PASSED" >&2;
+			echo 1;
+			return;
+		fi
+	fi
+	echo 0;
+}
 
 
 #########################################################################################
@@ -1531,5 +1601,28 @@ test_drv_pause_frame(){
 	echo 1;
 }
 
-
-
+# For all interfaces corresponding to drivers, verifies
+# whether cpu performance increases or not with changing the
+# traffic service time from 0 to 250.
+test_drv_interrupt_pacing(){
+	driver=$1
+	echo "${FUNCNAME[0]}: Testing for driver: $driver " >&2;
+	interfaces=$(get_eth_list)
+	iter=3
+	for iface in $interfaces
+	do
+		if [[ "$driver" == "$(get_if_drv $iface)" ]]
+		then
+			check=0
+			check=$(test_interrupt_pacing_client $iface $iter);
+			if [[ $check == 0 ]]
+			then
+				echo 0;
+				return;
+			fi
+		fi
+		iter=$(($iter+1));
+	done
+	echo "${FUNCNAME[0]}: TEST PASSED" >&2;
+	echo 1;
+}
