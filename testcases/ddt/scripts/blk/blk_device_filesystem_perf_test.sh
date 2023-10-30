@@ -61,6 +61,35 @@ do_fio()
   rm mpstat.out
 }
 
+do_dd()
+{
+  echo
+  IO_OP=$1
+  RUNTIME=$2
+  if [ "$IO_OP" == "read" ]
+    then
+      echo "=| Read operation |="
+      echo 'READ Command :       timeout -s INT --foreground '${RUNTIME}' dd of=/dev/null if='${DEV_NODE}' bs='${BUFFER_SIZE}' || echo "" &'
+      timeout -s INT --foreground ${RUNTIME} dd of=/dev/null if=$DEV_NODE bs=$BUFFER_SIZE || echo "" &
+  elif [ "$IO_OP" == "write" ]
+    then
+      echo "=| Write operation |="
+      echo 'WRITE Command :      timeout -s INT --foreground '${RUNTIME}' dd if=/dev/random of='${DEV_NODE}' bs='${BUFFER_SIZE}' || echo "" &'
+      timeout -s INT --foreground ${RUNTIME} dd if=/dev/random of=$DEV_NODE bs=$BUFFER_SIZE || echo "" &
+  else
+    echo "=| Operation not supported |="
+  fi
+  do_cmd sleep 5
+  do_cmd mpstat -P ALL $(( $RUNTIME - 5 )) 1 2>&1 > mpstat.out
+  do_cmd wait
+  cat mpstat.out
+  iowait=`cat mpstat.out|grep -i 'average:\s*all\s*'|awk '{print $6}' `
+  idle=`cat mpstat.out|grep -i 'average:\s*all\s*'|awk '{print $11}' `
+  cpuload=`echo "100 - $iowait - $idle" |bc -l`
+  echo "CPUload for rw:$IO_OP with blocksize:$BUFFER_SIZE is: ${cpuload}%"
+  rm mpstat.out
+}
+
 ############################### CLI Params ###################################
 if [ $# == 0 ]; then
 	echo "Please provide options; see usage"
@@ -114,8 +143,8 @@ echo "ls -al /dev/disk/by-path"
 ls -al /dev/disk/by-path
 
 if [ -z $DEV_NODE ]; then
-        DEV_NODE=`get_blk_device_node.sh "$DEVICE_TYPE" "$EXTRA_PARAM"` || die "error while getting device node: $DEV_NODE"
-        test_print_trc "DEV_NODE return from get_blk_device_node is: $DEV_NODE" 
+  DEV_NODE=`get_blk_device_node.sh "$DEVICE_TYPE" "$EXTRA_PARAM"` || die "error while getting device node: $DEV_NODE"
+  test_print_trc "DEV_NODE return from get_blk_device_node is: $DEV_NODE"
 fi
 
 # translate DEVICE_TYPE to DEV_TYPE (mtd or not)
@@ -172,6 +201,14 @@ for BUFFER_SIZE in $BUFFER_SIZES; do
 	fi
 
   case $PERF_METHOD in
+    dd)
+      # call dd
+      do_dd 'write' $FIO_W_RUNTIME
+      sleep 1
+      do_dd 'read' $FIO_R_RUNTIME
+      sleep1
+      mkfs.vfat -F32 /dev/mmcblk0p3
+      ;;
     fio)
       # call fio
       # fio --name TEST --directory=/run/media/nvme0n1p3/ --size=10g --rw=write --blocksize=4m --ioengine=libaio --iodepth=4 --direct=1 --group_reporting --runtime=30 --time_base --eta=never
