@@ -350,6 +350,14 @@ get_destip () {
 	echo $dest_ip;
 }
 
+# Returns the base address for the interface
+get_basename () {
+	iface=$1
+	base=$(ethtool -i $iface | grep "bus-info" | awk '{print $2}')
+	echo "${FUNCNAME[0]}: $iface Basename: $base" >&2;
+	echo $base;
+}
+
 #########################################################################################
 ##### INTERFACE LEVEL TESTS #############################################################
 #########################################################################################
@@ -1131,6 +1139,26 @@ test_dma_rate_limit_client () {
 	echo 0;
 }
 
+# Enable Hardware Switch mode for the interfaces provided
+test_switch_mode () {
+	base=$1
+	iface1=$2
+	iface2=$3
+	devlink dev param set platform/$base name switch_mode value true cmode runtime
+	ip link add name br0 type bridge
+	ip link set dev br0 type bridge ageing_time 1000
+	ip link set dev $iface1 up
+	ip link set dev $iface2 up
+	sleep 10
+	ip link set dev $iface1 master br0
+	ip link set dev $iface2 master br0
+	ip link set dev br0 up
+	ip link set dev br0 type bridge vlan_filtering 1
+	bridge vlan add dev br0 vid 1 self
+	bridge vlan add dev br0 vid 1 pvid untagged self
+	bridge vlan add dev $iface1 vid 100 master
+	bridge vlan add dev $iface2 vid 100 master
+}
 
 #########################################################################################
 ##### DRIVER LEVEL TESTS ################################################################
@@ -1694,6 +1722,40 @@ test_drv_dma_rate_limit(){
 		iter=$(($iter+1));
 	done
 	echo "${FUNCNAME[0]}: TEST PASSED" >&2;
+	echo 1;
+}
+
+# For the interfaces corresponding to drivers and base address,
+# Enables the switch mode
+test_drv_switch_mode () {
+	driver=$1
+	echo "${FUNCNAME[0]}: Testing for driver: $driver" >&2;
+	interfaces=$(get_eth_list)
+	iter=0
+	base=$2
+	declare -A iface_arr
+	for iface in $interfaces
+	do
+		interface_state=$(cat /sys/class/net/$iface/operstate)
+		basename=$(get_basename $iface)
+		if [[ "$driver" == "$(get_if_drv $iface)" && "$interface_state" == "up" && "$basename" == "$base" ]]
+		then
+			iface_arr[$iter]=$iface
+			iter=$(($iter+1))
+			if [[ $iter -gt 1 ]]
+			then
+				echo "Iter value $iter" >&2;
+				break
+			fi
+		fi
+	done
+	if [[ $iter -lt 2 ]]
+	then
+		echo "Failed: Not enough interfaces are up" >&2;
+		echo 0;
+		return;
+	fi
+	$(test_switch_mode $base ${iface_arr[0]} ${iface_arr[1]})
 	echo 1;
 }
 
