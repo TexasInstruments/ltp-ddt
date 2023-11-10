@@ -1,9 +1,10 @@
-# MakeFile function     :: MakeFile for compiling SPIDEV test suite 
+# MakeFile function     :: MakeFile for compiling CSI capture test suite
 
 top_srcdir              ?= ../../..
 
 include $(top_srcdir)/include/mk/env_pre.mk
 
+SUBDIRS			:= datafiles
 KERNEL_DIR		:= $(patsubst %/include,%,$(KERNEL_INC))
 INSTALL_DIR             := testcases/bin/ddt
 
@@ -30,4 +31,4 @@ MAKE_TARGETS            := csi_capture_test
 csi_capture_test:
 	$(CC) $(CFLAGS) $(LDFLAGS) -o csi_capture_test ${INCLUDES} ${SOURCES}
 
-include $(top_srcdir)/include/mk/generic_leaf_target.mk
+include $(top_srcdir)/include/mk/generic_trunk_target.mk

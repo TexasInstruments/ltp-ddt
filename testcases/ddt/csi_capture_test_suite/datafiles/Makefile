@@ -11,13 +11,9 @@
 #    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #    GNU General Public License for more details.
 
-top_srcdir		?= ../../../../..
+top_srcdir		?= ../../../..
 
 include $(top_srcdir)/include/mk/env_pre.mk
-
-TPFOLDER            = test_patterns
-INSTALL_DIR			:= /opt/ltp/testcases/data/$(TPFOLDER)
-MAKE_TARGETS		:=
+INSTALL_DIR			:= testcases/data/test_patterns
 INSTALL_TARGETS		:= *.bin
-
 include $(top_srcdir)/include/mk/generic_leaf_target.mk
