@@ -1,0 +1,5 @@
+# @name Check vtm existence
+# @desc Check if wkup_vtm0 exists under sys interface
+# @requires vtm
+
+VTM_M_FUNC_CHECK_EXISTENCE find /sys/ | grep vtm && exit 0 || exit 1
