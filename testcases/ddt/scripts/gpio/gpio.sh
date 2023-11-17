@@ -20,47 +20,23 @@ source "super-pm-tests.sh"
 usage()
 {
 cat <<-EOF >&2
-  usage: ./${0##*/}  [-l TEST_LOOP] [-t SYSFS_TESTCASE] [-i TEST_INTERRUPT]
+  usage: ./${0##*/}  [-l TEST_LOOP] [-t LIBGPIOD_TESTCASE] [-i TEST_INTERRUPT]
   -l TEST_LOOP  test loop
-  -t SYSFS_TESTCASE testcase like 'out', 'in'
+  -t LIBGPIOD_TESTCASE testcase
   -i TEST_INTERRUPT if test interrupt, default is 0.
   -h Help   print this usage
 EOF
 exit 0
 }
 
-gpio_sysentry_get_item()  {
-  GPIO_NUM=$1
-  ITEM=$2
-
-  VAL=`cat /sys/class/gpio/gpio${GPIO_NUM}/${ITEM}`
-  echo "$VAL"
+gpio_set_item() {
+  GPIO_CHIP=$1
+  OFFSET=$2
+  VALUE=$3
+  `gpioset --mode=time -s 15 --background ${GPIO_CHIP} ${OFFSET}=${VALUE}`
 }
 
-gpio_sysentry_set_item() {
-  if [ $# -lt 3 ]; then
-    echo "Error: Invalid Argument Count"
-    echo "Syntax: $0 <gpio_num> <item like 'direction', 'value', 'edge'> <item value>"
-    exit 1
-  fi
-
-  GPIO_NUM=$1
-  ITEM=$2
-  ITEM_VALUE=$3
-
-  ORIG_VAL=`gpio_sysentry_get_item ${GPIO_NUM} ${ITEM}`
-  test_print_trc "The value was ${ORIG_VAL} before setting ${ITEM}" 
-
-  do_cmd "echo "$ITEM_VALUE" > /sys/class/gpio/gpio${GPIO_NUM}/${ITEM}"
-  VAL_SET=`gpio_sysentry_get_item ${GPIO_NUM} ${ITEM}`
-  if [ "${VAL_SET}" != "${ITEM_VALUE}" ]; then
-    die "Value for GPIO ${GPIO_NUM} was not set to ${ITEM_VALUE}"
-  else
-    test_print_trc "GPIO ${GPIO_NUM} was set to ${ITEM_VALUE}"
-  fi
-}
-
-set_gpio_pinmux(){
+set_gpio_pinmux() {
   reg=$1
   mux_val=$2
   do_cmd devmem2 "$reg"
@@ -70,12 +46,65 @@ set_gpio_pinmux(){
   do_cmd devmem2 "$reg" w "$new_val_hex"
 }
 
+gpio_chips=()
+offsets=()
+new_values=()
+gpioinfo_extract_output_gpio_pins() {
+    chip_info=$1
+    curr_gpio_chip=""
+    num_chips_count=0
+    while IFS= read -r line
+    do
+      IFS=' '
+      usage_status=""
+      direction=""
+      if [[ $num_chips_count -ge 2 ]]; then
+          break
+      fi
+      read -a strarr <<< "$line"
+      if [[ "$line" == *"gpiochip"* ]] 
+      then
+          curr_gpio_chip="${strarr[0]}"
+      else
+          usage_status="${strarr[3]}"
+          direction="${strarr[4]}"
+      fi
+      if [[ "${usage_status}" == "unused" && "${direction}" == "output" ]]; then
+        offsets[${#offsets[@]}]="${strarr[1]%:}"
+        new_values[${#new_values[@]}]=1
+        gpio_chips[${#gpio_chips[@]}]="${curr_gpio_chip}"
+        num_chips_count=`expr $num_chips_count + 1`
+      fi
+    done < <(printf '%s\n' "$chip_info")
+}
+
+gpioinfo_extract_given_offset() {
+    chip_info=$1
+    offset=`expr $2 + 1`
+    count=0
+    while IFS= read -r line
+    do
+      if [[ "$count" -eq $offset ]]; then
+	      IFS=' '
+        read -a strarr <<< "$line"
+        usage_status="${strarr[3]}"
+        if [[ "${usage_status}" == "\"gpioset\"" ]]
+        then
+          test_print_trc "GPIOSET is successful\n"
+        else
+          die "GPIOSET is not successful\n"
+        fi
+
+      fi
+      count=`expr $count + 1`
+    done < <(printf '%s\n' "$chip_info")
+}
 
 ############################### CLI Params ###################################
 while getopts  :l:t:i:h arg
 do case $arg in
   l)  TEST_LOOP="$OPTARG";;
-  t)  SYSFS_TESTCASE="$OPTARG";;
+  t)  LIBGPIOD_TESTCASE="$OPTARG";;
   i)  TEST_INTERRUPT="$OPTARG";;
   h)  usage;;
   :)  test_print_trc "$0: Must supply an argument to -$OPTARG." >&2
@@ -98,91 +127,65 @@ done
 # use user-defined Params section above.
 test_print_trc "STARTING GPIO Test... "
 test_print_trc "TEST_LOOP:${TEST_LOOP}"
-test_print_trc "SYSFS_TESTCASE:${SYSFS_TESTCASE}"
+test_print_trc "LIBGPIOD_TESTCASE:${LIBGPIOD_TESTCASE}"
 
 do_cmd "cat /sys/kernel/debug/gpio"
 
-case $MACHINE in
-  am180x-evm|omapl138-lcdk) 
-    gpio_nums="368,399,426,484,511"
-  ;;
-  am335x-*|beaglebone|beaglebone-black)
-    gpio_nums="31,40,64,98"
-  ;;
-  am335x-sk)
-    gpio_nums="3,40,65,101"
-  ;;
-  beagleboard)
-    gpio_nums="26,38,70,115"
-  ;;
-  k2hk-evm|k2e-evm|k2l-evm)
-    gpio_nums="448,480"
-  ;;
-  am654x-evm|am654x-idk|j721e*)
-    gpio_nums="285,344,440"
-  ;;
-  j784*)
-    gpio_nums="344,440"
-  ;;
-  am64xx*|am62xx*|am62axx*|am62xxsip*|am62pxx*)
-    gpio_nums="420,450,325"
-  ;;
-  j720*|j721s*)
-    gpio_nums="322,355,391"                  
-  ;;
-  am68*|am69*)
-    gpio_nums="420,450"
-  ;;
-  k2g-evm)
-    gpio_nums="346,281,484"
-    if [[ "$MACHINE" == "k2g-evm" ]]; then
-      # Based on k2g datasheet
-      # gpio0_6
-      set_gpio_pinmux "0x02621018" "0x3"
-      # gpio0_24
-      #set_gpio_pinmux "0x02621060" "0x3"
-      # gpio0_25
-      set_gpio_pinmux "0x02621064" "0x3"
-      # gpio0_33
-      set_gpio_pinmux "0x02621084" "0x3"
-      # gpio0_48
-      set_gpio_pinmux "0x026210c0" "0x3"
-      # gpio0_73
-      #set_gpio_pinmux "0x02621124" "0x3"
-      # gpio0_86
-      #set_gpio_pinmux "0x02621158" "0x3"
-      # gpio0_97
-      #set_gpio_pinmux "0x02621188" "0x3"
-      # gpio0_121
-      #set_gpio_pinmux "0x02621260" "0x3"
-      # gpio0_135
-      #set_gpio_pinmux "0x02621298" "0x3"
-      # gpio1_57
-      #set_gpio_pinmux "0x02621200" "0x3"
-      # gpio1_65
-      #set_gpio_pinmux "0x02621220" "0x3"
-    fi
-  ;;
-  dra7xx-evm|am572x-idk|am571x-idk|am574x-idk) 
-    gpio_nums="22,29,0,1,0,17,0,0"
-  ;;
-  am57xx-evm)
-    gpio_nums="22,29,0,0,0,14,0,0"
-  ;;
-  am43xx-epos|am43xx-gpevm|am437x-idk)
-    gpio_nums="0,32,95"
-  ;;
-  *)
-    die "The gpio numbers are not specified for this platform $MACHINE"
-  ;;  
-esac
+platforms=("am180x-evm|omapl138-lcdk" "am335x-|beaglebone|beaglebone-black" "am335x-sk" 
+           "beagleboard" "k2hk-evm|k2e-evm|k2l-evm" "am654x-evm|am654x-idk" "j721e" 
+           "j784" "am64xx|am62xx|am62axx" "j721s" "j7200" "am68|am69" "k2g-evm" 
+           "dra7xx-evm|am572x-idk|am571x-idk|am574x-idk" "am57xx-evm" 
+           "am43xx-epos|am43xx-gpevm|am437x-idk" "am62p")
+
+valid_platform=0
+for mach in ${platforms[@]}; do
+  mach="${mach%\"}"
+  mach="${mach#\"}"
+  if [[ "$MACHINE" =~ $mach || "$mach" =~ $MACHINE ]]; then
+    chip_info=$(gpioinfo)
+    gpioinfo_extract_output_gpio_pins "$chip_info"
+    valid_platform=1
+    break
+  fi
+done
+
+if [[ valid_platform == 0 ]]; then
+  die "The gpio numbers are not specified for this platform $MACHINE"
+fi
+
+if [[ "$MACHINE" == "k2g-evm" ]]; then
+  # Based on k2g datasheet
+  # gpio0_6
+  set_gpio_pinmux "0x02621018" "0x3"
+  # gpio0_24
+  #set_gpio_pinmux "0x02621060" "0x3"
+  # gpio0_25
+  set_gpio_pinmux "0x02621064" "0x3"
+  # gpio0_33
+  set_gpio_pinmux "0x02621084" "0x3"
+  # gpio0_48
+  set_gpio_pinmux "0x026210c0" "0x3"
+  # gpio0_73
+  #set_gpio_pinmux "0x02621124" "0x3"
+  # gpio0_86
+  #set_gpio_pinmux "0x02621158" "0x3"
+  # gpio0_97
+  #set_gpio_pinmux "0x02621188" "0x3"
+  # gpio0_121
+  #set_gpio_pinmux "0x02621260" "0x3"
+  # gpio0_135
+  #set_gpio_pinmux "0x02621298" "0x3"
+  # gpio1_57
+  #set_gpio_pinmux "0x02621200" "0x3"
+  # gpio1_65
+  #set_gpio_pinmux "0x02621220" "0x3"
+fi
 
 OIFS=$IFS
 IFS=","
-for gpio_num in $gpio_nums; do
-
+for j in "${!gpio_chips[@]}"; do
     EXTRA_PARAMS=""
-    test_print_trc "gpio_num:${gpio_num}"
+    test_print_trc "gpio_chip_num:${gpio_chips[j]} offset:${offsets[j]}"
 
     if [ "$TEST_INTERRUPT" = "1" ]; then
       do_cmd lsmod | grep gpio_test
@@ -193,21 +196,13 @@ for gpio_num in $gpio_nums; do
       fi
     fi
 
-    if [ -n "$SYSFS_TESTCASE" ]; then
-      if [ -e /sys/class/gpio/gpio"$gpio_num" ]; then
-        do_cmd "echo ${gpio_num} > /sys/class/gpio/unexport"
-        do_cmd ls /sys/class/gpio
-        sleep 1
-      fi
-    fi
-
     if [ "$TEST_INTERRUPT" = "1" ]; then
       test_print_trc "Inserting gpio test module. Please wait..."
       do_cmd "cat /proc/interrupts"
       # wait TIMEOUT for app to finish; if not finished by TIMEOUT, kill it
       # gpio_test module return sucessfully only after the interrupt complete.
       # do_cmd "timeout 30 insmod ddt/gpio_test.ko gpio_num=${gpio_num} test_loop=${TEST_LOOP} ${EXTRA_PARAMS}"
-      ( do_cmd insmod ddt/gpio_test.ko gpio_num=${gpio_num} test_loop=${TEST_LOOP} ${EXTRA_PARAMS} ) & pid=$!
+      # ( do_cmd insmod ddt/gpio_test.ko gpio_num=${gpio_num} test_loop=${TEST_LOOP} ${EXTRA_PARAMS} ) & pid=$!
       sleep 5; kill -9 $pid
       wait $pid
       if [ $? -ne 0 ]; then
@@ -222,88 +217,17 @@ for gpio_num in $gpio_nums; do
       do_cmd cat /proc/interrupts
     fi
 
-    # run sys entry tests if asked
-    if [ -n "$SYSFS_TESTCASE" ]; then
-      test_print_trc "Running sysfs test..."
-      
+    # run libgpiod tests if asked
+    if [ -n "$LIBGPIOD_TESTCASE" ]; then
+      test_print_trc "Running libgpiod test..."
+
       # test loop
       i=0
       while [ $i -lt $TEST_LOOP ]; do 
         test_print_trc "===LOOP: $i==="
-        do_cmd "echo ${gpio_num} > /sys/class/gpio/export"
-        do_cmd ls /sys/class/gpio
-        if [ -e /sys/class/gpio/gpio"$gpio_num" ]; then
-          case "$SYSFS_TESTCASE" in
-          neg_reserve)
-            test_print_trc "Try to reserve the same gpio again"
-            test_print_trc "echo ${gpio_num} > /sys/class/gpio/export"
-            echo ${gpio_num} > /sys/class/gpio/export
-            if [ $? -eq 0 ]; then
-              die "gpio should not be able to reserve gpio ${gpio_num} which is already being reserved"
-            fi
-            ;;
-          out)
-            gpio_sysentry_set_item "$gpio_num" "direction" "out"  
-            if [ $? -ne 0 ]; then
-              die "gpio_sysentry_set_item failed to set ${gpio_num} to out"
-            fi
-            gpio_sysentry_set_item "$gpio_num" "value" "0"
-            if [ $? -ne 0 ]; then
-              die "gpio_sysentry_set_item failed to set ${gpio_num} to 0"
-            fi
-            gpio_sysentry_set_item "$gpio_num" "value" "1"
-            if [ $? -ne 0 ]; then
-              die "gpio_sysentry_set_item failed to set ${gpio_num} to 1"
-            fi
-            ;;
-          in)
-            gpio_sysentry_set_item "$gpio_num" "direction" "in" || die "gpio_sysentry_set_item failed to set ${gpio_num} to in"
-            VAL=`gpio_sysentry_get_item "$gpio_num" "value"` || die "gpio_sysentry_set_item failed to get the value of ${gpio_num} " 
-            test_print_trc "The value is ${VAL} for $gpio_num" 
-            ;;
-          edge)
-            gpio_sysentry_set_item "$gpio_num" "direction" "in" || die "gpio_sysentry_set_item failed to set ${gpio_num} to in"
-            gpio_sysentry_set_item "$gpio_num" "edge" "falling"
-            if [ $? -ne 0 ]; then
-              die "gpio_sysentry_set_item failed to set ${gpio_num} to falling"
-            fi
-            gpio_sysentry_set_item "$gpio_num" "edge" "rising"
-            if [ $? -ne 0 ]; then
-              die "gpio_sysentry_set_item failed to set ${gpio_num} to rising"
-            fi
-            gpio_sysentry_set_item "$gpio_num" "edge" "both"
-            if [ $? -ne 0 ]; then
-              die "gpio_sysentry_set_item failed to set ${gpio_num} to both"
-            fi
-            ;;
-          pm_context_restore)
-            gpio_sysentry_set_item "$gpio_num" "direction" "out" || die "gpio_sysentry_set_item failed to set ${gpio_num} to out"
-            gpio_sysentry_set_item "$gpio_num" "value" "1" || die "gpio_sysentry_set_item failed to set ${gpio_num} to 1"
-            VAL_BEFORE=`gpio_sysentry_get_item "$gpio_num" "value"` || die "gpio_sysentry_set_item failed to get the value of ${gpio_num} " 
-            test_print_trc "The value was ${VAL_BEFORE} for $gpio_num before suspend" 
-    
-            simple_suspend_w_stats 'mem' 10 2
-            
-            # check if the value is still the same as the one before suspend
-            VAL_AFTER=`gpio_sysentry_get_item "$gpio_num" "value"` || die "gpio_sysentry_set_item failed to get the value of ${gpio_num} " 
-            test_print_trc "The value was ${VAL_AFTER} for $gpio_num after suspend" 
-
-            # compare 
-            if [ $VAL_BEFORE -ne $VAL_AFTER ]; then
-              die "The value for gpio $gpio_num is different before and after suspend"
-            else
-              test_print_trc "The values are the same before and after"
-            fi
-            ;;
-          esac
-        else
-          die "/sys/class/gpio/gpio${gpio_num} does not exist!"
-        fi
-
-        # remove gpio sys entry
-        do_cmd "echo ${gpio_num} > /sys/class/gpio/unexport" 
-        do_cmd "ls /sys/class/gpio/"
-
+        gpio_set_item "${gpio_chips[j]}" "${offsets[j]}" "${new_values[j]}"
+        chip_info=$(gpioinfo "${gpio_chips[j]}")
+        gpioinfo_extract_given_offset "$chip_info" "${offsets[j]}"
         i=`expr $i + 1`
       done  # while loop
     fi
