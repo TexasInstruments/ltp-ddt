@@ -62,7 +62,7 @@ static int fd = -1;
 static int fd_subdev = -1;
 FILE* fd_ref_tp;
 FILE* fd_ref_tp_temp;
-char* ref_file;
+char ref_file[200];
 int test_pattern_val;
 double fps = 0;
 struct buffer *buffers;
@@ -72,6 +72,7 @@ static int frame_count = 60;
 static int frame_simple_err_count = 0;
 static int frame_direct_err_count = 0;
 struct camera_info OV5640_info={CAMERA_TYPE_OV5640,"OV5640",640,480,5,{}};
+struct camera_info IMX219_info={CAMERA_TYPE_IMX219,"IMX219",640,480,4,{}};
 struct camera_info IMX390_info={CAMERA_TYPE_IMX390,"IMX390",1936,1100,5,{}};
 
 static void errno_exit(const char *s)
@@ -339,19 +340,13 @@ static void change_test_pattern(int fd_subdev,int test_pattern_val)
     ioctl(fd_subdev,VIDIOC_S_CTRL,&ctrl);
 }
 
-static char* get_tp_ref_file(int test_pattern_val)
+static void get_tp_ref_file(char *test_data_file, int test_pattern_val,
+                            char *sensor_name)
 {
-    char tp_str[10];
-    char* test_data_file;
     char *ltproot = getenv("LTPROOT");
-    char *test_data_folder = strcat(ltproot,"/testcases/data/");
-    test_data_folder = strcat(test_data_folder,TCID);
-    test_data_file=strcat(test_data_folder,"/v4l2cap_ov5640_testpattern_");
-    sprintf(tp_str, "%d", test_pattern_val);
-    test_data_file=strcat(test_data_file,tp_str);
-    test_data_file=strcat(test_data_file,".bin");
-
-    return test_data_file;
+    snprintf(test_data_file, 200,
+             "%s/testcases/data/%s/v4l2cap_%s_testpattern_%d.bin", ltproot,
+             TCID, sensor_name, test_pattern_val);
 }
 
 static void init_device(char *camera_name,int test_pattern_val)
@@ -385,7 +380,7 @@ static void init_device(char *camera_name,int test_pattern_val)
     }
     if(strcmp(camera_name,"OV5640")==0)
     {
-        ref_file=get_tp_ref_file(test_pattern_val);
+        get_tp_ref_file(ref_file, test_pattern_val, "ov5640");
         OV5640_info.tp[test_pattern_val].simple_check=1;
         OV5640_info.tp[test_pattern_val].direct_compare=1;
 
@@ -396,9 +391,19 @@ static void init_device(char *camera_name,int test_pattern_val)
                     ref_file, errno, strerror(errno));
             exit(EXIT_FAILURE);
         }
-    }
-    if(strcmp(camera_name,"IMX390")==0)
-    {
+    } else if(strcmp(camera_name,"IMX219")==0) {
+        get_tp_ref_file(ref_file, test_pattern_val, "imx219");
+        IMX219_info.tp[test_pattern_val].simple_check=1;
+        IMX219_info.tp[test_pattern_val].direct_compare=1;
+
+        fd_ref_tp = fopen(ref_file, "rb");
+        if (NULL == fd_ref_tp)
+        {
+            fprintf(stderr, "Cannot open '%s': %d, %s\\n",
+                    ref_file, errno, strerror(errno));
+            exit(EXIT_FAILURE);
+        }
+    } else if(strcmp(camera_name,"IMX390")==0) {
         IMX390_info.tp[test_pattern_val].simple_check=1;
         IMX390_info.tp[test_pattern_val].direct_compare=1;
     }
@@ -525,6 +530,10 @@ int main(int argc, char **argv)
     else if(strcmp(camera_name,"IMX390")==0)
     {
         mainloop(test_pattern_val,IMX390_info);
+    }
+    else if(strcmp(camera_name,"IMX219")==0)
+    {
+        mainloop(test_pattern_val,IMX219_info);
     }
     stop_capturing();
     uninit_device();
