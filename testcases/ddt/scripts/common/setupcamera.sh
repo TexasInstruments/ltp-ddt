@@ -263,7 +263,7 @@ setup_ov2312(){
 }
 
 setup_imx219(){
-    IMX219_CAM_FMT='[fmt:SRGGB8_1X8/1920x1080]'
+    IMX219_CAM_FMT='[fmt:SRGGB10_1X10/640x480]'
     count=0
     for media_id in {0..1}; do
     for name in `media-ctl -d $media_id -p | grep entity | grep imx219 | cut -d ' ' -f 5`; do
@@ -281,6 +281,7 @@ setup_imx219(){
 
         ln -snf $CAM_DEV $CAM_DEV_NAME
         ln -snf $CAM_SUBDEV $CAM_SUBDEV_NAME
+        v4l2-ctl -d/dev/video-rpi-cam$count -v width=640,height=480,pixelformat=RG10
 
         #echo -e "${GREEN}CSI Camera $media_id detected${NOCOLOR}"
         #echo "    device = $CAM_DEV_NAME"
@@ -313,6 +314,7 @@ setup_ov5640(){
 
         ln -snf $CAM_DEV $CAM_DEV_NAME
         ln -snf $CAM_SUBDEV $CAM_SUBDEV_NAME
+        v4l2-ctl -d/dev/video-ov5640-cam$count -v width=640,height=480,pixelformat=UYVY
 
         #echo -e "${GREEN}CSI Camera $media_id detected${NOCOLOR}"
         #echo "    device = $CAM_DEV_NAME"
