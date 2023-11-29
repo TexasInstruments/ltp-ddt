@@ -89,25 +89,27 @@ if [[ "$DEVICE_TYPE" = "mmc" ]]; then
   case $MACHINE in
     j7*-evm)
       regaddr="0x04FB00FE";;
+    am62* | am64xx*)
+      regaddr="0x0FA000FE";;
     *)
-      die "No MMCSD1_HOST_CONTROLLER_VER Register Address is there for this platform";;
+      die "No MMCSD1_HOST_CONTROLLER_VER register address for this platform in ltp-ddt/testcases/ddt/scripts/blk/check_standard.sh";;
   esac
 
 
   if [[ "$regaddr" = "" ]]; then
-    die "No MMCSD1_HOST_CONTROLLER_VER Register Address is there for this platform";
+    die "No MMCSD1_HOST_CONTROLLER_VER register address for this platform in ltp-ddt/testcases/ddt/scripts/blk/check_standard.sh";;
   fi
 
   # Get Expected Register Value
   case $MACHINE in
-    j7*-evm)
+    j7*-evm | am62* | am64xx*)
       expected_val="4";;
     *)
-      die "No expected value is specified for MMCSD1_HOST_CONTROLLER_VER Register for this platform";;
+      die "No expected value specified for MMCSD1_HOST_CONTROLLER_VER register for this platform in ltp-ddt/testcases/ddt/scripts/blk/check_standard.sh";;
   esac
 
   if [[ "$expected_val" = "" ]]; then
-    die "No expected value is specified for MMCSD1_HOST_CONTROLLER_VER Register for this platform";
+    die "No expected value specified for MMCSD1_HOST_CONTROLLER_VER register for this platform in ltp-ddt/testcases/ddt/scripts/blk/check_standard.sh";;
   fi
 
   echo "MMCSD1_HOST_CONTROLLER_VER Register Address : ${regaddr}";
