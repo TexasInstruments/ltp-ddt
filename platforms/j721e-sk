@@ -56,3 +56,4 @@ watchdog
 wlan
 wlan/wl18xx
 wlan/wlcore_sdio
+vtm
