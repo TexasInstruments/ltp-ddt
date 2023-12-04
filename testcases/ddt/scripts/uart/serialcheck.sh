@@ -94,7 +94,7 @@ esac
 case $DRIVER in
 esac
 case $SOC in
-j721|j784)
+j721|j722|j784)
 	PORT="/dev/ttyS6"
 esac
 case $MACHINE in

@@ -30,6 +30,7 @@ case $SOC in
 	j784s4) PREFIX='k3-j784s4-evm-linux-demo';;
 	j721s2) PREFIX='k3-j721s2-evm-linux-demo';;
 	j721e) PREFIX='k3-j721e-evm-linux-demo';;
+	j722s) PREFIX='k3-j722s-evm-linux-demo';;
 	j7200) PREFIX='k3-j7200-evm-linux-demo';;
 	am654) PREFIX='k3-am654-idk-linux-demo';;
 	am62xx) PREFIX='k3-am625-sk-linux-demo';;
