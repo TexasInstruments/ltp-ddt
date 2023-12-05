@@ -350,6 +350,14 @@ get_destip () {
 	echo $dest_ip;
 }
 
+# Returns the base address for the interface
+get_basename () {
+	iface=$1
+	base=$(ethtool -i $iface | grep "bus-info" | awk '{print $2}')
+	echo "${FUNCNAME[0]}: $iface Basename: $base" >&2;
+	echo $base;
+}
+
 #########################################################################################
 ##### INTERFACE LEVEL TESTS #############################################################
 #########################################################################################
@@ -957,6 +965,201 @@ test_mtu_size () {
 	echo 0;
 }
 
+test_pause_frame_server () {
+	iface=$1
+	interface_state=$(cat /sys/class/net/$iface/operstate)
+	server_ip=25.24.50.1
+	echo "${FUNCNAME[0]}: Interface: $iface is $interface_state" >&2;
+	if [[ "$interface_state" == "down" ]]
+	then
+		echo "${FUNCNAME[0]}: Failed as Interface is down" >&2;
+	else
+		$(ethtool -A $iface rx on tx on)
+		$(ifconfig $iface $server_ip)
+		init_rx_pause_frames=$(ethtool -S $iface | grep pause | head -1 | awk '{print $2}')
+		init_tx_pause_frames=$(ethtool -S $iface | grep pause | tail -1 | awk '{print $2}')
+		echo "$(iperf3 -s -B $server_ip)" >&2;
+		cur_rx_pause_frames=$(ethtool -S $iface | grep pause | head -1 | awk '{print $2}')
+		cur_tx_pause_frames=$(ethtool -S $iface | grep pause | tail -1 | awk '{print $2}')
+		diff_rx=$cur_rx_pause_frames-$init_rx_pause_frames
+		diff_tx=$cur_tx_pause_frames-$init_tx_pause_frames
+		if [[ $diff_rx -gt 0 && $diff_tx -gt 0 ]]
+		then
+			echo "${FUNCNAME[0]}: TEST PASSED" >&2;
+			echo 1;
+			return;
+		fi
+	fi
+	echo 0;
+}
+
+
+test_pause_frame_client () {
+	iface=$1
+	time_interval=$2
+	server_ip=25.24.50.1
+	client_ip=25.24.50.$3
+	interface_state=$(cat /sys/class/net/$iface/operstate)
+	echo "${FUNCNAME[0]}: Interface: $iface is $interface_state" >&2;
+	if [[ "$interface_state" == "down" ]]
+	then
+		echo "${FUNCNAME[0]}: Failed as Interface is down" >&2;
+	else
+		$(ethtool -A $iface rx on tx on);
+		$(ifconfig $iface $client_ip);
+		init_rx_pause_frames=$(ethtool -S $iface | grep pause | head -1 | awk '{print $2}')
+		init_tx_pause_frames=$(ethtool -S $iface | grep pause | tail -1 | awk '{print $2}')
+		echo "$(iperf3 -c $server_ip -B $client_ip -u -b0 -t $time_interval --bidir)" >&2;
+		cur_rx_pause_frames=$(ethtool -S $iface | grep pause | head -1 | awk '{print $2}')
+		cur_tx_pause_frames=$(ethtool -S $iface | grep pause | tail -1 | awk '{print $2}')
+		diff_rx=$cur_rx_pause_frames-$init_rx_pause_frames
+		diff_tx=$cur_tx_pause_frames-$init_tx_pause_frames
+		if [[ $diff_rx -gt 0 && $diff_tx -gt 0 ]]
+		then
+			echo "${FUNCNAME[0]}: TEST PASSED" >&2;
+			echo 1;
+			return;
+		fi
+	fi
+	echo 0;
+}
+
+test_interrupt_pacing_server () {
+	iface=$1
+	server_ip=25.24.50.1
+	interface_state=$(cat /sys/class/net/$iface/operstate)
+	echo "${FUNCNAME[0]}: Interface: $iface is $interface_state" >&2;
+	if [[ "$interface_state" == "down" ]]
+	then
+		echo "${FUNCNAME[0]}: Failed as Interface is down" >&2;
+	else
+		$(ifconfig $iface $server_ip)
+		port1=8001
+		port2=8002
+		echo "$(iperf3 -s -p $port1 & iperf3 -s -p $port2)" >&2;
+		echo 1;
+	fi
+}
+
+test_interrupt_pacing_client () {
+	iface=$1
+	server_ip=25.24.50.1
+	client_ip=25.24.50.$2
+	interface_state=$(cat /sys/class/net/$iface/operstate)
+	echo "${FUNCNAME[0]}: Interface: $iface is $interface_state" >&2;
+	if [[ "$interface_state" == "down" ]]
+	then
+		echo "${FUNCNAME[0]}: Failed as Interface is down" >&2;
+	else
+		$(ifconfig $iface $client_ip)
+		port1=8001
+		port2=8002
+		$(ethtool -C $iface tx-usecs 0 rx-usecs 0)
+		iperf3 -c $server_ip -p $port1 -u -b0 > /dev/null &
+		val1=$(mpstat -A -P ALL 1 10 | grep "%idle" -A 1 | grep -v "%idle" | grep -v '^\d*$' | awk '{print $11}')
+		val1="${val1//$'\n'/ }"
+		val1="${val1//  / }"
+		IFS=' ' read -r -a array <<< "$val1"
+		res1=101
+		for element in "${array[@]}"
+		do
+			if [[ "$(echo "$element < $res1" | bc)" -eq 1 ]]
+			then
+				res1=$element
+			fi
+		done
+		echo "CPU idle % without interrupt pacing $res1" >&2;
+		sleep 2
+		$(ethtool -C $iface tx-usecs 250 rx-usecs 250)
+		iperf3 -c $server_ip -p $port2 -u -b0 > /dev/null &
+		val2=$(mpstat -A -P ALL 1 10 | grep "%idle" -A 1 | grep -v "%idle" | grep -v '^\d*$' | awk '{print $11}')
+		val2="${val2//$'\n'/ }"
+		val2="${val2//  / }"
+		IFS=' ' read -r -a array <<< "$val2"
+		res2=101
+		for element in "${array[@]}"
+		do
+			if [[ "$(echo "$element < $res2" | bc)" -eq 1 ]]
+			then
+				res2=$element
+			fi
+		done
+		echo "CPU idle % with interrupt pacing $res2" >&2;
+		$(ethtool -C $iface tx-usecs 0 rx-usecs 0)
+		if [[ $res1 < $res2 ]]
+		then
+			echo "${FUNCNAME[0]}: TEST PASSED" >&2;
+			echo 1;
+			return;
+		fi
+	fi
+	echo 0;
+}
+
+test_dma_rate_limit_server () {
+	iface=$1
+	server_ip=25.24.50.1
+	interface_state=$(cat /sys/class/net/$iface/operstate)
+	echo "${FUNCNAME[0]}: Interface: $iface is $interface_state" >&2;
+	if [[ "$interface_state" == "down" ]]
+	then
+		echo "${FUNCNAME[0]}: Failed as Interface is down" >&2;
+	else
+		echo "$(iperf3 -s)" >&2;
+	fi
+}
+
+
+
+test_dma_rate_limit_client () {
+	iface=$1
+	server_ip=25.24.50.1
+	client_ip=25.24.50.3
+	interface_state=$(cat /sys/class/net/$iface/operstate)
+	echo "${FUNCNAME[0]}: Interface: $iface is $interface_state" >&2;
+	if [[ "$interface_state" == "down" ]]
+	then
+		echo "${FUNCNAME[0]}: Failed as Interface is down" >&2;
+	else
+		echo 0 > /sys/class/net/$iface/queues/tx-0/tx_maxrate
+		init_bandwidth=$(iperf3 -c $server_ip -b0 -t10 --forceflush | awk '/[0-9]]/{sub(/.*]/,"");print $5}' | tail -1)
+		echo "Bandwidth befor DMA Rate Limiting --> $init_bandwidth" >&2;
+		echo 200 > /sys/class/net/eth0/queues/tx-0/tx_maxrate
+		curr_bandwidth=$(iperf3 -c $server_ip -b0 -t10 --forceflush | awk '/[0-9]]/{sub(/.*]/,"");print $5}' | tail -1)
+		echo "Bandwidth after DMA Rate Limiting to 200 Mbits --> $curr_bandwidth" >&2;
+		if [[ $curr_bandwidth -lt 200 ]]
+		then
+			echo 0 > /sys/class/net/$iface/queues/tx-0/tx_maxrate
+			echo "${FUNCNAME[0]}: TEST PASSED" >&2;
+			echo 1;
+			return;
+		fi
+		echo 0 > /sys/class/net/$iface/queues/tx-0/tx_maxrate
+	fi
+	echo 0;
+}
+
+# Enable Hardware Switch mode for the interfaces provided
+test_switch_mode () {
+	base=$1
+	iface1=$2
+	iface2=$3
+	devlink dev param set platform/$base name switch_mode value true cmode runtime
+	ip link add name br0 type bridge
+	ip link set dev br0 type bridge ageing_time 1000
+	ip link set dev $iface1 up
+	ip link set dev $iface2 up
+	sleep 10
+	ip link set dev $iface1 master br0
+	ip link set dev $iface2 master br0
+	ip link set dev br0 up
+	ip link set dev br0 type bridge vlan_filtering 1
+	bridge vlan add dev br0 vid 1 self
+	bridge vlan add dev br0 vid 1 pvid untagged self
+	bridge vlan add dev $iface1 vid 100 master
+	bridge vlan add dev $iface2 vid 100 master
+}
+
 #########################################################################################
 ##### DRIVER LEVEL TESTS ################################################################
 #########################################################################################
@@ -1444,3 +1647,115 @@ test_drv_mtu_size(){
 	echo "${FUNCNAME[0]}: TEST PASSED" >&2;
 	echo 1;
 }
+
+
+# For all interfaces corresponding to drivers, verifies
+# whether it can send/receive the pause frame or not.
+test_drv_pause_frame(){
+	driver=$1
+	echo "${FUNCNAME[0]}: Testing for driver: $driver " >&2;
+	interfaces=$(get_eth_list)
+	iter=3
+	for iface in $interfaces
+	do
+		if [[ "$driver" == "$(get_if_drv $iface)" ]]
+		then
+			check=0
+			time_interval=$2
+			check=$(test_pause_frame_client $iface $time_interval $iter);
+			if [[ $check == 0 ]]
+			then
+				echo 0;
+				return;
+			fi
+		fi
+		iter=$(($iter+1));
+	done
+	echo "${FUNCNAME[0]}: TEST PASSED" >&2;
+	echo 1;
+}
+
+# For all interfaces corresponding to drivers, verifies
+# whether cpu performance increases or not with changing the
+# traffic service time from 0 to 250.
+test_drv_interrupt_pacing(){
+	driver=$1
+	echo "${FUNCNAME[0]}: Testing for driver: $driver " >&2;
+	interfaces=$(get_eth_list)
+	iter=3
+	for iface in $interfaces
+	do
+		if [[ "$driver" == "$(get_if_drv $iface)" ]]
+		then
+			check=0
+			check=$(test_interrupt_pacing_client $iface $iter);
+			if [[ $check == 0 ]]
+			then
+				echo 0;
+				return;
+			fi
+		fi
+		iter=$(($iter+1));
+	done
+	echo "${FUNCNAME[0]}: TEST PASSED" >&2;
+	echo 1;
+}
+
+# For all interfaces corresponding to drivers, verifies
+# whether it can limit the bandwidth to 200 Mbps or not.
+test_drv_dma_rate_limit(){
+	driver=$1
+	echo "${FUNCNAME[0]}: Testing for driver: $driver" >&2;
+	interfaces=$(get_eth_list)
+	iter=3
+	for iface in $interfaces
+	do
+		if [[ "$driver" == "$(get_if_drv $iface)" ]]
+		then
+			check=$(test_dma_rate_limit_client $iface $iter)
+			if [[ $check == 0 ]]
+			then
+				echo 0;
+				return;
+			fi
+		fi
+		iter=$(($iter+1));
+	done
+	echo "${FUNCNAME[0]}: TEST PASSED" >&2;
+	echo 1;
+}
+
+# For the interfaces corresponding to drivers and base address,
+# Enables the switch mode
+test_drv_switch_mode () {
+	driver=$1
+	echo "${FUNCNAME[0]}: Testing for driver: $driver" >&2;
+	interfaces=$(get_eth_list)
+	iter=0
+	base=$2
+	declare -A iface_arr
+	for iface in $interfaces
+	do
+		interface_state=$(cat /sys/class/net/$iface/operstate)
+		basename=$(get_basename $iface)
+		if [[ "$driver" == "$(get_if_drv $iface)" && "$interface_state" == "up" && "$basename" == "$base" ]]
+		then
+			iface_arr[$iter]=$iface
+			iter=$(($iter+1))
+			if [[ $iter -gt 1 ]]
+			then
+				echo "Iter value $iter" >&2;
+				break
+			fi
+		fi
+	done
+	if [[ $iter -lt 2 ]]
+	then
+		echo "Failed: Not enough interfaces are up" >&2;
+		echo 0;
+		return;
+	fi
+	$(test_switch_mode $base ${iface_arr[0]} ${iface_arr[1]})
+	echo 1;
+}
+
