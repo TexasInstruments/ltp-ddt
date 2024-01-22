@@ -23,6 +23,7 @@ usage()
 ################################ CLI Params ####################################
 p_interface="eth0"
 p_direction="up"
+p_timeout=45
 while getopts  ":h:d:i:" arg
 do case $arg in
         h)      usage;;
@@ -36,6 +37,17 @@ if [ $p_direction == "up" ]
 then
 	do_cmd "ifconfig $p_interface up"
 	sleep 1
+
+	operstate=`cat /sys/class/net/$p_interface/operstate`
+
+	count = 0
+	while [ "$operstate" == "down" -a "$count" -lt "$p_timeout" ];
+	do
+		sleep 1
+		operstate=`cat /sys/class/net/$p_interface/operstate`
+		let count++
+	done
+
 	do_cmd "udhcpc -n -i $p_interface"
 	operstate=`cat /sys/class/net/$p_interface/operstate`
 	if [ "$operstate" == "down" ]
