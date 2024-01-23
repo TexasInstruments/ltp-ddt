@@ -43,10 +43,7 @@ ifneq ($(WITH_POWER_MANAGEMENT_TESTSUITE),yes)
 UNWANTED_FILES		+= power_management_tests
 endif
 
-
-#INSTALL_TARGETS		:= $(filter-out $(UNWANTED_FILES),$(notdir $(patsubst $(abs_srcdir)/%,%,$(wildcard $(abs_srcdir)/*))))
-# Add PROMOTED LTP test scenario files that should be installed with ltp-ddt
-INSTALL_TARGETS   := timers syscalls math sched mm ipc nptl pipes realtime cpuhotplug cve
+INSTALL_TARGETS		:= $(filter-out $(UNWANTED_FILES),$(notdir $(patsubst $(abs_srcdir)/%,%,$(wildcard $(abs_srcdir)/*))))
 
 MAKE_TARGETS		:=
 
