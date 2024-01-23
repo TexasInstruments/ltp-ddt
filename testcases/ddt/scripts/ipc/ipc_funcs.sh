@@ -1123,8 +1123,11 @@ list_rprocs()
     am64xx|am62xx|am62xxsip)
       echo "78000000.r5f 78400000.r5f 5000000.m4fss"
     ;;
-    am62pxx|j722)
+    am62pxx)
       echo "78000000.r5f 79000000.r5f"
+    ;;
+    j722)
+      echo "78000000.r5f 78400000.r5f 79000000.r5f 7e000000.dsp 7e200000.dsp"
     ;;
     am65xx)
       echo "41000000.r5f"
