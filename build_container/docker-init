@@ -1,0 +1,60 @@
+#!/bin/bash
+
+get_attribs() {
+	local file_stats file_to_test useful_attribs
+	if file_to_test=$(realpath "$1") && [[ $2 =~ ^[0-9]+$ ]] ; then
+		useful_attribs=$(stat "$file_to_test" -t)
+		read -r -a file_stats <<< "${useful_attribs#"$file_to_test"}"
+		echo "${file_stats["$2"]}"
+	else
+		return 1
+	fi
+}
+
+get_build_uid() {
+	get_attribs /workspace 3
+}
+
+get_build_gid() {
+	get_attribs /workspace 4
+}
+
+if NEW_GID=$(get_build_gid) && NEW_UID=$(get_build_uid); then
+	# bypass everything if podman is remapping the id to root
+	if [ "${NEW_UID}" == "0" ]; then
+		if [ "$(id -u)" == "0" ]; then
+			exec dumb-init -- "$@"
+		else
+			echo "Unable to resolve ns mapping!"
+		fi
+	fi
+
+	# change the uid and gid of user otherwise
+	[ "$NEW_GID" != "$(id -u user)" ] && groupmod -g "${NEW_GID}" user
+	[ "$NEW_UID" != "$(id -g user)" ] && usermod -u "${NEW_UID}" user
+else
+	echo "Not able to detect UID/GID for remapping!"
+fi
+
+if [ -z "${TI_LINUX_KERNEL_BRANCH}" ];then
+	TI_LINUX_KERNEL_BRANCH="ti-linux-6.1.y-cicd"
+fi
+if [ -f "/dependencies/ti-linux-kernel/.docker-local" ]; then
+	echo "Warning: /dependencies/ti-linux-kernel was not mounted, using the local copy in container"
+	pushd /dependencies/ti-linux-kernel
+	echo "Info: Pulling latest updates into /dependencies/ti-linux-kernel"
+	git pull
+	git checkout ${TI_LINUX_KERNEL_BRANCH}
+	make CROSS_COMPILE=aarch64-none-linux-gnu- distclean
+	make CROSS_COMPILE=aarch64-none-linux-gnu- headers_install
+	git status
+	popd
+else
+	echo "Info: Using user specified ti-kernel-linux repo mounted to /dependencies/ti-linux-kernel"
+fi
+
+if [ "$(id -u)" == "$(id -u user)" ]; then
+	exec dumb-init -- "$@"
+else
+	exec dumb-init -- su user -s /bin/bash --session-command "$@"
+fi
