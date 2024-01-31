@@ -42,7 +42,7 @@ run_configure()
 
 configure_in_tree()
 {
-	run_configure ./configure $CONFIGURE_OPTS_IN_TREE --prefix=$prefix $@
+	run_configure ./configure $CONFIGURE_OPTS_IN_TREE $@
 }
 
 configure_out_tree()
@@ -132,12 +132,14 @@ test_out_tree()
 
 install_in_tree()
 {
-	make $MAKE_OPTS install
+	install -d "$prefix/opt/ltp/runtest/ddt"
+	make $MAKE_OPTS DESTDIR="$prefix" install
 }
 
 install_out_tree()
 {
 	cd $BUILD_DIR
+	install -d "$prefix/opt/ltp/runtest/ddt"
 	make $MAKE_OPTS_OUT_TREE DESTDIR="$prefix" SKIP_IDCHECK=1 install
 }
 
@@ -153,6 +155,7 @@ Options:
 -c CC    Define compiler (\$CC variable), needed only for configure step
 -i       Run 'make install', needed only for install step
 -o TREE  Specify build tree, default: $DEFAULT_TREE
+-k DIR   Path to the kernel usr/include directory
 -p DIR   Change installation directory. For in-tree build is this value passed
          to --prefix option of configure script. For out-of-tree build is this
          value passed to DESTDIR variable (i.e. sysroot) of make install
@@ -195,7 +198,7 @@ tree="$DEFAULT_TREE"
 install=
 run=
 
-while getopts "c:hio:p:r:t:" opt; do
+while getopts "c:hio:k:p:r:t:" opt; do
 	case "$opt" in
 	c) CC="$OPTARG";;
 	h) usage; exit 0;;
@@ -204,6 +207,10 @@ while getopts "c:hio:p:r:t:" opt; do
 		in|out) tree="$OPTARG";;
 		*) echo "Wrong build tree '$OPTARG'" >&2; usage; exit 1;;
 		esac;;
+	k) KERNEL_USR_INC="$OPTARG";
+        MAKE_OPTS="$MAKE_OPTS KERNEL_USR_INC=${KERNEL_USR_INC} ";
+        MAKE_OPTS_OUT_TREE="$MAKE_OPTS_OUT_TREE KERNEL_USR_INC=${KERNEL_USR_INC}"
+	   ;;
 	p) prefix="$OPTARG";;
 	r) case "$OPTARG" in
 		autotools|configure|build|test|test-c|test-shell|install) run="$OPTARG";;
