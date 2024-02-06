@@ -20,11 +20,10 @@
 source "common.sh"
 
 
-i2c_nodes=`ls /dev/i2c*` || die "No I2C nodes availble"
-i2cbus_numbers=""
-for i2c_node in $i2c_nodes; do
-  i2cbus_num=`echo $i2c_node | awk '{print substr ($0, length($0))}'`
-
+i2cbus_numbers=`dmesg | grep -c omap_i2c`
+((i2cbus_numbers=i2cbus_numbers-1))
+for i2cbus_num in $(seq 0 $i2cbus_numbers)
+do
   # check the speed
   speed=`dmesg |grep -i i2c |grep "i2c: bus ${i2cbus_num}" |grep -Eo '[[:digit:]]+\s+kHz' `
   if [ -z "$speed" ]; then
