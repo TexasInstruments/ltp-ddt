@@ -43,7 +43,7 @@ for i in range(len(planes)):
     fbs.append(pykms.DumbFramebuffer(card, w, h, pykms.PixelFormat.RGB888))
     pykms.draw_rect(fbs[i], 0, 0, int(w/l_div), int(h/l_div), pykms.RGB(255*(1 & 2**(i%3)), 255*((2 & 2**(i%3)) >> i), 255*((4 & 2**(i%3)) >> i)))
 
-if not re.match("am62.*|am65.*|j721.*|j722.*|j784.*|am68.*|am69.*|am62xxsip.*|am62p.*", platform, re.I):
+if not re.match("am62.*|am65.*|j721.*|j722.*|j784.*|am68.*|am69.*|am62xxsip.*|am62p.*|am5.*", platform, re.I):
     crtc.set_props({
         "trans-key-mode": 0,
         "trans-key": 0,
