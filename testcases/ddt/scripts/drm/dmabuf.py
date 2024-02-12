@@ -21,7 +21,7 @@ conn = res.reserve_connector()
 crtc = res.reserve_crtc(conn)
 mode = conn.get_default_mode()
 
-origfb = pykms.DumbFramebuffer(card, mode.hdisplay, mode.vdisplay, "XR24")
+origfb = pykms.DmabufFramebuffer(card, mode.hdisplay, mode.vdisplay, "XR24")
 
 fb = pykms.ExtFramebuffer(card, origfb.width, origfb.height, origfb.format,
 		[origfb.fd(0)], [origfb.stride(0)], [origfb.offset(0)])
