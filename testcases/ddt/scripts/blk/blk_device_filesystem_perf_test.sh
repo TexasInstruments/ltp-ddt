@@ -49,7 +49,8 @@ do_fio()
 {
   IO_OP=$1
   RUNTIME=$2
-  do_cmd "fio --name ${DEVICE_TYPE}_TEST --directory=$MNT_POINT --size=$FILE_SIZE --rw=$IO_OP --blocksize=$BUFFER_SIZE --ioengine=$FIO_IOENGINE --iodepth=$FIO_IODEPTH --numjobs=${FIO_NUMJOBS} --direct=1 --group_reporting --runtime=${RUNTIME} --time_based --eta=never &"
+  TEST_METHOD=$3
+  do_cmd "fio --name ${DEVICE_TYPE}_TEST $TEST_METHOD --size=$FILE_SIZE --rw=$IO_OP --blocksize=$BUFFER_SIZE --ioengine=$FIO_IOENGINE --iodepth=$FIO_IODEPTH --numjobs=${FIO_NUMJOBS} --direct=1 --group_reporting --runtime=${RUNTIME} --time_based --eta=never &"
   do_cmd sleep 5
   do_cmd mpstat -P ALL $(( $RUNTIME - 5 )) 1 2>&1 > mpstat.out
   do_cmd wait
@@ -212,9 +213,17 @@ for BUFFER_SIZE in $BUFFER_SIZES; do
     fio)
       # call fio
       # fio --name TEST --directory=/run/media/nvme0n1p3/ --size=10g --rw=write --blocksize=4m --ioengine=libaio --iodepth=4 --direct=1 --group_reporting --runtime=30 --time_base --eta=never
-      do_fio 'write' $FIO_W_RUNTIME 
+      do_fio 'write' $FIO_W_RUNTIME --directory=$MNT_POINT
       sleep 1
-      do_fio 'read' $FIO_R_RUNTIME 
+      do_fio 'read' $FIO_R_RUNTIME --directory=$MNT_POINT
+      ;;
+    fio_raw)
+      # call fio_raw
+      # fio --name TEST --filename=/dev/mmcblk0p1 --size=10g --rw=write --blocksize=4m --ioengine=libaio --iodepth=4 --direct=1 --group_reporting --runtime=30 --time_base --eta=never
+      do_cmd blk_device_umount.sh -m "$MNT_POINT"
+      do_fio 'write' $FIO_W_RUNTIME --filename=$DEV_NODE
+      sleep 1
+      do_fio 'read' $FIO_R_RUNTIME --filename=$DEV_NODE
       ;;
     *) 
       test_print_trc "Checking if Buffer Size is valid"
