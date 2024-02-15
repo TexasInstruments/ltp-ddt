@@ -55,9 +55,10 @@ done
 test_print_trc "Umounting device"
 test_print_trc "MNT_POINT: $MNT_POINT"
 
-do_cmd "umount $MNT_POINT"
-do_cmd "rm -rf $MNT_POINT"
-
+if mountpoint $MNT_POINT; then
+  do_cmd "umount $MNT_POINT"
+  do_cmd "rm -rf $MNT_POINT"
+fi
 
 
 
