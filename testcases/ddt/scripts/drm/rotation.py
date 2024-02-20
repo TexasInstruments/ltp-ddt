@@ -4,7 +4,7 @@ import pykms
 import time
 from enum import Enum
 
-card = pykms.OmapCard()
+card = pykms.Card()
 
 res = pykms.ResourceManager(card)
 conn = res.reserve_connector()
