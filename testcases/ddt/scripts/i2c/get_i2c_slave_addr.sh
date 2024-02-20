@@ -305,7 +305,7 @@ case $MACHINE in
               ;;
           esac
       ;;
-      am62* | am64*)
+      am62* | am64* | j722s*)
           case $SLAVE_DEVICE in
               temp_sensor)
                   SLAVE_ADDR=0x48
