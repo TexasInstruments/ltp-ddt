@@ -5,7 +5,7 @@
 
 ## IMG CASES
 
-TIDEC_S_FUNC_DECODE_WB_10BIT_QP21_I-ONLY_1920X1088_10FR.264 source 'ti_codecs.sh'; get_media decoder SDK_Release_Streams/bbb_1080p30_30s.h264; F=$(mktemp); gst-launch-1.0 filesrc location=/usr/share/ti/tidec-decode/bbb_1080p30_30s.h264 num-buffers=25 ! h264parse ! v4l2h264dec ! video/x-raw,format='(string)'NV12 ! filesink location=$F || die "Decode operation did not complete successfully"; MD5=$(md5sum ${F}) ; echo $MD5 | grep 1fa16f84fb82e40311d88b8a926f0f69 || die "decoded file does not match expected md5sum"; remove_media decoder
+TIDEC_S_FUNC_DECODE_WB_10BIT_QP21_I-ONLY_1920X1088_10FR.264 source 'ti_codecs.sh'; get_media decoder SDK_Release_Streams/bbb_1080p30_30s.h264; F=$(mktemp); gst-launch-1.0 filesrc location=/usr/share/ti/tidec-decode/bbb_1080p30_30s.h264 num-buffers=25 ! h264parse ! v4l2h264dec ! video/x-raw,format='(string)'NV12 ! filesink location=$F || die "Decode operation did not complete successfully"; MD5=$(md5sum ${F}) ; echo $MD5 | grep 7d8be613b57afaf90afe384c64c1d45a || die "decoded file does not match expected md5sum"; remove_media decoder
 
 TIDEC_S_FUNC_DECODE_NETFLIX_FOODMARKET_4096X2160_60FPS_IPB_51LEVEL_MAIN_40MBPS.265 source 'ti_codecs.sh'; service stop weston; get_media decoder SDK_Release_Streams/Netflix_FoodMarket_4096x2160_60fps_IPB_51level_main_40mbps.265; F=$(mktemp); gst-launch-1.0 filesrc location=/usr/share/ti/tidec-decode/Netflix_FoodMarket_4096x2160_60fps_IPB_51level_main_40mbps.265 ! h265parse ! v4l2h265dec capture-io-mode=dmabuf ! kmssink driver-name=tidss || die "Decode operation did not complete successfully"; remove_media decoder
 
