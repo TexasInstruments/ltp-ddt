@@ -11,10 +11,7 @@ def usage():
 
 if len(sys.argv) != 2 : usage()
 
-if re.match('dra7.*|am5.*',sys.argv[1],re.I):
-	card = pykms.OmapCard()
-else:
-	card = pykms.Card()
+card = pykms.Card()
 
 res = pykms.ResourceManager(card)
 conn = res.reserve_connector()
