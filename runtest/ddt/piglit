@@ -13,3 +13,5 @@ PIGLIT_L_RGB565_ALL source 'common.sh'; swapfile_create; piglit run deqp_egl deq
 PIGLIT_L_SRGB_ALL source 'common.sh'; swapfile_create; piglit run deqp_egl deqp_gles31 deqp_vk results -t ".*srgb.*"; piglit_exit=$?; output=$(piglit summary console results -p); if [ $piglit_exit != 0 ] || echo "${output}" | grep -q 'failed$'; then die "${output}"; fi
 
 PIGLIT_L_YUV_ALL source 'common.sh'; swapfile_create; piglit run deqp_egl deqp_gles31 deqp_vk results -t ".*yuv.*"; piglit_exit=$?; output=$(piglit summary console results -p); if [ $piglit_exit != 0 ] || echo "${output}" | grep -q 'failed$'; then die "${output}"; fi
+
+PIGLIT_L_LINEAR_ALL source 'common.sh'; swapfile_create; piglit run deqp_egl deqp_gles31 deqp_vk results -t ".*linear.*"; piglit_exit=$?; output=$(piglit summary console results -p); if [ $piglit_exit != 0 ] || echo "${output}" | grep -q 'failed$'; then die "${output}"; fi
