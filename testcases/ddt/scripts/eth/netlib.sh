@@ -1537,6 +1537,7 @@ test_drv_phy_mode_ping () {
 	phy_mode=$2
 	echo "${FUNCNAME[0]}: Testing for driver: $driver" >&2;
 	interfaces=$(get_eth_list)
+	count=0
 	### Bring up all interfaces.
 	for iface in $interfaces
 	do
@@ -1558,10 +1559,17 @@ test_drv_phy_mode_ping () {
 				then
 					echo 0;
 					return;
+				else
+					count=$(($count+1));
 				fi
 			fi
 		fi
 	done
+	if [[ $count == 0 ]]
+	then
+		echo 0;
+		return;
+	fi
 	echo "${FUNCNAME[0]}: TEST PASSED" >&2;
 	echo 1;
 }
