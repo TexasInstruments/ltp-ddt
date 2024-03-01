@@ -33,3 +33,5 @@ MMC_L_PERF_SDHC_EXT4 source "common.sh"; install_modules.sh "mmc"; blk_device_fi
 
 MMC_S_PERF_SDHC_EXT4_FIO_QUICK source 'common.sh'; install_modules.sh "mmc"; do_cmd 'blk_device_filesystem_perf_test.sh -p "fio" -f "ext4" -s 1g -B "4m" -d "mmc" '
 MMC_L_PERF_SDHC_EXT4_FIO_1G source 'common.sh'; install_modules.sh "mmc"; do_cmd 'blk_device_filesystem_perf_test.sh -p "fio" -f "ext4" -s 1g -B "4m 1m 256k 4k" -d "mmc" '
+
+MMC_L_PERF_RAW_FIO_1G source 'common.sh'; install_modules.sh "mmc"; do_cmd 'blk_device_filesystem_perf_test.sh -p "fio_raw" -s 1g -B "4m 1m 256k 4k" -d "mmc" '
