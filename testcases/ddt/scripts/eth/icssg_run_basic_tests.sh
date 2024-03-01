@@ -8,6 +8,7 @@ source "netlib.sh"
 
 driver=$1
 test_to_run=$2
+optargs=${@:3};
 
 interfaces=$(get_eth_list)
 
@@ -36,7 +37,14 @@ then
 fi
 
 result=0;
-result=$($test_to_run $driver);
+
+echo "Executing test: $testname for driver: $driver" >&2;
+if [[ -z "$optargs" ]]
+then
+        result=$($test_to_run $driver);
+else
+        result=$($test_to_run $driver $optargs);
+fi
 
 if [[ $result != 1 ]]
 then

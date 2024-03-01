@@ -18,3 +18,4 @@ ETH_XS_FUNC_ICSSG_RX_CONFIG source "common.sh"; icssg_run_basic_tests.sh "icssg-
 ETH_XS_FUNC_ICSSG_IP_CONFIG source "common.sh"; icssg_run_basic_tests.sh "icssg-prueth" test_drv_ip_config
 ETH_XS_FUNC_ICSSG_MAC_CONFIG source "common.sh"; icssg_run_basic_tests.sh "icssg-prueth" test_drv_mac_config
 ETH_XS_FUNC_ICSSG_MTU_CONFIG source "common.sh"; icssg_run_basic_tests.sh "icssg-prueth" test_drv_mtu_config
+ETH_XS_FUNC_ICSSG_MII_PING source "common.sh"; icssg_run_basic_tests.sh "icssg-prueth" test_drv_phy_mode_ping mii
