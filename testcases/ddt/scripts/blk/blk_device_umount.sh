@@ -31,12 +31,15 @@ exit 0
 
 ############################### CLI Params ###################################
 
-while getopts  :m:d:f:h arg
+while getopts  :m:d:f:n:ha arg
 do case $arg in
         m)      
 		            MNT_POINT="$OPTARG";;
+        n)      
+                DEV_NODE="$OPTARG";;
         d)      DEVICE_TYPE="$OPTARG";;
         f)      FS_TYPE="$OPTARG";;
+        a)      UNMOUNT_ALL=1;;
         h)      usage;;
         :)      test_print_trc "$0: Must supply an argument to -$OPTARG." >&2
                 exit 1
@@ -49,16 +52,31 @@ do case $arg in
 esac
 done
 
+do_unmount()
+{
+  MNT_POINT=$1;
+  test_print_trc "Umounting device"
+  test_print_trc "MNT_POINT: $MNT_POINT"
+
+  if mountpoint $MNT_POINT; then
+    do_cmd "umount $MNT_POINT"
+    do_cmd "rm -rf $MNT_POINT"
+  fi
+}
+
 ############################ DEFAULT Params #######################
 ############# Do the work ###########################################
 # TODO: don't hardcode ubi node and volume name
-test_print_trc "Umounting device"
-test_print_trc "MNT_POINT: $MNT_POINT"
 
-if mountpoint $MNT_POINT; then
-  do_cmd "umount $MNT_POINT"
-  do_cmd "rm -rf $MNT_POINT"
-fi
-
-
+if [ $UNMOUNT_ALL -eq 1 ]; then 
+  mount_points=`findmnt -o TARGET ${DEV_NODE}`
+  for mount_point in $mount_points; do
+    # mount_point=`echo ${mount_point} | tr -d ' '`
+    if [[ "$mount_point" != "TARGET" ]]; then
+      do_unmount $mount_point
+    fi
+  done
+else
+  do_unmount $MNT_POINT;
+fi;
 
