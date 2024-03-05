@@ -220,7 +220,7 @@ for BUFFER_SIZE in $BUFFER_SIZES; do
     fio_raw)
       # call fio_raw
       # fio --name TEST --filename=/dev/mmcblk0p1 --size=10g --rw=write --blocksize=4m --ioengine=libaio --iodepth=4 --direct=1 --group_reporting --runtime=30 --time_base --eta=never
-      do_cmd blk_device_umount.sh -m "$MNT_POINT"
+      do_cmd blk_device_umount.sh -a -n "${DEV_NODE}"
       do_fio 'write' $FIO_W_RUNTIME --filename=$DEV_NODE
       sleep 1
       do_fio 'read' $FIO_R_RUNTIME --filename=$DEV_NODE
