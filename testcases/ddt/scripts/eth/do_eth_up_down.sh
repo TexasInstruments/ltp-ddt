@@ -40,7 +40,7 @@ then
 
 	operstate=`cat /sys/class/net/$p_interface/operstate`
 
-	count = 0
+	count=0
 	while [ "$operstate" == "down" -a "$count" -lt "$p_timeout" ];
 	do
 		sleep 1
