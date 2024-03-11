@@ -445,8 +445,9 @@ swapfile_create() {
       return 0
     else
       printf '%s\n' "Attempting to remounting swapfile ${DDT_SWAPFILE}"
-      swapon "$DDT_SWAPFILE"
-      return $?
+      if ! swapon "$DDT_SWAPFILE"; then
+	die "Swapfile creation failed! Assuming test will not pass!"
+      fi
     fi
   else
     printf '%s\n' "Creating swapfile ${DDT_SWAPFILE}"
@@ -454,8 +455,9 @@ swapfile_create() {
     dd if=/dev/zero of="$DDT_SWAPFILE" bs=4k count=250000 conv=fsync status=progress
     chmod 0600 "$DDT_SWAPFILE"
     mkswap "$DDT_SWAPFILE"
-    swapon "$DDT_SWAPFILE"
-    return $?
+    if ! swapon "$DDT_SWAPFILE"; then
+      die "Swapfile creation failed! Assuming test will not pass!"
+    fi
   fi
 }
 
