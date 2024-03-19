@@ -33,6 +33,7 @@
 /hugetlb/hugemmap/hugemmap29
 /hugetlb/hugemmap/hugemmap30
 /hugetlb/hugemmap/hugemmap31
+/hugetlb/hugemmap/hugemmap32
 /hugetlb/hugeshmat/hugeshmat01
 /hugetlb/hugeshmat/hugeshmat02
 /hugetlb/hugeshmat/hugeshmat03
@@ -52,6 +53,7 @@
 /ksm/ksm04
 /ksm/ksm05
 /ksm/ksm06
+/ksm/ksm07
 /mem/mem02
 /mmapstress/mmap-corruption01
 /mmapstress/mmapstress01

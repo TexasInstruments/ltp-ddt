@@ -1,24 +1,6 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*
  * Copyright (C) 2014 Cyril Hrubis chrubis@suse.cz
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of version 2 of the GNU General Public License as
- * published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it would be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- *
- * Further, this software is distributed without any warranty that it is
- * free of the rightful claim of any third person regarding infringement
- * or the like.  Any license provided herein, whether implied or
- * otherwise, applies only to this software file.  Patent licenses, if
- * any, provided herein do not apply to combinations of this program with
- * other software, or any other product whatsoever.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, write the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
 #include <sys/types.h>
@@ -38,6 +20,7 @@
 #include "lapi/syscalls.h"
 #include "test.h"
 #include "safe_macros.h"
+#include "tst_device.h"
 
 #ifndef LOOP_CTL_GET_FREE
 # define LOOP_CTL_GET_FREE 0x4C82
@@ -50,17 +33,37 @@
 #define UUID_STR_SZ 37
 #define UUID_FMT "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x"
 
-static char dev_path[1024];
+static char dev_path[PATH_MAX];
 static int device_acquired;
 static unsigned long prev_dev_sec_write;
 
-static const char *dev_variants[] = {
+static const char * const dev_loop_variants[] = {
 	"/dev/loop%i",
 	"/dev/loop/%i",
 	"/dev/block/loop%i"
 };
 
-static int set_dev_path(int dev, char *path, size_t path_len)
+static const char * const dev_variants[] = {
+	"/dev/%s",
+	"/dev/block/%s"
+};
+
+static int set_dev_loop_path(int dev, char *path, size_t path_len)
+{
+	unsigned int i;
+	struct stat st;
+
+	for (i = 0; i < ARRAY_SIZE(dev_loop_variants); i++) {
+		snprintf(path, path_len, dev_loop_variants[i], dev);
+
+		if (stat(path, &st) == 0 && S_ISBLK(st.st_mode))
+			return 0;
+	}
+
+	return 1;
+}
+
+static int set_dev_path(char *dev, char *path, size_t path_len)
 {
 	unsigned int i;
 	struct stat st;
@@ -69,17 +72,17 @@ static int set_dev_path(int dev, char *path, size_t path_len)
 		snprintf(path, path_len, dev_variants[i], dev);
 
 		if (stat(path, &st) == 0 && S_ISBLK(st.st_mode))
-			return 1;
+			return 0;
 	}
 
-	return 0;
+	return 1;
 }
 
 int tst_find_free_loopdev(char *path, size_t path_len)
 {
 	int ctl_fd, dev_fd, rc, i;
 	struct loop_info loopinfo;
-	char buf[1024];
+	char buf[PATH_MAX];
 
 	/* since Linux 3.1 */
 	ctl_fd = open(LOOP_CONTROL_FILE, O_RDWR);
@@ -88,8 +91,8 @@ int tst_find_free_loopdev(char *path, size_t path_len)
 		rc = ioctl(ctl_fd, LOOP_CTL_GET_FREE);
 		close(ctl_fd);
 		if (rc >= 0) {
-			if (path)
-				set_dev_path(rc, path, path_len);
+			if (path && set_dev_loop_path(rc, path, path_len))
+				tst_brkm(TBROK, NULL, "Could not stat loop device %i", rc);
 			tst_resm(TINFO, "Found free device %d '%s'",
 				rc, path ?: "");
 			return rc;
@@ -103,7 +106,7 @@ int tst_find_free_loopdev(char *path, size_t path_len)
 	break;
 	case EACCES:
 		tst_resm(TINFO | TERRNO,
-		         "Not allowed to open " LOOP_CONTROL_FILE ". "
+			 "Not allowed to open " LOOP_CONTROL_FILE ". "
 			 "Are you root?");
 	break;
 	default:
@@ -116,7 +119,7 @@ int tst_find_free_loopdev(char *path, size_t path_len)
 	 */
 	for (i = 0; i < 256; i++) {
 
-		if (!set_dev_path(i, buf, sizeof(buf)))
+		if (set_dev_loop_path(i, buf, sizeof(buf)))
 			continue;
 
 		dev_fd = open(buf, O_RDONLY);
@@ -239,7 +242,8 @@ int tst_detach_device_by_fd(const char *dev, int dev_fd)
 	int ret, i;
 
 	/* keep trying to clear LOOPDEV until we get ENXIO, a quick succession
-	 * of attach/detach might not give udev enough time to complete */
+	 * of attach/detach might not give udev enough time to complete
+	 */
 	for (i = 0; i < 40; i++) {
 		ret = ioctl(dev_fd, LOOP_CLR_FD, 0);
 
@@ -340,7 +344,7 @@ const char *tst_acquire_device_(void (cleanup_fn)(void), unsigned int size)
 
 	if (!tst_tmpdir_created()) {
 		tst_brkm(TBROK, cleanup_fn,
-		         "Cannot acquire device without tmpdir() created");
+			 "Cannot acquire device without tmpdir() created");
 		return NULL;
 	}
 
@@ -396,17 +400,17 @@ int tst_umount(const char *path)
 
 		if (err != EBUSY) {
 			tst_resm(TWARN, "umount('%s') failed with %s",
-		         path, tst_strerrno(err));
+				 path, tst_strerrno(err));
 			errno = err;
 			return ret;
 		}
 
 		tst_resm(TINFO, "umount('%s') failed with %s, try %2i...",
-		         path, tst_strerrno(err), i+1);
+			 path, tst_strerrno(err), i+1);
 
 		if (i == 0) {
 			tst_resm(TINFO, "Likely gvfsd-trash is probing newly "
-			         "mounted fs, kill it to speed up tests.");
+				 "mounted fs, kill it to speed up tests.");
 		}
 
 		usleep(100000);
@@ -461,7 +465,7 @@ int tst_is_mounted_at_tmpdir(const char *path)
 	return tst_is_mounted(mpath);
 }
 
-int find_stat_file(const char *dev, char *path, size_t path_len)
+static int find_stat_file(const char *dev, char *path, size_t path_len)
 {
 	const char *devname = strrchr(dev, '/') + 1;
 
@@ -489,7 +493,7 @@ int find_stat_file(const char *dev, char *path, size_t path_len)
 unsigned long tst_dev_bytes_written(const char *dev)
 {
 	unsigned long dev_sec_write = 0, dev_bytes_written, io_ticks = 0;
-	char dev_stat_path[1024];
+	char dev_stat_path[PATH_MAX];
 
 	if (!find_stat_file(dev, dev_stat_path, sizeof(dev_stat_path)))
 		tst_brkm(TCONF, NULL, "Test device stat file: %s not found",
@@ -511,7 +515,7 @@ unsigned long tst_dev_bytes_written(const char *dev)
 }
 
 __attribute__((nonnull))
-void tst_find_backing_dev(const char *path, char *dev)
+void tst_find_backing_dev(const char *path, char *dev, size_t dev_size)
 {
 	struct stat buf;
 	struct btrfs_ioctl_fs_info_args args = {0};
@@ -574,7 +578,7 @@ void tst_find_backing_dev(const char *path, char *dev)
 			sprintf(uevent_path, "%s/%s/uevent",
 				bdev_path, d->d_name);
 		} else {
-			tst_brkm(TBROK | TERRNO, NULL, "No backining device found while looking in %s.", bdev_path);
+			tst_brkm(TBROK | TERRNO, NULL, "No backing device found while looking in %s.", bdev_path);
 		}
 
 		if (SAFE_READDIR(NULL, dir))
@@ -590,17 +594,12 @@ void tst_find_backing_dev(const char *path, char *dev)
 	if (!access(uevent_path, R_OK)) {
 		FILE_LINES_SCANF(NULL, uevent_path, "DEVNAME=%s", dev_name);
 
-		if (dev_name[0])
-			sprintf(dev, "/dev/%s", dev_name);
+		if (!dev_name[0] || set_dev_path(dev_name, dev, dev_size))
+			tst_brkm(TBROK, NULL, "Could not stat backing device %s", dev);
+
 	} else {
 		tst_brkm(TBROK, NULL, "uevent file (%s) access failed", uevent_path);
 	}
-
-	if (stat(dev, &buf) < 0)
-		tst_brkm(TWARN | TERRNO, NULL, "stat(%s) failed", dev);
-
-	if (S_ISBLK(buf.st_mode) != 1)
-		tst_brkm(TCONF, NULL, "dev(%s) isn't a block dev", dev);
 }
 
 void tst_stat_mount_dev(const char *const mnt_path, struct stat *const st)
@@ -641,9 +640,9 @@ int tst_dev_block_size(const char *path)
 {
 	int fd;
 	int size;
-	char dev_name[1024];
+	char dev_name[PATH_MAX];
 
-	tst_find_backing_dev(path, dev_name);
+	tst_find_backing_dev(path, dev_name, sizeof(dev_name));
 
 	fd = SAFE_OPEN(NULL, dev_name, O_RDONLY);
 	SAFE_IOCTL(NULL, fd, BLKSSZGET, &size);

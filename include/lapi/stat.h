@@ -10,7 +10,9 @@
 
 #include <stdint.h>
 #include <unistd.h>
+#include <sys/stat.h>
 #include "lapi/syscalls.h"
+
 /*
  * Timestamp structure for the timestamps in struct statx.
  *
@@ -21,9 +23,7 @@
  *
  * __reserved is held in case we need a yet finer resolution.
  */
-#if defined(HAVE_STRUCT_STATX_TIMESTAMP)
-#include <sys/stat.h>
-#else
+#ifndef HAVE_STRUCT_STATX_TIMESTAMP
 struct statx_timestamp {
 	int64_t tv_sec;
 	uint32_t tv_nsec;
@@ -67,9 +67,7 @@ struct statx_timestamp {
  * will have values installed for compatibility purposes so that stat() and
  * co. can be emulated in userspace.
  */
-#if defined(HAVE_STRUCT_STATX)
-#include <sys/stat.h>
-#else
+#ifndef HAVE_STRUCT_STATX
 struct statx {
 	/* 0x00 */
 	uint32_t	stx_mask;
@@ -102,7 +100,7 @@ struct statx {
 };
 #endif
 
-#if !defined(HAVE_STATX)
+#ifndef HAVE_STATX
 
 /*
  * statx: wrapper function of statx
@@ -180,8 +178,8 @@ static inline int statx(int dirfd, const char *pathname, unsigned int flags,
 # define STATX_MNT_ID		0x00001000U
 #endif
 
-#ifndef STATX_ALL
-# define STATX_ALL		0x00000fffU
+#ifndef STATX_DIOALIGN
+# define STATX_DIOALIGN		0x00002000U
 #endif
 
 #ifndef STATX__RESERVED
@@ -223,44 +221,12 @@ static inline int statx(int dirfd, const char *pathname, unsigned int flags,
 # define STATX_ATTR_AUTOMOUNT	0x00001000
 #endif
 
+#ifndef STATX_ATTR_MOUNT_ROOT
+# define STATX_ATTR_MOUNT_ROOT	0x00002000
+#endif
+
 #ifndef STATX_ATTR_VERITY
 # define STATX_ATTR_VERITY	0x00100000
-#endif
-
-#ifndef AT_SYMLINK_NOFOLLOW
-# define AT_SYMLINK_NOFOLLOW	0x100
-#endif
-
-#ifndef AT_REMOVEDIR
-# define AT_REMOVEDIR		0x200
-#endif
-
-#ifndef AT_SYMLINK_FOLLOW
-# define AT_SYMLINK_FOLLOW	0x400
-#endif
-
-#ifndef AT_NO_AUTOMOUNT
-# define AT_NO_AUTOMOUNT	0x800
-#endif
-
-#ifndef AT_EMPTY_PATH
-# define AT_EMPTY_PATH		0x1000
-#endif
-
-#ifndef AT_STATX_SYNC_TYPE
-# define AT_STATX_SYNC_TYPE	0x6000
-#endif
-
-#ifndef AT_STATX_SYNC_AS_STAT
-# define AT_STATX_SYNC_AS_STAT	0x0000
-#endif
-
-#ifndef AT_STATX_FORCE_SYNC
-# define AT_STATX_FORCE_SYNC	0x2000
-#endif
-
-#ifndef AT_STATX_DONT_SYNC
-# define AT_STATX_DONT_SYNC	0x4000
 #endif
 
 #endif /* LAPI_STAT_H__ */

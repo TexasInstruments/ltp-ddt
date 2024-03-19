@@ -31,8 +31,8 @@
 static pid_t clone_newuser(void)
 {
 	const struct tst_clone_args cargs = {
-		CLONE_NEWUSER,
-		SIGCHLD
+		.flags = CLONE_NEWUSER,
+		.exit_signal = SIGCHLD,
 	};
 
 	return SAFE_CLONE(&cargs);
@@ -136,6 +136,7 @@ static struct tst_test test = {
 	},
 	.save_restore = (const struct tst_path_val[]) {
 		{"/proc/sys/user/max_user_namespaces", NULL, TST_SR_SKIP},
+		{"/proc/sys/kernel/unprivileged_userns_clone", "1", TST_SR_SKIP},
 		{}
 	},
 	.tags = (const struct tst_tag[]) {

@@ -21,6 +21,7 @@
 #include <dirent.h>
 #include <grp.h>
 
+#include "safe_stdio_fn.h"
 #include "safe_macros_fn.h"
 #include "tst_cmd.h"
 
@@ -85,6 +86,12 @@ void *safe_realloc(const char *file, const int lineno, void *ptr, size_t size);
 
 #define SAFE_MUNMAP(addr, length) \
 	safe_munmap(__FILE__, __LINE__, NULL, (addr), (length))
+
+int safe_msync(const char *file, const int lineno, void *addr,
+				size_t length, int flags);
+
+#define SAFE_MSYNC(addr, length, flags) \
+	safe_msync(__FILE__, __LINE__, (addr), (length), (flags))
 
 #define SAFE_OPEN(pathname, oflags, ...) \
 	safe_open(__FILE__, __LINE__, NULL, (pathname), (oflags), \
@@ -664,5 +671,7 @@ long tst_safe_ptrace(const char *file, const int lineno, int req, pid_t pid,
 int safe_sysinfo(const char *file, const int lineno, struct sysinfo *info);
 #define SAFE_SYSINFO(info) \
 	safe_sysinfo(__FILE__, __LINE__, (info))
+
+void safe_print_file(const char *file, const int lineno, char *path);
 
 #endif /* SAFE_MACROS_H__ */

@@ -16,13 +16,15 @@ pidns31 pidns31
 pidns32 pidns32
 
 mqns_01 mqns_01
-mqns_01_clone mqns_01 -clone
+mqns_01_clone mqns_01 -m clone
+mqns_01_unshare mqns_01 -m unshare
 mqns_02 mqns_02
-mqns_02_clone mqns_02 -clone
-mqns_03 mqns_03
-mqns_03_clone mqns_03 -clone
-mqns_04 mqns_04
-mqns_04_clone mqns_04 -clone
+mqns_02_clone mqns_02 -m clone
+mqns_02_unshare mqns_02 -m unshare
+mqns_03_unshare mqns_03 -m unshare
+mqns_03_clone mqns_03 -m clone
+mqns_04_unshare mqns_04 -m unshare
+mqns_04_clone mqns_04 -m clone
 
 netns_netlink netns_netlink
 netns_breakns_ip_ipv4_netlink netns_breakns.sh
@@ -62,16 +64,12 @@ semtest_2ns_clone semtest_2ns -m clone
 semtest_2ns_unshare semtest_2ns -m unshare
 sem_comm sem_comm
 
-utstest_unshare_1 utstest unshare 1
-utstest_unshare_2 utstest unshare 2
-utstest_unshare_3 utstest unshare 3
-utstest_unshare_4 utstest unshare 4
-utstest_unshare_5 utstest unshare 5
-utstest_clone_1 utstest clone 1
-utstest_clone_2 utstest clone 2
-utstest_clone_3 utstest clone 3
-utstest_clone_4 utstest clone 4
-utstest_clone_5 utstest clone 5
+utsname01 utsname01
+utsname02 utsname02
+utsname03_clone utsname03 -m clone
+utsname03_unshare utsname03 -m unshare
+utsname04_clone utsname04 -m clone
+utsname04_unshare utsname04 -m unshare
 
 mountns01 mountns01
 mountns02 mountns02

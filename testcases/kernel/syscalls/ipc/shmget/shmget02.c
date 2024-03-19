@@ -11,17 +11,17 @@
  *
  * Test for ENOENT, EEXIST, EINVAL, EACCES, EPERM errors.
  *
- * ENOENT - No segment exists for the given key and IPC_CREAT was not specified.
- * EEXIST - the segment exists and IPC_CREAT | IPC_EXCL is given.
- * EINVAL - A new segment was to be created and size is less than SHMMIN or
- * greater than SHMMAX. Or a segment for the given key exists, but size is
- * gran eater than the size of that segment.
- * EACCES - The user does not have permission to access the shared memory segment.
- * EPERM - The SHM_HUGETLB flag was specified, but the caller was not privileged
- * (did not have the CAP_IPC_LOCK capability) and is not a member of the
- * sysctl_hugetlb_shm_group group.
- * ENOMEM - The SHM_HUGETLB flag was specified, the caller was privileged but not
- * have enough hugepage memory space.
+ * - ENOENT - No segment exists for the given key and IPC_CREAT was not specified.
+ * - EEXIST - the segment exists and IPC_CREAT | IPC_EXCL is given.
+ * - EINVAL - A new segment was to be created and size is less than SHMMIN or
+ *   greater than SHMMAX. Or a segment for the given key exists, but size is
+ *   gran eater than the size of that segment.
+ * - EACCES - The user does not have permission to access the shared memory segment.
+ * - EPERM - The SHM_HUGETLB flag was specified, but the caller was not
+ *   privileged (did not have the CAP_IPC_LOCK capability) and is not a member
+ *   of the sysctl_hugetlb_shm_group group.
+ * - ENOMEM - The SHM_HUGETLB flag was specified, the caller was privileged but
+ *   not have enough hugepage memory space.
  */
 
 #include <errno.h>
@@ -36,8 +36,6 @@
 #include "tst_test.h"
 #include "libnewipc.h"
 #include "lapi/shm.h"
-
-#define CONFIG_HUGETLBFS "CONFIG_HUGETLBFS"
 
 static int shm_id = -1;
 static key_t shmkey, shmkey1;
@@ -56,7 +54,7 @@ static struct tcase {
 	{&shmkey1, SHM_SIZE, IPC_EXCL, 0, 0, ENOENT},
 	{&shmkey, SHM_SIZE, IPC_CREAT | IPC_EXCL, 0, 0, EEXIST},
 	{&shmkey1, SHMMIN - 1, IPC_CREAT | IPC_EXCL, 0, 0, EINVAL},
-	{&shmkey1, SHMMAX + 1, IPC_CREAT | IPC_EXCL, 0, 0, EINVAL},
+	{&shmkey1, 8192 + 1, IPC_CREAT | IPC_EXCL, 0, 0, EINVAL},
 	{&shmkey, SHM_SIZE * 2, IPC_EXCL, 0, 0, EINVAL},
 	{&shmkey, SHM_SIZE, SHM_RD, 1, 0, EACCES},
 	{&shmkey1, SHM_SIZE, IPC_CREAT | SHM_HUGETLB, 0, 1, EPERM},
@@ -66,10 +64,7 @@ static struct tcase {
 static int get_hugetlb_exp_error(void)
 {
 	long tmp;
-	struct tst_kconfig_var kconfig = {
-		.id = CONFIG_HUGETLBFS,
-		.id_len = sizeof(CONFIG_HUGETLBFS)-1,
-	};
+	struct tst_kconfig_var kconfig = TST_KCONFIG_INIT("CONFIG_HUGETLBFS");
 
 	tst_kconfig_read(&kconfig, 1);
 
@@ -149,4 +144,8 @@ static struct tst_test test = {
 	.test = do_test,
 	.tcnt = ARRAY_SIZE(tcases),
 	.hugepages = {TST_NO_HUGEPAGES},
+	.save_restore = (const struct tst_path_val[]) {
+		{"/proc/sys/kernel/shmmax", "8192", TST_SR_TCONF_MISSING | TST_SR_TBROK_RO},
+		{}
+	},
 };

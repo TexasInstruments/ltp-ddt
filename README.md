@@ -101,8 +101,7 @@ $ make install
 ```
 
 This will install LTP to `/opt/ltp`.
-* If you have a problem see `doc/mini-howto-building-ltp-from-git.txt`.
-* If you still have a problem see `INSTALL` and `./configure --help`.
+* If you have a problem see `INSTALL` and `./configure --help`.
 * Failing that, ask for help on the mailing list or Github.
 
 Some tests will be disabled if the configure script can not find their build
@@ -155,7 +154,7 @@ $ testcases/bin/abort01
 Some have arguments
 
 ```
-$ testcases/bin/mesgq\_nstest -m none
+$ testcases/bin/mesgq_nstest -m none
 ```
 
 The vast majority of test cases accept the -h (help) switch
@@ -177,7 +176,7 @@ Note that all shell scripts need the `PATH` to be set. However this is not
 limited to shell scripts, many C based tests need environment variables as
 well.
 
-For more info see `doc/user-guide.txt` or online at
+For more info see `doc/User-Guidelines.asciidoc` or online at
 https://github.com/linux-test-project/ltp/wiki/User-Guidelines.
 
 Network tests
@@ -185,18 +184,56 @@ Network tests
 Network tests require certain setup, described in `testcases/network/README.md`
 (online at https://github.com/linux-test-project/ltp/tree/master/testcases/network).
 
+Containers
+----------
+
+*Presently running the LTP inside a container is not a shortcut. It
+will make things much harder for you.*
+
+There is a Containerfile which can be used with Docker or
+Podman. Currently it can build Alpine and OpenSUSE images.
+
+The container can be built with a command like:
+
+```
+$ podman build -t tumbleweed/ltp \
+       --build-arg PREFIX=registry.opensuse.org/opensuse/ \
+       --build-arg DISTRO_NAME=tumbleweed \
+       --build-arg DISTRO_RELEASE=20230925 .
+```
+
+Or just `podman build .` which will create an Alpine container.
+
+It contains Kirk in /opt/kirk. So the following will run some tests.
+
+```
+$ podman run -it --rm tumbleweed/ltp:latest
+$ cd /opt/kirk && ./kirk -f ltp -r syscalls
+```
+
+SUSE also publishes a
+[smaller LTP container](https://registry.opensuse.org/cgi-bin/cooverview?srch_term=project%3D%5Ebenchmark+container%3D.*)
+that is not based on the Containerfile.
+
+Debugging with gdb
+==================
+
+The new test library runs the actual test, i.e. the `test()` function in a
+forked process. To get stack trace of a crashing test in gdb it's needed to
+[`set follow-fork-mode child`](https://ftp.gnu.org/old-gnu/Manuals/gdb/html_node/gdb_25.html).
+
 Developers corner
 =================
 
 Before you start you should read following documents:
 
-* `doc/test-writing-guidelines.txt`
-* `doc/build-system-guide.txt`
-* `doc/library-api-writing-guidelines.txt`
+* `doc/Test-Writing-Guidelines.asciidoc`
+* `doc/Build-System.asciidoc`
+* `doc/LTP-Library-API-Writing-Guidelines.asciidoc`
 
 There is also a step-by-step tutorial:
 
-* `doc/c-test-tutorial-simple.txt`
+* `doc/C-Test-Case-Tutorial.asciidoc`
 
 If something is not covered there don't hesitate to ask on the LTP mailing
 list. Also note that these documents are available online at:

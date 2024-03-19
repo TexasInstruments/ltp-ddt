@@ -30,7 +30,8 @@ int make_swapfile(const char *swapfile, int safe)
 	argv[1] = swapfile;
 	argv[2] = NULL;
 
-	return tst_cmd(argv, "/dev/null", "/dev/null", safe);
+	return tst_cmd(argv, "/dev/null", "/dev/null", safe ?
+				   TST_CMD_PASS_RETVAL | TST_CMD_TCONF_ON_MISSING : 0);
 }
 
 /*
@@ -53,10 +54,12 @@ void is_swap_supported(const char *filename)
 
 	TEST(tst_syscall(__NR_swapon, filename, 0));
 	if (TST_RET == -1) {
-		if (fibmap == 1 && errno == EINVAL)
+		if (errno == EPERM)
+			tst_brk(TCONF, "Permission denied for swapon()");
+		else if (fibmap == 1 && errno == EINVAL)
 			tst_brk(TCONF, "Swapfile on %s not implemented", fstype);
 		else
-			tst_brk(TFAIL | TTERRNO, "swapon on %s failed", fstype);
+			tst_brk(TFAIL | TTERRNO, "swapon() on %s failed", fstype);
 	}
 
 	TEST(tst_syscall(__NR_swapoff, filename, 0));

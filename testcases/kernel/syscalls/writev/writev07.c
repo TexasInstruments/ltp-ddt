@@ -4,20 +4,26 @@
  *   Copyright (c) Linux Test Project, 2016
  */
 
-/*
- * Test Description:
- *   Verify writev() behaviour with partially valid iovec list.
- *   Kernel <4.8 used to shorten write up to first bad invalid
- *   iovec. Starting with 4.8, a writev with short data (under
- *   page size) is likely to get shorten to 0 bytes and return
- *   EFAULT.
+/*\
+ * [Description]
  *
- *   This test doesn't make assumptions how much will write get
- *   shortened. It only tests that file content/offset after
- *   syscall corresponds to return value of writev().
+ * Verify writev() behaviour with partially valid iovec list.
+ * Kernel <4.8 used to shorten write up to first bad invalid
+ * iovec. Starting with 4.8, a writev with short data (under
+ * page size) is likely to get shorten to 0 bytes and return
+ * EFAULT.
  *
- *   See: [RFC] writev() semantics with invalid iovec in the middle
- *        https://marc.info/?l=linux-kernel&m=147388891614289&w=2
+ * This test doesn't make assumptions how much will write get
+ * shortened. It only tests that file content/offset after
+ * syscall corresponds to return value of writev().
+ *
+ * See: [RFC] writev() semantics with invalid iovec in the middle
+ * https://marc.info/?l=linux-kernel&m=147388891614289&w=2.
+ *
+ * This is also regression test for kernel commits:
+ *
+ * * 20c64ec83a9f ("iomap: fix a regression for partial write errors")
+ * * 3ac974796e5d ("iomap: fix short copy in iomap_write_iter()")
  */
 
 #include <errno.h>
@@ -138,4 +144,9 @@ static struct tst_test test = {
 	.needs_tmpdir = 1,
 	.setup = setup,
 	.test_all = test_writev,
+	.tags = (const struct tst_tag[]) {
+		{"linux-git", "20c64ec83a9f"},
+		{"linux-git", "3ac974796e5d"},
+		{},
+	}
 };

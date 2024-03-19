@@ -26,6 +26,11 @@ void tst_pollute_memory(size_t maxsize, int fillchar);
 long long tst_available_mem(void);
 
 /*
+ * Read the value of SwapFree from /proc/meminfo.
+ */
+long long tst_available_swap(void);
+
+/*
  * Enable OOM protection to prevent process($PID) being killed by OOM Killer.
  *   echo -1000 >/proc/$PID/oom_score_adj
  *
@@ -52,5 +57,7 @@ void tst_enable_oom_protection(pid_t pid);
  *   echo 0 >/proc/$PID/oom_score_adj
  */
 void tst_disable_oom_protection(pid_t pid);
+
+#define TST_PRINT_MEMINFO() safe_print_file(__FILE__, __LINE__, "/proc/meminfo")
 
 #endif /* TST_MEMUTILS_H__ */

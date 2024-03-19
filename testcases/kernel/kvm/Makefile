@@ -8,8 +8,8 @@ include $(top_srcdir)/include/mk/testcases.mk
 ASFLAGS =
 CPPFLAGS += -I$(abs_srcdir)/include
 GUEST_CPPFLAGS = $(CPPFLAGS) -DCOMPILE_PAYLOAD
-GUEST_CFLAGS = -ffreestanding -O2 -Wall -fno-asynchronous-unwind-tables -mno-mmx -mno-sse
-GUEST_LDFLAGS = -nostdlib -Wl,--build-id=none -fno-stack-protector
+GUEST_CFLAGS = -ffreestanding -O2 -Wall -fno-asynchronous-unwind-tables -fno-stack-protector -mno-mmx -mno-sse
+GUEST_LDFLAGS = -nostdlib -Wl,--build-id=none -z noexecstack
 GUEST_LDLIBS =
 KVM_LD ?= $(LD)
 
@@ -47,6 +47,9 @@ endif
 
 lib_guest.o $(ARCH_OBJ): CPPFLAGS	:= $(GUEST_CPPFLAGS)
 lib_guest.o $(ARCH_OBJ): CFLAGS		:= $(GUEST_CFLAGS)
+
+kvm_svm03: CFLAGS += -pthread
+kvm_svm03: LDLIBS += -pthread
 
 include $(top_srcdir)/include/mk/generic_leaf_target.mk
 

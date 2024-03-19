@@ -1,6 +1,6 @@
-#!/bin/sh
-# Copyright (c) 2018-2020 Petr Vorel <pvorel@suse.cz>
-set -ex
+#!/bin/sh -eux
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Copyright (c) 2018-2023 Petr Vorel <pvorel@suse.cz>
 
 apt="apt remove -y"
 
@@ -11,7 +11,6 @@ $apt \
 	libaio-dev \
 	libaio1 \
 	libcap-dev \
-	libcap2 \
 	libkeyutils-dev \
 	libnuma-dev \
 	libnuma1 \

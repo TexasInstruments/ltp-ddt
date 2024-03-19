@@ -6,7 +6,7 @@
 #ifndef TST_FS_H__
 #define TST_FS_H__
 
-/* man 2 statfs or kernel-source/include/linux/magic.h */
+/* man 2 statfs or kernel-source/include/uapi/linux/magic.h */
 #define TST_BTRFS_MAGIC    0x9123683E
 #define TST_NFS_MAGIC      0x6969
 #define TST_RAMFS_MAGIC    0x858458f6
@@ -33,6 +33,9 @@
 #define TST_FUSE_MAGIC     0x65735546
 #define TST_VFAT_MAGIC     0x4d44 /* AKA MSDOS */
 #define TST_EXFAT_MAGIC    0x2011BAB0UL
+
+/* fs/bcachefs/bcachefs_format.h */
+#define TST_BCACHE_MAGIC		0xca451a4e
 
 enum tst_fill_access_pattern {
 	TST_FILL_BLOCKS,
@@ -209,7 +212,10 @@ int tst_fs_in_skiplist(const char *fs_type, const char *const *skiplist);
 void tst_fill_fs(const char *path, int verbose, enum tst_fill_access_pattern pattern);
 
 /*
- * test if FIBMAP ioctl is supported
+ * Check if FIBMAP ioctl is supported.
+ * Tests needs to set .needs_root = 1 in order to avoid EPERM.
+ *
+ * @return 0: FIBMAP is supported, 1: FIBMAP is *not* supported.
  */
 int tst_fibmap(const char *filename);
 

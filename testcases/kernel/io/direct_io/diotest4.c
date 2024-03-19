@@ -62,7 +62,6 @@
 #include <sys/file.h>
 #include <fcntl.h>
 #include <sys/types.h>
-#include <sys/mman.h>
 #include <sys/syscall.h>
 #include <errno.h>
 
@@ -271,6 +270,7 @@ int main(int argc, char *argv[])
 	case TST_NFS_MAGIC:
 	case TST_BTRFS_MAGIC:
 	case TST_FUSE_MAGIC:
+	case TST_TMPFS_MAGIC:
 		tst_resm(TCONF, "%s supports odd count IO",
 			 tst_fs_type_name(fs_type));
 	break;
@@ -444,6 +444,7 @@ int main(int argc, char *argv[])
 	case TST_NFS_MAGIC:
 	case TST_BTRFS_MAGIC:
 	case TST_FUSE_MAGIC:
+	case TST_TMPFS_MAGIC:
 		tst_resm(TCONF, "%s supports non-aligned buffer",
 			 tst_fs_type_name(fs_type));
 	break;

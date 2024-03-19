@@ -125,13 +125,29 @@ struct kvm_cpuid2 *tst_kvm_get_cpuid(int sysfd);
 void tst_kvm_create_instance(struct tst_kvm_instance *inst, size_t ram_size);
 
 /*
- * Execute the given KVM instance and print results.
+ * Execute the given KVM instance and print results. If ioctl(KVM_RUN) is
+ * expected to fail, pass the expected error code in exp_errno, otherwise
+ * set it to zero. Returns last value returned by ioctl(KVM_RUN).
  */
-void tst_kvm_run_instance(struct tst_kvm_instance *inst);
+int tst_kvm_run_instance(struct tst_kvm_instance *inst, int exp_errno);
 
 /*
  * Close the given KVM instance.
  */
 void tst_kvm_destroy_instance(struct tst_kvm_instance *inst);
+
+/*
+ * Wait for given VM to call tst_signal_host() or tst_wait_host(). Timeout
+ * value is in milliseconds. Zero means no wait, negative value means wait
+ * forever. Returns 0 if signal was received, KVM_TEXIT if the VM exited
+ * without sending a signal, or -1 if timeout was reached.
+ */
+int tst_kvm_wait_guest(struct tst_kvm_instance *inst, int timeout_ms);
+
+/*
+ * Clear VM signal sent by tst_signal_host(). If the VM is waiting
+ * in tst_wait_host(), this function will signal the VM to resume execution.
+ */
+void tst_kvm_clear_guest_signal(struct tst_kvm_instance *inst);
 
 #endif /* KVM_HOST_H_ */

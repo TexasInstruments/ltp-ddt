@@ -15,7 +15,6 @@
 #include "tst_test.h"
 #include "lapi/fcntl.h"
 #include "lapi/mount.h"
-#include "lapi/mkdirat.h"
 #include "tst_safe_file_at.h"
 
 struct cgroup_root;
@@ -94,9 +93,10 @@ enum cgroup_ctrl_indx {
 	CTRL_MISC,
 	CTRL_PERFEVENT,
 	CTRL_DEBUG,
-	CTRL_RDMA
+	CTRL_RDMA,
+	CTRL_BASE
 };
-#define CTRLS_MAX CTRL_RDMA
+#define CTRLS_MAX CTRL_BASE
 
 /* At most we can have one cgroup V1 tree for each controller and one
  * (empty) v2 tree.
@@ -166,6 +166,7 @@ static const struct cgroup_file cgroup_ctrl_files[] = {
 	{ "cgroup.controllers", NULL, 0 },
 	{ "cgroup.subtree_control", NULL, 0 },
 	{ "cgroup.clone_children", "cgroup.clone_children", 0 },
+	{ "cgroup.kill", NULL, 0 },
 	{ }
 };
 
@@ -258,6 +259,10 @@ static const struct cgroup_file rdma_ctrl_files[] = {
 	{ }
 };
 
+static const struct cgroup_file base_ctrl_files[] = {
+	{ }
+};
+
 #define CTRL_NAME_MAX 31
 #define CGROUP_CTRL_MEMBER(x, y)[y] = { .ctrl_name = #x, .files = \
 	x ## _ctrl_files, .ctrl_indx = y, NULL, 0 }
@@ -281,6 +286,7 @@ static struct cgroup_ctrl controllers[] = {
 	CGROUP_CTRL_MEMBER(perf_event, CTRL_PERFEVENT),
 	CGROUP_CTRL_MEMBER(debug, CTRL_DEBUG),
 	CGROUP_CTRL_MEMBER(rdma, CTRL_RDMA),
+	CGROUP_CTRL_MEMBER(base, CTRL_BASE),
 	{ }
 };
 
@@ -376,6 +382,9 @@ static void cgroup_dir_mk(const struct cgroup_dir *const parent,
 		tst_brk(TCONF | TERRNO,
 			"Lack permission to make '%s/%s'; premake it or run as root",
 			dpath, dir_name);
+	} else if (errno == EROFS) {
+		tst_brk(TCONF | TERRNO, "'%s/%s' must not be read-only",
+			dpath, dir_name);
 	} else {
 		tst_brk(TBROK | TERRNO,
 			"mkdirat(%d<%s>, '%s', 0777)",
@@ -420,12 +429,28 @@ void tst_cg_print_config(void)
 }
 
 __attribute__ ((nonnull, warn_unused_result))
-static struct cgroup_ctrl *cgroup_find_ctrl(const char *const ctrl_name)
+static struct cgroup_ctrl *cgroup_find_ctrl(const char *const ctrl_name,
+					    unsigned int strict)
 {
 	struct cgroup_ctrl *ctrl;
+	int l = 0;
+	char c = ctrl_name[l];
+
+	while (c == '_' || (c >= 'a' && c <= 'z'))
+		c = ctrl_name[++l];
+
+	if (l > 32 && strict)
+		tst_res(TWARN, "Subsys name len greater than max known value of MAX_CGROUP_TYPE_NAMELEN: %d > 32", l);
+
+	if (!(c == '\n' || c == '\0')) {
+		if (!strict)
+			return NULL;
+
+		tst_brk(TBROK, "Unexpected char in %s: %c", ctrl_name, c);
+	}
 
 	for_each_ctrl(ctrl) {
-		if (!strcmp(ctrl_name, ctrl->ctrl_name))
+		if (!strncmp(ctrl_name, ctrl->ctrl_name, l))
 			return ctrl;
 	}
 
@@ -458,7 +483,7 @@ static void cgroup_parse_config_line(const char *const config_entry)
 	if (vars_read != 7)
 		tst_brk(TBROK, "Incorrect number of vars read from config. Config possibly malformed?");
 
-	ctrl = cgroup_find_ctrl(ctrl_name);
+	ctrl = cgroup_find_ctrl(ctrl_name, 1);
 	if (!ctrl)
 		tst_brk(TBROK, "Could not find ctrl from config. Ctrls changing between calls?");
 
@@ -551,7 +576,7 @@ static void cgroup_root_scan(const char *const mnt_type,
 	SAFE_FILE_READAT(mnt_dfd, "cgroup.controllers", buf, sizeof(buf));
 
 	for (tok = strtok(buf, " "); tok; tok = strtok(NULL, " ")) {
-		const_ctrl = cgroup_find_ctrl(tok);
+		const_ctrl = cgroup_find_ctrl(tok, 1);
 		if (const_ctrl)
 			add_ctrl(&ctrl_field, const_ctrl);
 	}
@@ -568,7 +593,7 @@ static void cgroup_root_scan(const char *const mnt_type,
 
 v1:
 	for (tok = strtok(mnt_opts, ","); tok; tok = strtok(NULL, ",")) {
-		const_ctrl = cgroup_find_ctrl(tok);
+		const_ctrl = cgroup_find_ctrl(tok, 0);
 		if (const_ctrl)
 			add_ctrl(&ctrl_field, const_ctrl);
 
@@ -795,8 +820,12 @@ void tst_cg_require(const char *const ctrl_name,
 			const struct tst_cg_opts *options)
 {
 	const char *const cgsc = "cgroup.subtree_control";
-	struct cgroup_ctrl *const ctrl = cgroup_find_ctrl(ctrl_name);
+	struct cgroup_ctrl *const ctrl = cgroup_find_ctrl(ctrl_name, 1);
 	struct cgroup_root *root;
+	int base = !strcmp(ctrl->ctrl_name, "base");
+
+	if (base && options->needs_ver != TST_CG_V2)
+		tst_brk(TCONF, "Base control only support needs_ver TST_CG_V2!");
 
 	if (!ctrl) {
 		tst_brk(TBROK, "'%s' controller is unknown to LTP", ctrl_name);
@@ -826,6 +855,9 @@ void tst_cg_require(const char *const ctrl_name,
 	if (options->needs_ver != TST_CG_V2)
 		cgroup_mount_v1(ctrl);
 
+	if (base)
+		ctrl->ctrl_root = roots;
+
 	if (!ctrl->ctrl_root) {
 		tst_brk(TCONF,
 			"'%s' controller required, but not available",
@@ -848,7 +880,7 @@ mkdirs:
 			ctrl->ctrl_name);
 	}
 
-	if (cgroup_ctrl_on_v2(ctrl)) {
+	if (cgroup_ctrl_on_v2(ctrl) && !base) {
 		if (root->we_mounted_it) {
 			SAFE_FILE_PRINTFAT(root->mnt_dir.dir_fd,
 					   cgsc, "+%s", ctrl->ctrl_name);
@@ -863,15 +895,17 @@ mkdirs:
 	else
 		root->ltp_dir.ctrl_field |= root->mnt_dir.ctrl_field;
 
-	if (cgroup_ctrl_on_v2(ctrl)) {
-		SAFE_FILE_PRINTFAT(root->ltp_dir.dir_fd,
-				   cgsc, "+%s", ctrl->ctrl_name);
-	} else {
-		SAFE_FILE_PRINTFAT(root->ltp_dir.dir_fd,
-				   "cgroup.clone_children", "%d", 1);
+	if (!base) {
+		if (cgroup_ctrl_on_v2(ctrl)) {
+			SAFE_FILE_PRINTFAT(root->ltp_dir.dir_fd,
+					cgsc, "+%s", ctrl->ctrl_name);
+		} else {
+			SAFE_FILE_PRINTFAT(root->ltp_dir.dir_fd,
+					"cgroup.clone_children", "%d", 1);
 
-		if (ctrl->ctrl_indx == CTRL_CPUSET)
-			cgroup_copy_cpuset(root);
+			if (ctrl->ctrl_indx == CTRL_CPUSET)
+				cgroup_copy_cpuset(root);
+		}
 	}
 
 	cgroup_dir_mk(&root->ltp_dir, cgroup_ltp_drain_dir, &root->drain_dir);
@@ -996,7 +1030,8 @@ void tst_cg_cleanup(void)
 	}
 
 	for_each_ctrl(ctrl) {
-		if (!cgroup_ctrl_on_v2(ctrl) || !ctrl->ctrl_root->we_mounted_it)
+		if (!cgroup_ctrl_on_v2(ctrl) || !ctrl->ctrl_root->we_mounted_it
+			|| !strcmp(ctrl->ctrl_name, "base"))
 			continue;
 
 		SAFE_FILE_PRINTFAT(ctrl->ctrl_root->mnt_dir.dir_fd,
@@ -1049,8 +1084,10 @@ static void cgroup_group_add_dir(const struct tst_cg_group *const parent,
 		if (!parent || dir->dir_root->ver == TST_CG_V1)
 			continue;
 
-		SAFE_CG_PRINTF(parent, "cgroup.subtree_control",
-				   "+%s", ctrl->ctrl_name);
+		if (strcmp(ctrl->ctrl_name, "base")) {
+			SAFE_CG_PRINTF(parent, "cgroup.subtree_control",
+					"+%s", ctrl->ctrl_name);
+		}
 	}
 
 	for (i = 0; cg->dirs[i]; i++)
@@ -1093,6 +1130,14 @@ const char *tst_cg_group_name(const struct tst_cg_group *const cg)
 	return cg->group_name;
 }
 
+int tst_cg_group_unified_dir_fd(const struct tst_cg_group *const cg)
+{
+	if(cg->dirs_by_ctrl[0])
+		return cg->dirs_by_ctrl[0]->dir_fd;
+
+	return -1;
+}
+
 struct tst_cg_group *tst_cg_group_rm(struct tst_cg_group *const cg)
 {
 	struct cgroup_dir **dir;
@@ -1131,7 +1176,7 @@ static const struct cgroup_file *cgroup_file_find(const char *const file,
 	memcpy(ctrl_name, file_name, len);
 	ctrl_name[len] = '\0';
 
-	ctrl = cgroup_find_ctrl(ctrl_name);
+	ctrl = cgroup_find_ctrl(ctrl_name, 1);
 
 	if (!ctrl) {
 		tst_brk_(file, lineno, TBROK,
@@ -1158,7 +1203,7 @@ enum tst_cg_ver tst_cg_ver(const char *const file, const int lineno,
 				    const struct tst_cg_group *const cg,
 				    const char *const ctrl_name)
 {
-	const struct cgroup_ctrl *const ctrl = cgroup_find_ctrl(ctrl_name);
+	const struct cgroup_ctrl *const ctrl = cgroup_find_ctrl(ctrl_name, 1);
 	const struct cgroup_dir *dir;
 
 	if (!strcmp(ctrl_name, "cgroup")) {

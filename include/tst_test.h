@@ -44,6 +44,7 @@
 #include "tst_taint.h"
 #include "tst_memutils.h"
 #include "tst_arch.h"
+#include "tst_fd.h"
 
 /*
  * Reports testcase result.
@@ -54,8 +55,9 @@ void tst_res_(const char *file, const int lineno, int ttype,
 
 #define tst_res(ttype, arg_fmt, ...) \
 	({									\
-		TST_RES_SUPPORTS_TCONF_TFAIL_TINFO_TPASS_TWARN(!((TTYPE_RESULT(ttype) ?: TCONF) & \
-			(TCONF | TFAIL | TINFO | TPASS | TWARN))); 				\
+		TST_RES_SUPPORTS_TCONF_TDEBUG_TFAIL_TINFO_TPASS_TWARN(\
+			!((TTYPE_RESULT(ttype) ?: TCONF) & \
+			(TCONF | TDEBUG | TFAIL | TINFO | TPASS | TWARN))); 				\
 		tst_res_(__FILE__, __LINE__, (ttype), (arg_fmt), ##__VA_ARGS__);\
 	})
 
@@ -177,6 +179,7 @@ struct tst_test {
 	int child_needs_reinit:1;
 	int needs_devfs:1;
 	int restore_wallclock:1;
+
 	/*
 	 * If set the test function will be executed for all available
 	 * filesystems and the current filesystem type would be set in the
@@ -186,8 +189,11 @@ struct tst_test {
 	 * to the test function.
 	 */
 	int all_filesystems:1;
+
 	int skip_in_lockdown:1;
+	int skip_in_secureboot:1;
 	int skip_in_compat:1;
+
 	/*
 	 * If set, the hugetlbfs will be mounted at .mntpoint.
 	 */
@@ -205,6 +211,9 @@ struct tst_test {
 
 	/* Minimum size(MB) of MemAvailable required by the test */
 	unsigned long min_mem_avail;
+
+	/* Minimum size(MB) of SwapFree required by the test */
+	unsigned long min_swap_avail;
 
 	/*
 	 * Two policies for reserving hugepage:

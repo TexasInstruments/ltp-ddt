@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /*
  * Copyright (c) 2014-2016 Oracle and/or its affiliates. All Rights Reserved.
+ * Copyright (c) 2014-2023 Petr Vorel <pvorel@suse.cz>
  * Author: Alexey Kodanev <alexey.kodanev@oracle.com>
  */
 
@@ -384,6 +385,7 @@ void *client_fn(void *id)
 
 	inf.raddr_len = sizeof(inf.raddr);
 	inf.etime_cnt = 0;
+	inf.eshutdown_cnt = 0;
 	inf.timeout = wait_timeout;
 	inf.pmtu_err_cnt = 0;
 
@@ -1008,7 +1010,7 @@ static struct tst_test test = {
 		{"T:", &type, "Tcp (default), udp, udp_lite, dccp, sctp"},
 		{"z", &zcopy, "Enable SO_ZEROCOPY"},
 		{"P:", &reuse_port, "Enable SO_REUSEPORT"},
-		{"D:", &dev, "Bind to device x"},
+		{"d:", &dev, "Bind to device x"},
 
 		{"H:", &server_addr, "Server name or IP address"},
 		{"l", &client_mode, "Become client, default is server"},
@@ -1017,7 +1019,7 @@ static struct tst_test test = {
 		{"n:", &narg, "Client message size"},
 		{"N:", &Narg, "Server message size"},
 		{"m:", &Targ, "Receive timeout in milliseconds (not used by UDP/DCCP client)"},
-		{"d:", &rpath, "Path to file where result is saved"},
+		{"c:", &rpath, "Path to file where result is saved"},
 		{"A:", &Aarg, "Max payload length (generated randomly)"},
 
 		{"R:", &Rarg, "Server requests after which conn.closed"},

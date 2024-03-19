@@ -1,9 +1,12 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /*
  * Copyright (C) 2019 Cyril Hrubis <chrubis@suse.cz>
+ * Copyright (c) Linux Test Project, 2019-2023
  */
 
-/*
+/*\
+ * [Description]
+ *
  * Very simple uevent netlink socket test.
  *
  * We fork a child that listens for a kernel events while parents creates and
@@ -24,7 +27,6 @@
 #include "uevent.h"
 
 #define TUN_PATH "/dev/net/tun"
-#define CONFIG_RPS "CONFIG_RPS"
 #define MAX_UEVENTS 7
 
 static struct uevent_desc add = {
@@ -127,10 +129,7 @@ static void verify_uevent(void)
 
 static void setup(void)
 {
-	struct tst_kconfig_var kconfig = {
-		.id = CONFIG_RPS,
-		.id_len = sizeof(CONFIG_RPS) - 1,
-	};
+	struct tst_kconfig_var kconfig = TST_KCONFIG_INIT("CONFIG_RPS");
 	int i = 0;
 
 	tst_kconfig_read(&kconfig, 1);

@@ -26,8 +26,9 @@ trap "unset _tst_setup_timer_pid; tst_brk TBROK 'test terminated'" TERM
 
 _tst_do_cleanup()
 {
-	if [ -n "$TST_DO_CLEANUP" -a -n "$TST_CLEANUP" -a -z "$TST_NO_CLEANUP" ]; then
+	if [ -n "$TST_DO_CLEANUP" -a -n "$TST_CLEANUP" -a -z "$LTP_NO_CLEANUP" ]; then
 		if command -v $TST_CLEANUP >/dev/null 2>/dev/null; then
+			TST_DO_CLEANUP=
 			$TST_CLEANUP
 		else
 			tst_res TWARN "TST_CLEANUP=$TST_CLEANUP declared, but function not defined (or cmd not found)"
@@ -126,12 +127,19 @@ tst_brk()
 	local res=$1
 	shift
 
-	if [ "$TST_DO_EXIT" = 1 ]; then
+	# TBROK => TWARN on cleanup or exit
+	if [ "$res" = TBROK ] && [ "$TST_DO_EXIT" = 1 -o -z "$TST_DO_CLEANUP" -a -n "$TST_CLEANUP" ]; then
 		tst_res TWARN "$@"
+		TST_DO_CLEANUP=
 		return
 	fi
 
-	tst_res "$res" "$@"
+	if [ "$res" != TBROK -a "$res" != TCONF ]; then
+		tst_res TBROK "tst_brk can be called only with TBROK or TCONF ($res)"
+	else
+		tst_res "$res" "$@"
+	fi
+
 	_tst_do_exit
 }
 
@@ -528,7 +536,7 @@ _tst_cleanup_timer()
 {
 	if [ -n "$_tst_setup_timer_pid" ]; then
 		kill -TERM $_tst_setup_timer_pid 2>/dev/null
-		# kill is succesful only on test timeout
+		# kill is successful only on test timeout
 		wait $_tst_setup_timer_pid 2>/dev/null || true
 	fi
 }
@@ -678,7 +686,7 @@ tst_run()
 			CHECKPOINT_WAIT|CHECKPOINT_WAKE);;
 			CHECKPOINT_WAKE2|CHECKPOINT_WAKE_AND_WAIT);;
 			DEV_EXTRA_OPTS|DEV_FS_OPTS|FORMAT_DEVICE|MOUNT_DEVICE);;
-			SKIP_FILESYSTEMS);;
+			SKIP_FILESYSTEMS|SKIP_IN_LOCKDOWN|SKIP_IN_SECUREBOOT);;
 			*) tst_res TWARN "Reserved variable TST_$_tst_i used!";;
 			esac
 		done
@@ -697,6 +705,14 @@ tst_run()
 	fi
 
 	[ "$TST_NEEDS_ROOT" = 1 ] && tst_require_root
+
+	if [ "$TST_SKIP_IN_SECUREBOOT" = 1 ] && tst_secureboot_enabled; then
+		tst_brk TCONF "SecureBoot enabled, skipping test"
+	fi
+
+	if [ "$TST_SKIP_IN_LOCKDOWN" = 1 ] && tst_lockdown_enabled; then
+		tst_brk TCONF "Kernel is locked down, skipping test"
+	fi
 
 	[ "$TST_DISABLE_APPARMOR" = 1 ] && tst_disable_apparmor
 	[ "$TST_DISABLE_SELINUX" = 1 ] && tst_disable_selinux
@@ -722,6 +738,8 @@ tst_run()
 		fi
 
 		TST_TMPDIR=$(mktemp -d "$TMPDIR/LTP_$TST_ID.XXXXXXXXXX")
+		# remove possible trailing slash or double slashes from TMPDIR
+		TST_TMPDIR=$(echo "$TST_TMPDIR" | sed 's~/\+~/~g')
 
 		chmod 777 "$TST_TMPDIR"
 
@@ -887,6 +905,8 @@ if [ -z "$TST_NO_DEFAULT_RUN" ]; then
 	fi
 
 	TST_ARGS="$@"
+
+	tst_res TINFO "Running: $(basename $0) $TST_ARGS"
 
 	OPTIND=1
 

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /*
- * Copyright (c) 2012-2020 Linux Test Project
+ * Copyright (c) 2012-2023 Linux Test Project
  * Copyright (c) 2012-2017 Red Hat, Inc.
  *
  * There are two tunables overcommit_memory and overcommit_ratio under
@@ -62,7 +62,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
-#include "lapi/abisize.h"
 #include "mem.h"
 
 #define DEFAULT_OVER_RATIO	50L
@@ -70,7 +69,6 @@
 #define EXPECT_FAIL		1
 
 static char *R_opt;
-static long old_overcommit_memory = -1;
 static long old_overcommit_ratio = -1;
 static long overcommit_ratio;
 static long sum_total;
@@ -90,16 +88,11 @@ static void setup(void)
 	long mem_total, swap_total;
 	struct rlimit lim;
 
-	if (access(PATH_SYSVM "overcommit_memory", F_OK) == -1 ||
-	    access(PATH_SYSVM "overcommit_ratio", F_OK) == -1)
-		tst_brk(TCONF, "system doesn't support overcommit_memory");
-
 	if (R_opt)
 		overcommit_ratio = SAFE_STRTOL(R_opt, 0, LONG_MAX);
 	else
 		overcommit_ratio = DEFAULT_OVER_RATIO;
 
-	old_overcommit_memory = get_sys_tune("overcommit_memory");
 	old_overcommit_ratio = get_sys_tune("overcommit_ratio");
 
 	mem_total = SAFE_READ_MEMINFO("MemTotal:");
@@ -128,20 +121,8 @@ static void setup(void)
 	tst_res(TINFO, "TotalBatchSize is %ld kB", total_batch_size);
 }
 
-static void cleanup(void)
-{
-	if (old_overcommit_memory != -1)
-		set_sys_tune("overcommit_memory", old_overcommit_memory, 0);
-	if (old_overcommit_ratio != -1)
-		set_sys_tune("overcommit_ratio", old_overcommit_ratio, 0);
-}
-
 static void overcommit_memory_test(void)
 {
-
-#ifdef TST_ABI32
-	tst_brk(TCONF, "test is not designed for 32-bit system.");
-#endif
 	/* start to test overcommit_memory=2 */
 	set_sys_tune("overcommit_memory", 2, 1);
 
@@ -269,6 +250,11 @@ static struct tst_test test = {
 		{}
 	},
 	.setup = setup,
-	.cleanup = cleanup,
 	.test_all = overcommit_memory_test,
+	.skip_in_compat = 1,
+	.save_restore = (const struct tst_path_val[]) {
+		{"/proc/sys/vm/overcommit_memory", NULL, TST_SR_TBROK},
+		{"/proc/sys/vm/overcommit_ratio", NULL, TST_SR_TBROK},
+		{}
+	},
 };
