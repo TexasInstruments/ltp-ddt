@@ -2,6 +2,7 @@ armv8
 am62xx
 am62xx_sk-se
 adc/tscadc
+can
 crypto/sa2ul
 crypto/sa2ul/3des
 crypto/sa2ul/aes
