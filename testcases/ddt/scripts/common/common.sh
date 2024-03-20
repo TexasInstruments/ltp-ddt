@@ -434,9 +434,16 @@ swapfile_create() {
   local swapdir
 
   # the root filesystem may sometimes be an nfs mount so instead we will try to
-  # use the 3rd partition on our devices
+  # use the 3rd partition of the SD card on our devices
 
-  swapdir=$(mount | grep "mmcblk0p3" | cut -d' ' -f 3)
+  device_path=$(grep -l '^SD$' /sys/class/mmc_host/mmc*/mmc*/type)
+  if block_device=$(ls "${device_path%/type}/block"); then
+    swapdir=$(mount | grep "${block_device}p3" | cut -d' ' -f 3)
+  else
+    printf '%s\n' "SD card not found! Making swapfile at root!"
+    swapdir=
+  fi
+
   export DDT_SWAPFILE="$swapdir/ddt-swapfile.img"
 
   if [ -e "$DDT_SWAPFILE" ]; then
