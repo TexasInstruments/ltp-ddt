@@ -48,7 +48,11 @@ check_silicon_rev () {
     rev=$(cat /sys/devices/soc0/revision)
     sys_devices_SOC_REV="$family $rev"
 
-    if [[ "$k3conf_SOC_REV" == "$sys_devices_SOC_REV" ]]
+    sys_socrev=`echo "$sys_devices_SOC_REV" | awk '{print tolower($0)}'`
+    k3conf_socrev=`echo "$k3conf_SOC_REV" | awk '{print tolower($0)}'`
+    printf "SoC rev in /sys=$sys_devices_SOC_REV\nSoC rev reported by k3conf=$k3conf_SOC_REV\n"
+
+    if [[ "$sys_socrev" == "$k3conf_socrev" ]]
     then
         echo "Correct silicon revision is reported"
     else
