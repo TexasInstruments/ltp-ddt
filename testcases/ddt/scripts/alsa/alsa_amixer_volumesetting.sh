@@ -112,7 +112,7 @@ am43xx-epos)
                 MAXVAL=175
                 STEP=30
                 ;;
-j721*|j722*|j784*)
+j721*|j722*|j784*|j742*)
                 CAPTURE_NAME=("ADC1 Capture Volume" "ADC2 Capture Volume" "ADC3 Capture Volume")
                 PLAYBACK_NAME=("DAC1 Playback Volume" "DAC2 Playback Volume" "DAC3 Playback Volume" "DAC4 Playback Volume")
                 MINVAL=0

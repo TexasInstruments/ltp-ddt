@@ -28,6 +28,7 @@ case $DRIVER in
 esac
 case $SOC in
 	j784s4) PREFIX='k3-j784s4-evm-linux-demo';;
+	j742s2) PREFIX='k3-j742s2-evm-linux-demo';;
 	j721s2) PREFIX='k3-j721s2-evm-linux-demo';;
 	j721e) PREFIX='k3-j721e-evm-linux-demo';;
 	j722s) PREFIX='k3-j722s-evm-linux-demo';;

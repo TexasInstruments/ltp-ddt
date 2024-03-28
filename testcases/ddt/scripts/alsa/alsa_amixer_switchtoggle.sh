@@ -93,7 +93,7 @@ am43xx-epos)
         CAPTURE_SWITCH_NAME=("ADC Capture Switch")
         PLAYBACK_SWITCH_NAME=("HP Driver Playback Switch" "Speaker Driver Playback Switch")
         ;;
-j721*|j72s*|j784*)
+j721*|j72s*|j784*|j742*)
         CAPTURE_SWITCH_NAME=("ADC1 Mute Switch" "ADC2 Mute Switch" "ADC3 Mute Switch")
         PLAYBACK_SWITCH_NAME=("DAC1 Invert Switch" "DAC2 Invert Switch" "DAC3 Invert Switch" "DAC4 Invert Switch")
         PLAY_SW_STATE=0
