@@ -1,16 +1,16 @@
-#! /bin/sh
-############################################################################### # Copyright (C) 2011 Texas Instruments Incorporated - http://www.ti.com/ 
-# # This program is free software; you can redistribute it and/or 
-# modify it under the terms of the GNU General Public License as 
+#! /bin/bash
+###############################################################################
+# Copyright (C) 2011 Texas Instruments Incorporated - http://www.ti.com/
+# # This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
 # published by the Free Software Foundation version 2.
 #
-# This program is distributed "as is" WITHOUT ANY WARRANTY of any 
-# kind, whether express or implied; without even the implied warranty 
-# of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+# This program is distributed "as is" WITHOUT ANY WARRANTY of any
+# kind, whether express or implied; without even the implied warranty
+# of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-#####################################################################
-########## 
-source "common.sh"  # Import do_cmd(), die() and other functions
+###############################################################################
+. "common.sh"  # Import do_cmd(), die() and other functions
 
 ############################# Functions #######################################
 usage()
@@ -21,15 +21,14 @@ usage()
 
 ################################ CLI Params ####################################
 p_stats='TXF'
-while getopts  ":h:s:" arg
+
+while getopts  ":hs:" arg
 do case $arg in
-        h)      usage;;
+	h)	usage;;
 	s)	p_stats=$OPTARG;;
-        \?)     die "Invalid Option -$OPTARG ";;
+	\?)	die "Invalid Option -$OPTARG ";;
 esac
 done
 
-DATA=$(cat /proc/net/can/stats | grep $p_stats  | grep -o -E '[0-9]+') 
-echo $DATA
-
-
+data=$(grep "$p_stats" /proc/net/can/stats | grep -o -E '[0-9]+');
+echo "$data";
