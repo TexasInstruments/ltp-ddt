@@ -7,5 +7,12 @@
 #	profile 1. Profile 1 supports CAN instead of wlan on this EVM.
 # @requires can
 
- CAN_S_FUNC_LOOPBACK_CAN0_1000000 source 'functions.sh';  interface='can0'; bitrate=1000000; do_cmd "do_can_loopback.sh -i  $interface -b $bitrate"; init_txf=`get_can_stats.sh -s 'TXF'`;  init_rxf=`get_can_stats.sh -s 'RXF'`; do_cmd "candump -d $interface"; do_cmd "cansequence -p $interface &"; suspend -i 10 -p "mem"; prefinal_txf=`get_can_stats.sh -s 'TXF'`; prefinal_rxf=`get_can_stats.sh -s 'RXF'`; do_cmd "sleep 20"; final_txf=`get_can_stats.sh -s 'TXF'`; final_rxf=`get_can_stats.sh -s 'RXF'`; do_cmd "killall candump"; do_cmd "killall cansequence"; do_cmd "ip link set $interface down"; echo "TX init=$init_txf, prefinal=$prefinal_txf, final=$final_txf"; echo "RX init=$init_rxf, prefinal=$prefinal_rxf, final=$final_rxf"; if [ "$final_rxf" -gt "$prefinal_rxf" ] && [ "$prefinal_rxf" -gt "$init_rxf" ] && [ "$final_txf" -gt "$prefinal_txf" ] && [ "$prefinal_txf" -gt "$init_txf" ]; then exit 0; else exit 1; fi
+CAN_S_FUNC_MODULAR_SUSPEND_CAN0_1000000 source 'functions.sh'; interface='can0'; bitrate=1000000; do_cmd "do_can_loopback.sh -i $interface -b $bitrate"; init_txf=`get_can_stats.sh -s 'TXF'`; init_rxf=`get_can_stats.sh -s 'RXF'`; do_cmd "candump -d $interface"; do_cmd "cansequence -p $interface &"; suspend -i 10 -p "mem"; prefinal_txf=`get_can_stats.sh -s 'TXF'`; prefinal_rxf=`get_can_stats.sh -s 'RXF'`; do_cmd "sleep 10"; final_txf=`get_can_stats.sh -s 'TXF'`; final_rxf=`get_can_stats.sh -s 'RXF'`; do_cmd "killall candump"; do_cmd "killall cansequence"; do_cmd "ip link set $interface down"; echo "Dump transmitted and received frames in: /proc/net/can/stats"; echo "TX init=$init_txf, prefinal=$prefinal_txf, final=$final_txf"; echo "RX init=$init_rxf, prefinal=$prefinal_rxf, final=$final_rxf"; if [ "$final_rxf" -gt "$prefinal_rxf" ] && [ "$prefinal_rxf" -gt "$init_rxf" ] && [ "$final_txf" -gt "$prefinal_txf" ] && [ "$prefinal_txf" -gt "$init_txf" ]; then exit 0; else exit 1; fi
 
+CAN_S_FUNC_MODULAR_SUSPEND_MAIN_MCAN0_1000000 source 'common.sh'; interface='main_mcan0'; bitrate=1000000; do_cmd cantest.sh --modular_suspend -i $interface -b $bitrate
+
+CAN_S_FUNC_MODULAR_SUSPEND_MAIN_MCAN1_1000000 source 'common.sh'; interface='main_mcan1'; bitrate=1000000; do_cmd cantest.sh --modular_suspend -i $interface -b $bitrate
+
+CAN_S_FUNC_MODULAR_SUSPEND_MCU_MCAN0_1000000 source 'common.sh'; interface='mcu_mcan0'; bitrate=1000000; do_cmd cantest.sh --modular_suspend -i $interface -b $bitrate
+
+CAN_S_FUNC_MODULAR_SUSPEND_MCU_MCAN1_1000000 source 'common.sh'; interface='mcu_mcan1'; bitrate=1000000; do_cmd cantest.sh --modular_suspend -i $interface -b $bitrate

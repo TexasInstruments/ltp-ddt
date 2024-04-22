@@ -8,4 +8,12 @@
 #       Tests that CAN interface exists and driver is built as module
 # @requires can
 
-CAN_S_FUNC_MODULAR source 'functions.sh';  interface='can0'; bitrate=1000000; can_interface=`ls /sys/class/net|grep $interface`; if [ -z $can_interface ]; then die "Check dtb to see if CAN is included"; fi; can_module=`zcat /proc/config.gz |grep CONFIG_CAN=m`; if [ -z $can_module ]; then die "CAN is not built as module"; fi
+CAN_S_FUNC_MODULAR source 'common.sh'; interface='can0'; do_cmd can_test.sh --modular -i $interface
+
+CAN_S_FUNC_MODULAR_MAIN_MCAN0 source 'common.sh'; interface='main_mcan0'; do_cmd cantest.sh --modular -i $interface
+
+CAN_S_FUNC_MODULAR_MAIN_MCAN1 source 'common.sh'; interface='main_mcan1'; do_cmd cantest.sh --modular -i $interface
+
+CAN_S_FUNC_MODULAR_MCU_MCAN0 source 'common.sh'; interface='mcu_mcan0'; do_cmd cantest.sh --modular -i $interface
+
+CAN_S_FUNC_MODULAR_MCU_MCAN1 source 'common.sh';interface='mcu_mcan1'; do_cmd cantest.sh --modular -i $interface
