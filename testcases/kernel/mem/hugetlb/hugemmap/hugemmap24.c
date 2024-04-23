@@ -23,14 +23,14 @@
 
 static int  fd = -1;
 static unsigned long slice_boundary;
-static long hpage_size, page_size;
+static unsigned long hpage_size, page_size;
 
 static int init_slice_boundary(int fd)
 {
 	unsigned long slice_size;
 	void *p, *heap;
 	int i;
-#if defined(__LP64__) && !defined(__aarch64__)
+#if defined(__LP64__) && !defined(__aarch64__) && !defined(__loongarch__)
 	/* powerpc: 1TB slices starting at 1 TB */
 	slice_boundary = 0x10000000000;
 	slice_size = 0x10000000000;
@@ -43,6 +43,13 @@ static int init_slice_boundary(int fd)
 	/* dummy malloc so we know where is heap */
 	heap = malloc(1);
 	free(heap);
+
+	 /* Avoid underflow on systems with large huge pages.
+	  * The additionally plus heap address is to reduce the possibility
+	  * of MAP_FIXED stomp over existing mappings.
+	  */
+	while (slice_boundary + slice_size < (unsigned long)heap + 2*hpage_size)
+		slice_boundary += slice_size;
 
 	/* Find 2 neighbour slices with couple huge pages free
 	 * around slice boundary.

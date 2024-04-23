@@ -27,12 +27,7 @@
  * but mode has been chaged in server file.
  *
  * The support for SYNC flags was implemented in NFS in:
- *
- *  commit 9ccee940bd5b766b6dab6c1a80908b9490a4850d
- *  Author: Trond Myklebust <trond.myklebust@primarydata.com>
- *  Date:   Thu Jan 4 17:46:09 2018 -0500
- *
- *  Support statx() mask and query flags parameters
+ * 9ccee940bd5b ("Support statx() mask and query flags parameters")
  */
 
 #define _GNU_SOURCE
@@ -44,6 +39,7 @@
 #include <sys/mount.h>
 #include "tst_test.h"
 #include "lapi/stat.h"
+#include "lapi/fcntl.h"
 
 #define MODE(X) (X & (~S_IFMT))
 #define FLAG_NAME(x) .flag = x, .flag_name = #x
@@ -67,15 +63,15 @@ static int get_mode(char *file_name, int flag_type, char *flag_name)
 {
 	struct statx buf;
 
-	TEST(statx(AT_FDCWD, file_name, flag_type, STATX_ALL, &buf));
+	TEST(statx(AT_FDCWD, file_name, flag_type, STATX_BASIC_STATS, &buf));
 
 	if (TST_RET == -1) {
 		tst_brk(TFAIL | TST_ERR,
-			"statx(AT_FDCWD, %s, %s, STATX_ALL, &buf)",
+			"statx(AT_FDCWD, %s, %s, STATX_BASIC_STATS, &buf)",
 			file_name, flag_name);
 	}
 
-	tst_res(TINFO, "statx(AT_FDCWD, %s, %s, STATX_ALL, &buf) = %o",
+	tst_res(TINFO, "statx(AT_FDCWD, %s, %s, STATX_BASIC_STATS, &buf) = %o",
 		file_name, flag_name, buf.stx_mode);
 
 	return buf.stx_mode;

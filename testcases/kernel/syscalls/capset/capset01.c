@@ -1,12 +1,20 @@
-// SPDX-License-Identifier: GPL-2.0-or-later
+// SPDX-License-Identifier: GPL-2.0
 /*
  * Copyright (c) Wipro Technologies Ltd, 2002.  All Rights Reserved.
- *    AUTHOR		: Saji Kumar.V.R <saji.kumar@wipro.com>
+ * Author: Saji Kumar.V.R <saji.kumar@wipro.com>
  *
- * CHANGES:
- *  2005/01/01: add an hint to a possible solution when test fails
- *              - Ricky Ng-Adam <rngadam@yahoo.com>
+ * 2005/01/01: add an hint to a possible solution when test fails
+ * Ricky Ng-Adam <rngadam@yahoo.com>
+ *
+ * Copyright (c) Linux Test Project, 2003-2023
  */
+
+/*\
+ * [Description]
+ *
+ * Test capset() with with LINUX_CAPABILITY_VERSION_{1,2,3}.
+ */
+
 #include <sys/types.h>
 #include <unistd.h>
 #include "tst_test.h"

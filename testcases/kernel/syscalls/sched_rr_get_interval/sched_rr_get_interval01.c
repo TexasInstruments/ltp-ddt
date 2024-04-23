@@ -2,13 +2,17 @@
 /*
  * Copyright (c) Wipro Technologies Ltd, 2002.  All Rights Reserved.
  *    AUTHOR		: Saji Kumar.V.R <saji.kumar@wipro.com>
+ */
+/*\
+ * [Description]
  *
  * Gets round-robin time quantum by calling sched_rr_get_interval() and
  * checks that the value is sane.
  *
- * It is also a regression test for kernel
- * commit 975e155ed873 ("sched/rt: Show the 'sched_rr_timeslice' SCHED_RR
- * timeslice tuning knob in milliseconds").
+ * It is also a regression test for:
+ *
+ * - 975e155ed873 (sched/rt: Show the 'sched_rr_timeslice' SCHED_RR timeslice tuning knob in milliseconds)
+ * - c7fcb99877f9 ( sched/rt: Fix sysctl_sched_rr_timeslice intial value)
  */
 
 #include "time64_variants.h"
@@ -69,7 +73,7 @@ static void run(void)
 	}
 
 	if (proc_flag)
-		TST_ASSERT_INT("/proc/sys/kernel/sched_rr_timeslice_ms", tst_ts_to_ms(tp));
+		TST_ASSERT_INT(PROC_SCHED_RR_TIMESLICE_MS, tst_ts_to_ms(tp));
 }
 
 static struct tst_test test = {
@@ -79,6 +83,7 @@ static struct tst_test test = {
 	.needs_root = 1,
 	.tags = (const struct tst_tag[]) {
 		{"linux-git", "975e155ed873"},
+		{"linux-git", "c7fcb99877f9"},
 		{}
 	}
 };

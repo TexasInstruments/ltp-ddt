@@ -114,7 +114,7 @@
 #endif
 #include <stdlib.h>		/* atoi, abs */
 
-#include "tlibio.h"		/* defines LIO* marcos */
+#include "tlibio.h"		/* defines LIO* macros */
 #include "random_range.h"
 
 #ifndef PATH_MAX
@@ -539,6 +539,10 @@ int lio_write_buffer(int fd,		/* open file descriptor */
 		long wrd)	/* to allow future features, use zero for now */
 {
 	int ret = 0;		/* syscall return or used to get random method */
+	/* as we cycle writes in case of partial writes, we have to report up
+	 * total bytes written
+	 */
+	int totally_written = 0;
 	char *io_type;		/* Holds string of type of io */
 	int omethod = method;
 	int listio_cmd;		/* Holds the listio/lio_listio cmd */
@@ -745,13 +749,14 @@ int lio_write_buffer(int fd,		/* open file descriptor */
 						fd, size, ret);
 					size -= ret;
 					buffer += ret;
+					totally_written += ret;
 				} else {
 					if (Debug_level > 1)
 						printf
 						    ("DEBUG %s/%d: write completed without error (ret %d)\n",
 						     __FILE__, __LINE__, ret);
 
-					return ret;
+					return totally_written + ret;
 				}
 			}
 			wait4sync_io(fd, 0);
@@ -1109,6 +1114,10 @@ int lio_read_buffer(int fd,	/* open file descriptor */
 		long wrd)	/* to allow future features, use zero for now */
 {
 	int ret = 0;		/* syscall return or used to get random method */
+	/* as we cycle reads in case of partial reads, we have to report up
+	 * total bytes read
+	 */
+	int totally_read = 0;
 	char *io_type;		/* Holds string of type of io */
 	int listio_cmd;		/* Holds the listio/lio_listio cmd */
 	int omethod = method;
@@ -1320,13 +1329,14 @@ int lio_read_buffer(int fd,	/* open file descriptor */
 						fd, size, ret);
 					size -= ret;
 					buffer += ret;
+					totally_read += ret;
 				} else {
 					if (Debug_level > 1)
 						printf
 						    ("DEBUG %s/%d: read completed without error (ret %d)\n",
 						     __FILE__, __LINE__, ret);
 
-					return ret;
+					return totally_read + ret;
 				}
 			}
 			wait4sync_io(fd, 1);

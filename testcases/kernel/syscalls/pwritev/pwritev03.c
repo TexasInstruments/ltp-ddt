@@ -2,12 +2,15 @@
 /*
  * Copyright (c) 2018 FUJITSU LIMITED. All rights reserved.
  * Author: Xiao Yang <yangx.jy@cn.fujitsu.com>
+ * Copyright (c) Linux Test Project, 2019-2023
  */
 
-/*
- * Description:
+/*\
+ * [Description]
+ *
  * Check the basic functionality of the pwritev(2) for the file
  * opened with O_DIRECT in all filesystem.
+ *
  * pwritev(2) should succeed to write the expected content of data
  * and after writing the file, the file offset is not changed.
  */
@@ -90,7 +93,7 @@ static void verify_direct_pwritev(unsigned int n)
 static void setup(void)
 {
 	int dev_fd, ret;
-	
+
 	dev_fd = SAFE_OPEN(tst_device->dev, O_RDWR);
 	SAFE_IOCTL(dev_fd, BLKSSZGET, &ret);
 	SAFE_CLOSE(dev_fd);

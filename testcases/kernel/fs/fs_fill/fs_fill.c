@@ -18,6 +18,7 @@
 #include "tst_test.h"
 
 #define MNTPOINT "mntpoint"
+#define THREADS_DIR MNTPOINT "/subdir"
 
 static volatile int run;
 static unsigned int nthreads;
@@ -99,9 +100,15 @@ static void setup(void)
 	nthreads = tst_ncpus_conf() + 2;
 	workers = SAFE_MALLOC(sizeof(struct worker) * nthreads);
 
+	/*
+	 * Avoid creating the thread directories in the root of the filesystem
+	 * to not hit the root entries limit on a FAT16 filesystem.
+	 */
+	SAFE_MKDIR(THREADS_DIR, 0700);
+
 	for (i = 0; i < nthreads; i++) {
 		snprintf(workers[i].dir, sizeof(workers[i].dir),
-			 MNTPOINT "/thread%i", i + 1);
+			 THREADS_DIR "/thread%i", i + 1);
 		SAFE_MKDIR(workers[i].dir, 0700);
 	}
 
@@ -114,8 +121,9 @@ static void cleanup(void)
 }
 
 static struct tst_test test = {
-	.max_runtime = 60,
+	.max_runtime = 300,
 	.needs_root = 1,
+	.dev_min_size = 1024,
 	.mount_device = 1,
 	.mntpoint = MNTPOINT,
 	.all_filesystems = 1,

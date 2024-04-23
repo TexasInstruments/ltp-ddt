@@ -1,4 +1,4 @@
-# Copyright (c) 2021 Petr Vorel <pvorel@suse.cz>
+# Copyright (c) 2021-2023 Petr Vorel <pvorel@suse.cz>
 
 name: "CI: docker based builds"
 on: [push, pull_request]
@@ -58,14 +58,12 @@ jobs:
               TREE: out
               VARIANT: minimal
 
-          # other builds
-          - container: "fedora:latest"
+          # oldest distros
+          - container: "opensuse/archive:42.2"
             env:
-              CC: clang
-              MAKE_INSTALL: 1
-              METADATA: asciidoctor-pdf
+              CC: gcc
 
-          - container: "centos:7"
+          - container: "quay.io/centos/centos:stream9"
             env:
               CC: gcc
               METADATA: asciidoc-pdf
@@ -79,9 +77,15 @@ jobs:
           - container: "debian:oldstable"
             env:
               CC: clang
-              METADATA: asciidoc-pdf
 
-          - container: "opensuse/leap"
+          # other builds
+          - container: "fedora:latest"
+            env:
+              CC: clang
+              MAKE_INSTALL: 1
+              METADATA: asciidoctor-pdf
+
+          - container: "opensuse/leap:latest"
             env:
               CC: gcc
               METADATA: asciidoc-pdf

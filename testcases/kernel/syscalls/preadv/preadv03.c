@@ -2,12 +2,15 @@
 /*
  * Copyright (c) 2018 FUJITSU LIMITED. All rights reserved.
  * Author: Xiao Yang <yangx.jy@cn.fujitsu.com>
+ * Copyright (c) Linux Test Project, 2019-2023
  */
 
-/*
- * Description:
+/*\
+ * [Description]
+ *
  * Check the basic functionality of the preadv(2) for the file
  * opened with O_DIRECT in all filesystem.
+ *
  * preadv(2) should succeed to read the expected content of data
  * and after reading the file, the file offset is not changed.
  */

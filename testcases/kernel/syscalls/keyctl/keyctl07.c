@@ -1,9 +1,12 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /*
  * Copyright (c) 2017 Google, Inc.
+ * Copyright (c) Linux Test Project, 2018-2024
  */
 
-/*
+/*\
+ * [Description]
+ *
  * Regression test for commit 37863c43b2c6 ("KEYS: prevent KEYCTL_READ on
  * negative key").  This is CVE-2017-12192.
  */
@@ -104,7 +107,7 @@ static struct tst_test test = {
 	.test_all = do_test,
 	.forks_child = 1,
 	.tags = (const struct tst_tag[]) {
-		{"CVE", "2017-12912"},
+		{"CVE", "2017-12192"},
 		{"linux-git", "37863c43b2c6"},
 		{}
 	}

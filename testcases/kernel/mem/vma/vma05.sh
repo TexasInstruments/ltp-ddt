@@ -25,17 +25,21 @@ TST_NEEDS_CMDS="gdb"
 
 CORE_LIMIT=$(ulimit -c)
 CORE_PATTERN=$(cat /proc/sys/kernel/core_pattern)
+CORE_USES_PID=$(cat /proc/sys/kernel/core_uses_pid)
 
 setup()
 {
 	ulimit -c unlimited
 	echo "core" > /proc/sys/kernel/core_pattern
+	echo 0 > /proc/sys/kernel/core_uses_pid
+	unset DEBUGINFOD_URLS
 }
 
 cleanup()
 {
 	ulimit -c "$CORE_LIMIT"
 	echo "$CORE_PATTERN" > /proc/sys/kernel/core_pattern
+	echo $CORE_USES_PID > /proc/sys/kernel/core_uses_pid
 }
 
 vma_report_check()
@@ -53,6 +57,8 @@ vma_report_check()
 
 	rm -rf core*
 	{ vma05_vdso; } > /dev/null 2>&1
+	[ -f core ] || tst_brk TBROK "missing core file"
+
 	TRACE=$(gdb -silent -ex="thread apply all backtrace" -ex="quit"\
 		vma05_vdso ./core* 2> /dev/null)
 	if echo "$TRACE" | grep -qF "??"; then

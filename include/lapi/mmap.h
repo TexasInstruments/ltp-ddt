@@ -8,6 +8,11 @@
 #define LAPI_MMAP_H__
 
 #include "config.h"
+#include <sys/mman.h>
+
+#ifndef MAP_SHARED_VALIDATE
+# define MAP_SHARED_VALIDATE 0x03
+#endif
 
 #ifndef MAP_HUGETLB
 # define MAP_HUGETLB 0x40000

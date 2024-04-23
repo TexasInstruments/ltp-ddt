@@ -43,7 +43,6 @@
 
 #ifdef HAVE_DECL_MADV_MERGEABLE
 
-static int ksm_run_orig = -1;
 static void sighandler(int sig);
 
 static void test_ksm(void)
@@ -89,12 +88,18 @@ static struct tst_test test = {
 	.test_all = test_ksm,
 	.save_restore = (const struct tst_path_val[]) {
 		{"/sys/kernel/mm/ksm/run", "1", TST_SR_TBROK},
+		{"/sys/kernel/mm/ksm/smart_scan", "0",
+			TST_SR_SKIP_MISSING | TST_SR_TBROK_RO},
 		{}
 	},
 	.needs_kconfigs = (const char *const[]){
 		"CONFIG_KSM=y",
 		NULL
 	},
+	.tags = (const struct tst_tag[]) {
+		{"CVE", "2011-2183"},
+		{}
+	}
 };
 
 #else

@@ -165,8 +165,7 @@ setup()
 	mount -t cgroup -o cpuset cpuset "$CPUSET" 2> /dev/null
 	if [ $? -ne 0 ]; then
 		cleanup
-		tst_brkm TFAIL "Could not mount cgroup filesystem with"\
-					" cpuset on $CPUSET..Exiting test"
+		tst_brkm TCONF "Could not mount cgroup filesystem with cpuset on $CPUSET"
 	fi
 
 	CHILDREN_VALUE="`cat $CLONE_CHILDREN`"
@@ -184,7 +183,7 @@ cleanup()
 	echo $CHILDREN_VALUE > $CLONE_CHILDREN
 	echo $SCHED_LB_VALUE > $SCHED_LB
 
-	find "$CPUSET" -type d | sort | sed -n '2,$p' | tac | while read subdir
+	find "$CPUSET" -type d | sort | sed -n '2,$p' | tac | while read -r subdir
 	do
 		while read pid
 		do

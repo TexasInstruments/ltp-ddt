@@ -21,10 +21,11 @@
 #include <limits.h>
 #include <sys/param.h>
 #include <sys/types.h>
+#include <lapi/mmap.h>
 
 #include "hugetlb.h"
 
-#define FOURGB (1UL << 32)
+#define FOURGB (1ULL << 32)
 #define MNTPOINT "hugetlbfs/"
 static int  fd = -1;
 static unsigned long hpage_size;
@@ -33,16 +34,16 @@ static int page_size;
 static void run_test(void)
 {
 	void *p, *q = NULL;
-	unsigned long lowaddr;
-	unsigned long below_start;
-	unsigned long above_end;
+	unsigned long long lowaddr;
+	unsigned long long below_start;
+	unsigned long long above_end;
 
 	p = mmap((void *)FOURGB, hpage_size, PROT_READ|PROT_WRITE,
 		 MAP_SHARED | MAP_FIXED, fd, 0);
 	if (p == MAP_FAILED) {
 		/* slice 0 (high) spans from 4G-1T */
 		below_start = FOURGB;
-		above_end = 1024L*1024*1024*1024;
+		above_end = 1024ULL*1024*1024*1024;
 
 		if (range_is_mapped(below_start, above_end) == 1) {
 			tst_res(TINFO|TERRNO, "region 4G-IT is not free & "
@@ -62,15 +63,15 @@ static void run_test(void)
 	memset(p, 0, hpage_size);
 
 	/* Test just below 4GB to check for off-by-one errors */
-	lowaddr = FOURGB - page_size;
-	q = mmap((void *)lowaddr, page_size, PROT_READ|PROT_WRITE,
+	lowaddr = FOURGB - MMAP_GRANULARITY;
+	q = mmap((void *)lowaddr, MMAP_GRANULARITY, PROT_READ|PROT_WRITE,
 		 MAP_SHARED|MAP_FIXED|MAP_ANONYMOUS, 0, 0);
 	if (q == MAP_FAILED) {
-		below_start = FOURGB - page_size;
+		below_start = FOURGB - MMAP_GRANULARITY;
 		above_end = FOURGB;
 
 		if (range_is_mapped(below_start, above_end) == 1) {
-			tst_res(TINFO|TERRNO, "region (4G-page)-4G is not free & "
+			tst_res(TINFO|TERRNO, "region (4G-MMAP_GRANULARITY)-4G is not free & "
 					"mmap() failed expected");
 			tst_res(TPASS, "Successful but inconclusive");
 		} else

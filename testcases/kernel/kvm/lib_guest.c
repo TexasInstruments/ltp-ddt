@@ -82,7 +82,7 @@ char *ptr2hex(char *dest, uintptr_t val)
 	uintptr_t tmp;
 	char *ret = dest;
 
-	for (i = 4; val >> i; i += 4)
+	for (i = 4, tmp = val >> 4; tmp; i += 4, tmp >>= 4)
 		;
 
 	do {
@@ -153,6 +153,22 @@ void tst_brk_(const char *file, const int lineno, int result,
 {
 	tst_res_(file, lineno, result, message);
 	kvm_exit();
+}
+
+void tst_signal_host(void *data)
+{
+	test_result->file_addr = (uintptr_t)data;
+	test_result->result = KVM_TSYNC;
+}
+
+void tst_wait_host(void *data)
+{
+	volatile int32_t *vres = &test_result->result;
+
+	tst_signal_host(data);
+
+	while (*vres != KVM_TNONE)
+		;
 }
 
 void tst_handle_interrupt(struct kvm_interrupt_frame *ifrm, long vector,

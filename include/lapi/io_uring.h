@@ -11,10 +11,9 @@
 
 #include <unistd.h>
 #include <fcntl.h>
-#include <sys/types.h>
 #include <sys/uio.h>
 #include <stdlib.h>
-#include <linux/fs.h>
+#include <linux/types.h>
 
 #include "lapi/syscalls.h"
 

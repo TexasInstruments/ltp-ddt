@@ -49,7 +49,7 @@ int tst_clear_device(const char *dev);
  * free loopdev). If path is non-NULL, it will be filled with free loopdev path.
  *
  */
-int tst_find_free_loopdev(const char *path, size_t path_len);
+int tst_find_free_loopdev(char *path, size_t path_len);
 
 /*
  * Attaches a file to a loop device.
@@ -108,10 +108,11 @@ void tst_purge_dir(const char *path);
 
 /*
  * Find the file or path belongs to which block dev
- * @path  Path to find the backing dev
- * @dev   The block dev
+ * @path       Path to find the backing dev
+ * @dev        The buffer to store the block dev in
+ * @dev_size   The length of the block dev buffer
  */
-void tst_find_backing_dev(const char *path, char *dev);
+void tst_find_backing_dev(const char *path, char *dev, size_t dev_size);
 
 /*
  * Stat the device mounted on a given path.

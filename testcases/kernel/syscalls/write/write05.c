@@ -1,19 +1,22 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /*
- *
- *   Copyright (c) International Business Machines Corp., 2001
- *	07/2001 Ported by John George
- *      04/2002 wjhuie sigset cleanups
- *      08/2007 Ricardo Salveti de Araujo <rsalveti@linux.vnet.ibm.com>
+ * Copyright (c) International Business Machines Corp., 2001
+ * 07/2001 Ported by John George
+ * 04/2002 wjhuie sigset cleanups
+ * 08/2007 Ricardo Salveti de Araujo <rsalveti@linux.vnet.ibm.com>
+ * Copyright (c) Linux Test Project, 2002-2023
  */
 
-/*
- * DESCRIPTION
+/*\
+ * [Description]
+ *
  *	Check the return value, and errnos of write(2)
+ *
  *	- when the file descriptor is invalid - EBADF
  *	- when the buf parameter is invalid - EFAULT
  *	- on an attempt to write to a pipe that is not open for reading - EPIPE
  */
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -42,7 +45,7 @@ static struct tcase {
 	{&pipefd[1], &buf, sizeof(buf), EPIPE},
 };
 
-static int sigpipe_cnt;
+static volatile int sigpipe_cnt;
 
 static void sighandler(int sig)
 {
@@ -56,26 +59,12 @@ static void verify_write(unsigned int i)
 
 	sigpipe_cnt = 0;
 
-	TEST(write(*tc->fd, *tc->buf, tc->size));
-
-	if (TST_RET != -1) {
-		tst_res(TFAIL, "write() succeeded unexpectedly");
+	TST_EXP_FAIL2(write(*tc->fd, *tc->buf, tc->size), tc->exp_errno);
+	if (TST_RET != -1)
 		return;
-	}
 
-	if (TST_ERR != tc->exp_errno) {
-		tst_res(TFAIL | TTERRNO,
-			"write() failed unexpectedly, expected %s",
-			tst_strerrno(tc->exp_errno));
-		return;
-	}
-
-	if (tc->exp_errno == EPIPE && sigpipe_cnt != 1) {
+	if (tc->exp_errno == EPIPE && sigpipe_cnt != 1)
 		tst_res(TFAIL, "sigpipe_cnt = %i", sigpipe_cnt);
-		return;
-	}
-
-	tst_res(TPASS | TTERRNO, "write() failed expectedly");
 }
 
 static void setup(void)

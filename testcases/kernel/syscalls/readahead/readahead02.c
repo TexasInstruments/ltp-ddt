@@ -318,6 +318,19 @@ static void test_readahead(unsigned int n)
 		tst_res(TCONF, "Page cache on your system is too small "
 			"to hold whole testfile.");
 	}
+
+	/*
+	 * The time consuming of readahead quite depending on the platform IO
+	 * speed, sometime test timeout when the default max_runtime is used up.
+	 *
+	 *  readahead02.c:221: TINFO: Test #2: POSIX_FADV_WILLNEED on file
+	 *  readahead02.c:285: TINFO: read_testfile(0) took: 26317623 usec
+	 *  readahead02.c:286: TINFO: read_testfile(1) took: 26101484 usec
+	 *
+	 * Here raise the maximum runtime dynamically.
+	 */
+	if ((tc+1)->readahead)
+		tst_set_max_runtime(test.max_runtime + (usec + usec_ra) / 1000000);
 }
 
 
@@ -352,7 +365,7 @@ static void setup_readahead_length(void)
 	/* raise bdi limit as much as kernel allows */
 	ra_new_limit = testfile_size / 1024;
 	while (ra_new_limit > pagesize / 1024) {
-		FILE_PRINTF(sys_bdi_ra_path, "%d", ra_new_limit);
+		SAFE_FILE_PRINTF(sys_bdi_ra_path, "%d", ra_new_limit);
 		SAFE_FILE_SCANF(sys_bdi_ra_path, "%d", &ra_limit);
 
 		if (ra_limit == ra_new_limit) {

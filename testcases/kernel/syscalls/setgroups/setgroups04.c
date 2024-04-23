@@ -70,6 +70,10 @@
 
 #include "test.h"
 
+/*
+ * Don't forget to remove USE_LEGACY_COMPAT_16_H from Makefile after
+ * rewriting this test to the new API.
+ */
 #include "compat_16.h"
 
 TCID_DEFINE(setgroups04);

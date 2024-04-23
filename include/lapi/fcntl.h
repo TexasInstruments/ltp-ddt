@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /*
  * Copyright (c) 2014 Cyril Hrubis <chrubis@suse.cz>
+ * Copyright (c) Linux Test Project, 2014-2023
  */
 
 #ifndef LAPI_FCNTL_H__
@@ -10,9 +11,7 @@
 #include <fcntl.h>
 #include <sys/socket.h>
 
-#ifndef O_DIRECT
-# define O_DIRECT 040000
-#endif
+/* NOTE: #define _GNU_SOURCE if you need O_DIRECT in tests */
 
 #ifndef O_CLOEXEC
 # define O_CLOEXEC 02000000
@@ -87,20 +86,44 @@
 # define AT_FDCWD -100
 #endif
 
-#ifndef AT_SYMLINK_FOLLOW
-# define AT_SYMLINK_FOLLOW 0x400
-#endif
-
 #ifndef AT_SYMLINK_NOFOLLOW
-# define AT_SYMLINK_NOFOLLOW 0x100
-#endif
-
-#ifndef AT_EMPTY_PATH
-# define AT_EMPTY_PATH 0x1000
+# define AT_SYMLINK_NOFOLLOW	0x100
 #endif
 
 #ifndef AT_REMOVEDIR
-# define AT_REMOVEDIR 0x200
+# define AT_REMOVEDIR		0x200
+#endif
+
+#ifndef AT_HANDLE_FID
+# define AT_HANDLE_FID		AT_REMOVEDIR
+#endif
+
+#ifndef AT_SYMLINK_FOLLOW
+# define AT_SYMLINK_FOLLOW	0x400
+#endif
+
+#ifndef AT_NO_AUTOMOUNT
+# define AT_NO_AUTOMOUNT	0x800
+#endif
+
+#ifndef AT_EMPTY_PATH
+# define AT_EMPTY_PATH		0x1000
+#endif
+
+#ifndef AT_STATX_SYNC_AS_STAT
+# define AT_STATX_SYNC_AS_STAT	0x0000
+#endif
+
+#ifndef AT_STATX_FORCE_SYNC
+# define AT_STATX_FORCE_SYNC	0x2000
+#endif
+
+#ifndef AT_STATX_DONT_SYNC
+# define AT_STATX_DONT_SYNC	0x4000
+#endif
+
+#ifndef AT_STATX_SYNC_TYPE
+# define AT_STATX_SYNC_TYPE	0x6000
 #endif
 
 #ifndef O_NOATIME

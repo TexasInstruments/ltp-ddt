@@ -18,6 +18,7 @@
  *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <limits.h>
@@ -29,8 +30,10 @@
 #include "tst_pid.h"
 #include "old_safe_file_ops.h"
 #include "tst_safe_macros.h"
+#include "lapi/syscalls.h"
 
 #define PID_MAX_PATH "/proc/sys/kernel/pid_max"
+#define THREADS_MAX_PATH "/proc/sys/kernel/threads-max"
 #define CGROUPS_V1_SLICE_FMT "/sys/fs/cgroup/pids/user.slice/user-%d.slice/pids.max"
 #define CGROUPS_V2_SLICE_FMT "/sys/fs/cgroup/user.slice/user-%d.slice/pids.max"
 /* Leave some available processes for the OS */
@@ -110,25 +113,35 @@ static int get_session_pids_limit(void (*cleanup_fn) (void))
 	return max_pids;
 }
 
+static int get_used_pids(void (*cleanup_fn) (void))
+{
+	DIR *dir_proc;
+	struct dirent *ent;
+	char status_path[PATH_MAX];
+	int used_threads, used_pids = 0;
+
+	dir_proc = SAFE_OPENDIR("/proc");
+
+	while ((ent = SAFE_READDIR(dir_proc))) {
+		if (isdigit(ent->d_name[0])) {
+			snprintf(status_path, sizeof(status_path), "/proc/%s/status", ent->d_name);
+			if (!FILE_LINES_SCANF(cleanup_fn, status_path, "Threads: %d", &used_threads))
+				used_pids += used_threads;
+		}
+	}
+
+	SAFE_CLOSEDIR(dir_proc);
+
+	return used_pids;
+}
+
 int tst_get_free_pids_(void (*cleanup_fn) (void))
 {
-	FILE *f;
-	int rc, used_pids, max_pids, max_session_pids;
-
-	f = popen("ps -eT | wc -l", "r");
-	if (!f) {
-		tst_brkm(TBROK, cleanup_fn, "Could not run 'ps' to calculate used pids");
-		return -1;
-	}
-	rc = fscanf(f, "%i", &used_pids);
-	pclose(f);
-
-	if (rc != 1 || used_pids < 0) {
-		tst_brkm(TBROK, cleanup_fn, "Could not read output of 'ps' to calculate used pids");
-		return -1;
-	}
+	int max_pids, max_session_pids, max_threads, used_pids = get_used_pids(cleanup_fn);
 
 	SAFE_FILE_SCANF(cleanup_fn, PID_MAX_PATH, "%d", &max_pids);
+	SAFE_FILE_SCANF(cleanup_fn, THREADS_MAX_PATH, "%d", &max_threads);
+	max_pids = MIN(max_pids, max_threads);
 
 	max_session_pids = get_session_pids_limit(cleanup_fn);
 	if ((max_session_pids > 0) && (max_session_pids < max_pids))
@@ -147,4 +160,14 @@ int tst_get_free_pids_(void (*cleanup_fn) (void))
 		return 0;
 	}
 	return max_pids - used_pids;
+}
+
+pid_t tst_getpid(void)
+{
+	return syscall(SYS_getpid);
+}
+
+pid_t tst_gettid(void)
+{
+	return syscall(SYS_gettid);
 }

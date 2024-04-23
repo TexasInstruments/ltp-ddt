@@ -10,6 +10,8 @@
 
 #define TST_NO_DEFAULT_MAIN
 #include "tst_test.h"
+#include "tst_clocks.h"
+#include "tst_timer.h"
 #include "kvm_host.h"
 
 static struct tst_kvm_instance test_vm = { .vm_fd = -1 };
@@ -234,14 +236,28 @@ void tst_kvm_create_instance(struct tst_kvm_instance *inst, size_t ram_size)
 	inst->result->message[0] = '\0';
 }
 
-void tst_kvm_run_instance(struct tst_kvm_instance *inst)
+int tst_kvm_run_instance(struct tst_kvm_instance *inst, int exp_errno)
 {
 	struct kvm_regs regs;
+	int ret;
 
 	while (1) {
 		inst->result->result = KVM_TNONE;
 		inst->result->message[0] = '\0';
-		SAFE_IOCTL(inst->vcpu_fd, KVM_RUN, 0);
+		errno = 0;
+		ret = ioctl(inst->vcpu_fd, KVM_RUN, 0);
+
+		if (ret == -1) {
+			if (errno == exp_errno)
+				return ret;
+
+			tst_brk(TBROK | TERRNO, "ioctl(KVM_RUN) failed");
+		}
+
+		if (ret < 0) {
+			tst_brk(TBROK | TERRNO,
+				"Invalid ioctl(KVM_RUN) return value %d", ret);
+		}
 
 		if (inst->vcpu_info->exit_reason != KVM_EXIT_HLT) {
 			SAFE_IOCTL(inst->vcpu_fd, KVM_GET_REGS, &regs);
@@ -255,6 +271,8 @@ void tst_kvm_run_instance(struct tst_kvm_instance *inst)
 
 		tst_kvm_print_result(inst);
 	}
+
+	return ret;
 }
 
 void tst_kvm_destroy_instance(struct tst_kvm_instance *inst)
@@ -272,6 +290,37 @@ void tst_kvm_destroy_instance(struct tst_kvm_instance *inst)
 	memset(inst->ram, 0, sizeof(inst->ram));
 }
 
+int tst_kvm_wait_guest(struct tst_kvm_instance *inst, int timeout_ms)
+{
+	volatile struct tst_kvm_result *result = inst->result;
+	int32_t res;
+	struct timespec start, now;
+
+	if (timeout_ms >= 0)
+		tst_clock_gettime(CLOCK_MONOTONIC, &start);
+
+	while ((res = result->result) != KVM_TSYNC) {
+		if (res == KVM_TEXIT)
+			return res;
+
+		if (timeout_ms >= 0) {
+			tst_clock_gettime(CLOCK_MONOTONIC, &now);
+
+			if (tst_timespec_diff_ms(now, start) >= timeout_ms)
+				return -1;
+		}
+
+		usleep(1000);
+	}
+
+	return 0;
+}
+
+void tst_kvm_clear_guest_signal(struct tst_kvm_instance *inst)
+{
+	inst->result->result = KVM_TNONE;
+}
+
 void tst_kvm_setup(void)
 {
 
@@ -280,7 +329,7 @@ void tst_kvm_setup(void)
 void tst_kvm_run(void)
 {
 	tst_kvm_create_instance(&test_vm, DEFAULT_RAM_SIZE);
-	tst_kvm_run_instance(&test_vm);
+	tst_kvm_run_instance(&test_vm, 0);
 	tst_kvm_destroy_instance(&test_vm);
 	tst_free_all();
 }
