@@ -15,20 +15,34 @@
 ############################# Functions #######################################
 usage()
 {
-	echo "get_can_stats.sh <type of statistic - TXF or RXF>"
+	echo "get_can_error_stats.sh <interface such as can0, main_mcan0> <type of statistic - tx or rx>"
 	exit 1
 }
 
 ################################ CLI Params ####################################
-p_stats='TXF'
+interface='can0'
+stats='tx'
 
-while getopts  ":hs:" arg
+while getopts  ":hi:s:" arg
 do case $arg in
 	h)	usage;;
-	s)	p_stats=$OPTARG;;
+	i)	interface=$OPTARG;;
+	s)	stats=$OPTARG;;
 	\?)	die "Invalid Option -$OPTARG ";;
 esac
 done
 
-data=$(grep "$p_stats" /proc/net/can/stats | grep -o -E '[0-9]+');
+nestats=$stats;
+nestats="${nestats}_[b,p]*";
+stats="${stats}*";
+spath=/sys/class/net/$interface/statistics;
+
+data="$(
+find "$spath" -type f -name "$stats" ! -name "$nestats" | \
+	while read -r variable; do
+		printf "%s" "$( < "$variable" )"
+	done
+)"
+
+data=${data//$'\n'/};
 echo "$data";

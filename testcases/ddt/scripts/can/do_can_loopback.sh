@@ -11,7 +11,7 @@
 # GNU General Public License for more details.
 #####################################################################
 ########## 
-source "common.sh"  # Import do_cmd(), die() and other functions
+. "common.sh"  # Import do_cmd(), die() and other functions
 
 ############################# Functions #######################################
 usage()
@@ -25,14 +25,13 @@ p_interface="can0"
 p_bitrate=1000000
 while getopts  ":h:i:b:" arg
 do case $arg in
-        h)      usage;;
+	h)	usage;;
 	i)	p_interface=$OPTARG;;
 	b)	p_bitrate=$OPTARG;;
-        \?)     die "Invalid Option -$OPTARG ";;
+	\?)	die "Invalid Option -$OPTARG ";;
 esac
 done
 
 do_cmd "ip link set $p_interface down"
 do_cmd "canconfig $p_interface bitrate $p_bitrate ctrlmode triple-sampling on loopback on"
 do_cmd "ip link set $p_interface up"
-
