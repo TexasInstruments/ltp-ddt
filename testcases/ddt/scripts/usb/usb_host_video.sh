@@ -45,7 +45,7 @@ done
 ############################ Default Values for Params ###############################
 
 : ${DEV_NAME:='/dev/video0'}
-: ${FILE_NAME:='/home/root/capture.YUV'}
+: ${FILE_NAME:='$HOME/capture.YUV'}
 : ${WIDTH:='320'}
 : ${LENGTH:='240'}
 

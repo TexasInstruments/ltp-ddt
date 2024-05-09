@@ -19,9 +19,9 @@ USBHOST_M_FUNC_AUDIO_LOOPBACK_ACCESSTYPE_NONINTER_03  source 'common.sh' ; do_cm
 
 # PLAYBACK
 
-USBHOST_S_FUNC_AUDIO_PLAYBACK_ACCESSTYPE_NONINTER_01  source 'common.sh' ; do_cmd install_modules.sh 'usb'; do_cmd usb_audio_search_devices.sh play usb; audio_dev=`usb_audio_search_devices.sh play usb`; do_cmd 'alsa_tests.sh -D hw:'$audio_dev',0 -t playback -a 0 -F /home/root/USBHOST_S_FUNC_AUDIO_PLAYBACK_ACCESSTYPE_NONINTER_01.wav' -f S16_LE -r 44100
+USBHOST_S_FUNC_AUDIO_PLAYBACK_ACCESSTYPE_NONINTER_01  source 'common.sh' ; do_cmd install_modules.sh 'usb'; do_cmd usb_audio_search_devices.sh play usb; audio_dev=`usb_audio_search_devices.sh play usb`; do_cmd 'alsa_tests.sh -D hw:'$audio_dev',0 -t playback -a 0 -F $HOME/USBHOST_S_FUNC_AUDIO_PLAYBACK_ACCESSTYPE_NONINTER_01.wav -f S16_LE -r 44100'
 
-USBHOST_M_FUNC_AUDIO_PLAYBACK_ACCESSTYPE_MMAP_01      source 'common.sh' ; do_cmd install_modules.sh 'usb'; do_cmd usb_audio_search_devices.sh play usb; audio_dev=`usb_audio_search_devices.sh play usb`; do_cmd 'alsa_tests.sh -D hw:'$audio_dev',0 -t playback -a 1 -F /home/root/USBHOST_M_FUNC_AUDIO_PLAYBACK_ACCESSTYPE_MMAP_01.wav -f S16_LE -r 44100'
+USBHOST_M_FUNC_AUDIO_PLAYBACK_ACCESSTYPE_MMAP_01      source 'common.sh' ; do_cmd install_modules.sh 'usb'; do_cmd usb_audio_search_devices.sh play usb; audio_dev=`usb_audio_search_devices.sh play usb`; do_cmd 'alsa_tests.sh -D hw:'$audio_dev',0 -t playback -a 1 -F $HOME/USBHOST_M_FUNC_AUDIO_PLAYBACK_ACCESSTYPE_MMAP_01.wav -f S16_LE -r 44100'
 
 USBHOST_S_STRESS_AUDIO_PLAYBACK_APLAY_STEREO_48KHz_01  source 'common.sh' ; do_cmd install_modules.sh 'usb'; do_cmd usb_audio_search_devices.sh play usb; audio_dev=`usb_audio_search_devices.sh play usb`; for i in {1..10}; do do_cmd 'aplay -Dplughw:'$audio_dev',0 -r 48000 -c 2 -f S16_LE /usr/share/sounds/alsa/Front_Center.wav'; done
 
@@ -35,6 +35,6 @@ USBHOST_L_STRESS_AUDIO_PLAYBACK_APLAY_STEREO_48KHz_01  source 'common.sh' ; do_c
 
 #CAPTURE
 
-USBHOST_S_FUNC_AUDIO_CAPTURE_ACCESSTYPE_NONINTER_01   source 'common.sh' ; do_cmd install_modules.sh 'usb'; do_cmd usb_audio_search_devices.sh record usb; audio_dev=`usb_audio_search_devices.sh record usb`; do_cmd 'alsa_tests.sh -D hw:'$audio_dev',0 -t capture -a 0 -F /home/root/USBHOST_S_FUN_AUDIO_CAP_ACC_TYPE_NONINTER_01.snd -f S16_LE -r 44100' 
+USBHOST_S_FUNC_AUDIO_CAPTURE_ACCESSTYPE_NONINTER_01   source 'common.sh' ; do_cmd install_modules.sh 'usb'; do_cmd usb_audio_search_devices.sh record usb; audio_dev=`usb_audio_search_devices.sh record usb`; do_cmd 'alsa_tests.sh -D hw:'$audio_dev',0 -t capture -a 0 -F $HOME/USBHOST_S_FUN_AUDIO_CAP_ACC_TYPE_NONINTER_01.snd -f S16_LE -r 44100'
 
-USBHOST_M_FUNC_AUDIO_CAPTURE_ACCESSTYPE_MMAP_01       source 'common.sh' ; do_cmd install_modules.sh 'usb'; do_cmd usb_audio_search_devices.sh record usb; audio_dev=`usb_audio_search_devices.sh record usb`; do_cmd 'alsa_tests.sh   -D hw:'$audio_dev',0  -t capture -a 1 -F /home/root/USBHOST_M_FUNC_AUDIO_CAPTURE_ACCESSTYPE_MMAP_01.snd -f S16_LE -r 44100'
+USBHOST_M_FUNC_AUDIO_CAPTURE_ACCESSTYPE_MMAP_01       source 'common.sh' ; do_cmd install_modules.sh 'usb'; do_cmd usb_audio_search_devices.sh record usb; audio_dev=`usb_audio_search_devices.sh record usb`; do_cmd 'alsa_tests.sh   -D hw:'$audio_dev',0  -t capture -a 1 -F $HOME/USBHOST_M_FUNC_AUDIO_CAPTURE_ACCESSTYPE_MMAP_01.snd -f S16_LE -r 44100'

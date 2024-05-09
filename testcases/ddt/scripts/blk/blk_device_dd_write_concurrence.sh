@@ -75,7 +75,7 @@ else
 fi
 
 test_print_trc "Doing write concurrence test"
-SRC_FILE="/home/root/srctest_file_${DEVICE_TYPE}_$$"
+SRC_FILE="$HOME/srctest_file_${DEVICE_TYPE}_$$"
 do_cmd "time dd if=/dev/urandom of=$SRC_FILE bs=$DD_BUFSIZE count=$DD_CNT"
 do_cmd dd if="$SRC_FILE" of=${MNT_POINT}/test1.file bs=$DD_BUFSIZE count=$DD_CNT &
 do_cmd dd if="$SRC_FILE" of=${MNT_POINT}/test2.file bs=$DD_BUFSIZE count=$DD_CNT

@@ -2,8 +2,8 @@
 # @desc Write to QSPI flash directly
 # @requires qspi_master/mtd
 # @setup_requires qspi
-QSPI_S_FUNC_MTD_RAW_WRITE_CHAR source "common.sh"; install_modules.sh "qspi"; part=`get_mtd_partition_number.sh "qspi"` || die "error getting mtd part number: $part"; do_cmd "echo deadbeaf > /home/root/short_test "; do_cmd "dd if=/home/root/short_test of=/dev/mtd"$part" " 
-QSPI_S_FUNC_MTD_RAW_WRITE_BLOCK source "common.sh"; install_modules.sh "qspi"; part=`get_mtd_partition_number.sh "qspi"` || die "error getting mtd part number: $part"; do_cmd "echo deadbeaf > /home/root/short_test "; do_cmd "dd if=/home/root/short_test of=/dev/mtdblock"$part" " 
+QSPI_S_FUNC_MTD_RAW_WRITE_CHAR source "common.sh"; install_modules.sh "qspi"; part=`get_mtd_partition_number.sh "qspi"` || die "error getting mtd part number: $part"; do_cmd "echo deadbeaf > $HOME/short_test "; do_cmd "dd if=$HOME/short_test of=/dev/mtd"$part" "
+QSPI_S_FUNC_MTD_RAW_WRITE_BLOCK source "common.sh"; install_modules.sh "qspi"; part=`get_mtd_partition_number.sh "qspi"` || die "error getting mtd part number: $part"; do_cmd "echo deadbeaf > $HOME/short_test "; do_cmd "dd if=$HOME/short_test of=/dev/mtdblock"$part" "
 
 
 

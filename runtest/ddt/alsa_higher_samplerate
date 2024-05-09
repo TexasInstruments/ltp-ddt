@@ -13,4 +13,4 @@
 # @requires sound/playback/alsa/hisamplingrate
 ALSA_XS_FUNC_CAP_SMPRT_192000 source 'common.sh' ; do_cmd install_modules.sh 'sound' ; do_cmd 'alsa_tests.sh -t capture -r 192000 -F ALSA_M_FUNC_CAP_SMPRT_192000.snd -d 30'; do_cmd 'alsa_tests.sh -t playback -r 192000 -F ALSA_M_FUNC_CAP_SMPRT_192000.snd -d 30'
 ALSA_XS_FUNC_LOOPBK_SMPRT_192000 source 'common.sh' ; do_cmd install_modules.sh 'sound' ; do_cmd 'alsa_tests.sh -t loopback -r 192000 -d 30'
-ALSA_S_FUNC_PLAYBACK_SMPRT_192000 source 'common.sh' ; do_cmd install_modules.sh 'sound' ; do_cmd 'alsa_tests.sh -t playback -r 192000 -F /home/root/ALSA_M_FUNC_PLAYBACK_SMPRT_192000 -d 60'
+ALSA_S_FUNC_PLAYBACK_SMPRT_192000 source 'common.sh' ; do_cmd install_modules.sh 'sound' ; do_cmd 'alsa_tests.sh -t playback -r 192000 -F $HOME/ALSA_M_FUNC_PLAYBACK_SMPRT_192000 -d 60'
