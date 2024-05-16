@@ -228,7 +228,7 @@ make SKIP_IDCHECK=1 KERNEL_USR_INC=/opt/lcpd/git_repos/ti-linux-kernel/usr/inclu
  == Install Step ==
    $ sudo make DESTDIR=<destination directory> SKIP_IDCHECK=1 PLATFORM=<Platform name> install
    For example:
-   $sudo make DESTDIR=/opt/filesystem/home/root/ltp-ddt-install SKIP_IDCHECK=1 PLATFORM=am335x-evm install
+   $sudo make DESTDIR=$HOME/ltp-ddt-install SKIP_IDCHECK=1 PLATFORM=am335x-evm install
 
 For more information about autotools, please check the tutorial to GNU MAKE tools
 http://www.gnu.org/software/automake/manual/html_node/index.html#SEC_Contents

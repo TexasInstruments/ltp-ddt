@@ -155,7 +155,7 @@ trap on_exit EXIT
 test_print_trc "Doing read/write test for $TEST_LOOP times"
 # not using tmpfs because it is too small and we don't measure performance here
 #SRC_FILE='/dev/shm/srctest_file' 
-SRC_FILE="/home/root/srctest_file_${DEVICE_TYPE}_$$"
+SRC_FILE="$HOME/srctest_file_${DEVICE_TYPE}_$$"
 do_cmd "time dd if=/dev/urandom of=$SRC_FILE bs=$DD_BUFSIZE count=$DD_CNT"
 sleep 10
 do_cmd ls -lh $SRC_FILE
