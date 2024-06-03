@@ -20,9 +20,7 @@
 source "common.sh"
 
 
-i2cbus_numbers=`dmesg | grep -c omap_i2c`
-((i2cbus_numbers=i2cbus_numbers-1))
-for i2cbus_num in $(seq 0 $i2cbus_numbers)
+for i2cbus_num in `dmesg | grep omap_i2c | sed -rn "s#.*bus ([[:digit:]]+).*#\1#p"`
 do
   # check the speed
   speed=`dmesg |grep -i i2c |grep "i2c: bus ${i2cbus_num}" |grep -Eo '[[:digit:]]+\s+kHz' `
