@@ -862,7 +862,10 @@ rpmsg_proto_msgqmulti_test()
   
   return $__result
 }
-
+# RPMSG_CLIENT_SAMPLE Test module is no more a part of default SDK starting from
+# SDK 10.0. Thus, we would only like to verify the creation of ping-pong
+# endpoints for the validation of this test. The actual communication test is
+# verified via 'rpmsg_chrdev' endpoints through RPMSG_CHAR_SIMPLE tests.
 rpmsg_client_sample_test_k3()
 {
   local __result=0
@@ -887,17 +890,13 @@ rpmsg_client_sample_test_k3()
 
   for idx in `seq 1 $__loops`
   do
-    __test_log=$(dmesg -c > /dev/null && modprobe rpmsg_client_sample || modprobe -f rpmsg_client_sample && sleep $__delay && dmesg)
-    __num_match=$(echo -e "$__test_log" | grep -c -i 'virtio[0-9].*: incoming msg 100')
-    __num_goodbye=$(echo -e "$__test_log" | grep -c -i 'virtio[0-9].*: goodbye!')
-    if [ $__num_match -ne $__num_procs -o  $__num_goodbye -ne $__num_procs ]
+    if [ $__num_match -ne $__num_procs ]
     then
       __result=$((__result + 1))
       echo -e "${__test_log}\nTest failed..."
     else
       echo "Test passed..."
     fi
-    rmmod rpmsg_client_sample
   done
 
   return $__result
