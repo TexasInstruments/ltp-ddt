@@ -14,6 +14,6 @@ GFX_XS_FUNC_BGRA8888_TEXTURE source 'common.sh'; service start weston; gst-launc
 
 GFX_XS_FUNC_PVRDBG source 'common.sh'; dmesg -c; pvrdebug -dd; dmesg | grep -i 'Connections.*pvrdebug' || die "pvrdebug -dd failed"
 
-GFX_XS_FUNC_APM source 'common.sh'; service stop weston; modprobe -r pvrsrvkm ; modprobe pvrsrvkm; echo 1 > /sys/kernel/debug/pvr/apphint/0/EnableAPM; unset WAYLAND_DISPLAY; weston --tty=8 --debug --backend=drm-backend.so --idle-time=0 & dmesg -c ; pvrdebug -dd ; dmesg | grep 'Power State:.*APM enabled' || die "Could not enable APM"
+GFX_XS_FUNC_APM source 'common.sh'; service stop weston; modprobe -r pvrsrvkm ; modprobe pvrsrvkm; echo 1 > /sys/kernel/debug/pvr/apphint/0/EnableAPM; unset WAYLAND_DISPLAY; weston --debug --backend=drm-backend.so --idle-time=0 & dmesg -c ; pvrdebug -dd ; dmesg | grep 'Power State:.*APM enabled' || die "Could not enable APM"
 
 GFX_XS_FUNC_GPU_MEM2MEM source 'common.sh'; [[ $(srender_to_tex_test -f 1 | grep -i 'Color match at (10,20): 0x80808080' | wc -l) -eq 1 ]] || die "Frame match not detected, check frame*.ppm.ppm files"

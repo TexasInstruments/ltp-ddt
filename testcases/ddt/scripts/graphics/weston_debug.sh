@@ -22,7 +22,7 @@ usage()
 {
 cat <<-EOF >&2
         usage: ./${0##*/} [-s START_OPTIONS]
-        -s START_OPTIONS weston command line options --tty=.. --drm-device=.. --idle-time=.. ...
+        -s START_OPTIONS weston command line options --drm-device=.. --idle-time=.. ...
         -h Help         print this usage
 EOF
 exit 0
@@ -32,7 +32,7 @@ default_weston_options()
 {
   case $MACHINE in
     j7*)
-      echo "--idle-time=0 --tty=8 --backend=drm-backend.so"
+      echo "--idle-time=0 --backend=drm-backend.so"
     ;;
     *)
       echo "--idle-time=0"
