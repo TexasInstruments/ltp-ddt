@@ -70,7 +70,7 @@ EOF
 	done
 
 	unset WAYLAND_DISPLAY
-	weston --tty=8 &
+	weston &
 	weston_pid=$!
 
 	sleep 15 && kill $weston_pid
