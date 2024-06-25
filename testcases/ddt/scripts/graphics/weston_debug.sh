@@ -55,7 +55,7 @@ while getopts :s: arg
     esac
 done
 
-service stop weston && sleep 3
+stop_daemon weston && sleep 3
 unset WAYLAND_DISPLAY
 weston --debug ${START_OPTIONS} &
 sleep 3

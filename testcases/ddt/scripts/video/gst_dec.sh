@@ -98,12 +98,12 @@ esac
 
 if [ "$VSINK" == "waylandsink" ]
 then
-    service start weston
-    service stop matrix-gui-2.0
+    start_daemon weston
+    stop_daemon matrix-gui-2.0
     V_CONN=""
     SCALING=""
 else
-    service stop weston
+    stop_daemon weston
 fi
 sleep 3
 
