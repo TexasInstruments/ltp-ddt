@@ -93,7 +93,7 @@ else
    fi
 fi
 # Stop Weston to avoid conflicts with gst
-service stop weston && sleep 3
+stop_daemon weston && sleep 3
 do_cmd "$GSTCMD"
 
 
