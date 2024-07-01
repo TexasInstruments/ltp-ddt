@@ -100,10 +100,10 @@ done
 
 case "$TYPE" in
 	1)
-		weston-info
+		wayland-info
 		;;
 	2)
-		weston-info | grep -w "interface: 'wl_drm', version:"
+		wayland-info | grep -w "interface: 'wl_drm',\s*version:"
 		;;
 	3)
 		simple_egl_test
