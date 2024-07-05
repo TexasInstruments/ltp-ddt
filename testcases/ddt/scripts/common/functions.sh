@@ -353,6 +353,22 @@ remove_cpuloadgen()
     fi
 }
 
+# Blocking call as a wrapper for cpuloadgen across all cpu cores
+cpu_load_nproc()
+{
+    local cpus_load=$1
+    local num_cpu=`nproc`
+    local RETVAL=0
+    cmd="cpuloadgen duration=$2"
+    for i in `seq 0 $((num_cpu-1))`
+    do
+        cmd="$cmd cpu${i}=$cpus_load"
+    done
+    eval "$cmd" || RETVAL=$?
+    report "'$cmd' returned ${RETVAL}!"
+    return $RETVAL
+}
+
 # start up cpuloadgen
 cpu_load_random()
 {
@@ -360,17 +376,15 @@ cpu_load_random()
         trap on_exit EXIT
         local cpus_load=''
         local num_cpu=`get_num_cpus`
+        time=`random_ne0 600`
+        cmd="cpuloadgen duration=$time"
         i=0
         while [ $i -lt $num_cpu ]; do
-            cpus_load="$cpus_load "`random_ne0 100`
+            cmd="$cmd cpu${i}="`random_ne0 100`
             i=`expr $i + 1` 
         done
-        if [ $num_cpu -lt 2 ]; then
-            cpus_load="$cpus_load 0"
-        fi
-        time=`random_ne0 600`
-        report "cpuloadgen $cpus_load $time"
-        time cpuloadgen $cpus_load $time &
+        report "$cmd"
+        time $cmd &
     else
         report "cpuloadgen is not installed"
     fi
