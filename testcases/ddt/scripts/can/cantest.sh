@@ -120,8 +120,9 @@ compare_stats()
 
 modular()
 {
+	echo "Running Can Modular Test on $iface"
 	can_interface="/sys/class/net/$iface";
-	if [ -z "$can_interface" ]; then die "Check dtb to see if CAN is included"; fi;
+	if ! [ -d "$can_interface" ]; then die "Check dtb to see if CAN is included"; fi;
 	can_module=$(zcat /proc/config.gz |grep CONFIG_CAN=m);
 	if [ -z "$can_module" ]; then die "Check dtb to see if CAN is included"; fi;
 }
