@@ -217,6 +217,8 @@ iface="${iface:=$DEFAULT_CAN_IFACE}"
 brate="${bitrate:=$DEFAULT_BITRATE}"
 dbrate="${dbitrate:=$DEFAULT_BITRATE}"
 
+if ! [ -z $interface ]; then iface=$interface; fi;
+
 case $test in
   modular)
 	modular
