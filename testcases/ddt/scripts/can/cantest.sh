@@ -13,7 +13,7 @@
 . "common.sh"  # Import do_cmd(), die() and other functions
 
 DEFAULT_BITRATE='1000000'
-DEFAULT_CAN_IFACE='main_mcan0'
+DEFAULT_CAN_IFACE='mcu_mcan0'
 
 INIT_STAT_RX=0;
 INIT_STAT_TX=0;
@@ -29,7 +29,7 @@ FINAL_ERRSTAT_TX=0;
 ############################# Functions #######################################
 usage()
 {
-	echo "can_test.sh <interface - main_mcan0> <bitrate> <dbitrate> <test to run - loopback or modular> "
+	echo "cantest.sh <interface - mcu_mcan0> <bitrate> <dbitrate> <test to run - loopback or modular> "
 	exit 1
 }
 
