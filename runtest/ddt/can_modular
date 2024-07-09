@@ -8,7 +8,7 @@
 #       Tests that CAN interface exists and driver is built as module
 # @requires can
 
-CAN_S_FUNC_MODULAR source 'common.sh'; interface='can0'; do_cmd can_test.sh --modular -i $interface
+CAN_S_FUNC_MODULAR source 'common.sh'; interface='can0'; do_cmd cantest.sh --modular -i $interface
 
 CAN_S_FUNC_MODULAR_MAIN_MCAN0 source 'common.sh'; interface='main_mcan0'; do_cmd cantest.sh --modular -i $interface
 
