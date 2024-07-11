@@ -13,7 +13,7 @@
 . "common.sh"  # Import do_cmd(), die() and other functions
 
 DEFAULT_BITRATE='1000000'
-DEFAULT_CAN_IFACE='main_mcan0'
+DEFAULT_CAN_IFACE='mcu_mcan0'
 
 INIT_STAT_RX=0;
 INIT_STAT_TX=0;
@@ -29,7 +29,7 @@ FINAL_ERRSTAT_TX=0;
 ############################# Functions #######################################
 usage()
 {
-	echo "can_test.sh <interface - main_mcan0> <bitrate> <dbitrate> <test to run - loopback or modular> "
+	echo "cantest.sh <interface - mcu_mcan0> <bitrate> <dbitrate> <test to run - loopback or modular> "
 	exit 1
 }
 
@@ -120,8 +120,9 @@ compare_stats()
 
 modular()
 {
+	echo "Running Can Modular Test on $iface"
 	can_interface="/sys/class/net/$iface";
-	if [ -z "$can_interface" ]; then die "Check dtb to see if CAN is included"; fi;
+	if ! [ -d "$can_interface" ]; then die "Check dtb to see if CAN is included"; fi;
 	can_module=$(zcat /proc/config.gz |grep CONFIG_CAN=m);
 	if [ -z "$can_module" ]; then die "Check dtb to see if CAN is included"; fi;
 }
@@ -215,6 +216,8 @@ dbitrate=$(echo "$dbitrate" | tr -d "\"\'\`");
 iface="${iface:=$DEFAULT_CAN_IFACE}"
 brate="${bitrate:=$DEFAULT_BITRATE}"
 dbrate="${dbitrate:=$DEFAULT_BITRATE}"
+
+if ! [ -z $interface ]; then iface=$interface; fi;
 
 case $test in
   modular)
