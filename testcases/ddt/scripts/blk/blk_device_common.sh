@@ -57,8 +57,35 @@ create_three_partitions() {
       ls ${basenode}* | grep ${basenode}p1 && (mkfs.vfat -F32 ${basenode}p1; mkfs.vfat -F32 ${basenode}p2; mkfs.vfat -F32 ${basenode}p3)
       ls ${basenode}* | grep ${basenode}1 && (mkfs.vfat -F32 ${basenode}1; mkfs.vfat -F32 ${basenode}2; mkfs.vfat -F32 ${basenode}3)
     else
-      echo "Skipping creating partition in $basenode since there is at least one partition in it"
+      # There are existing partitions so create test partition if there are only 2 partitions
+      echo "Found partitions in $basenode"
+      partitions=$(get_num_partitions "$basenode")
+      if [ "$partitions" = "2" ]; then
+        echo "Found two partitions in $basenode, create third partition"
+        printf "%s\n" "p" "n" "p" "3" "" "" "p" "w" | fdisk "$basenode"
+        # making initial fs
+        mkfs.vfat -F32 "${basenode}p3"
+      else
+          echo "Skipping creating a third partition since there are $partitions partitions in $basenode"
+      fi
     fi
+}
+
+# This function is to count the number of partitions
+get_num_partitions() {
+    basenode=$1
+    num_partitions=0
+    MATCH=$(fdisk -l "$basenode" |grep -E "${basenode}p|${basenode}[1-9]+")
+    for i in $MATCH
+    do
+      LINE="$i"
+      case $LINE in
+          /dev/mmcblk0p*)
+          num_partitions="$((num_partitions+1))"
+          ;;
+      esac
+    done
+    echo "$num_partitions"
 }
 
 # This function is to check if blk device has at least on partition in it
