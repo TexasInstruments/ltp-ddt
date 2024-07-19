@@ -52,7 +52,11 @@ create_three_partitions() {
       end_of_1st_partition=`echo ${partsize_1st}*1024*1024/${sector_size} |bc`
       end_of_2nd_partition=`echo ${partsize_2nd}*1024*1024/${sector_size}+${end_of_1st_partition} |bc`
       echo "Making three partitions..."
-      echo -e "p\nn\np\n1\n\n${end_of_1st_partition}\nn\np\n2\n\n${end_of_2nd_partition}\nn\np\n\n\n\na\n1\nt\n1\nc\np\nw\n" | fdisk $basenode
+      printf "%s\n" "p" \
+        "n" "p" "1" "" "${end_of_1st_partition}" \
+        "n" "p" "2" "" "${end_of_2nd_partition}" \
+        "n" "p" "3" "" "" \
+        "a" "1" "t" "1" "c" "p" "w" | fdisk /dev/mmcblk0
       # making initial fs
       ls ${basenode}* | grep ${basenode}p1 && (mkfs.vfat -F32 ${basenode}p1; mkfs.vfat -F32 ${basenode}p2; mkfs.vfat -F32 ${basenode}p3)
       ls ${basenode}* | grep ${basenode}1 && (mkfs.vfat -F32 ${basenode}1; mkfs.vfat -F32 ${basenode}2; mkfs.vfat -F32 ${basenode}3)
