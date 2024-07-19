@@ -125,7 +125,7 @@ case $DEV_TYPE in
             die "Could not fine emmc basenode"
           fi
           # create two partition if emmc doesn't have any partition on it
-          create_three_partitions $emmc_basenode 80 1024 > /dev/null
+          create_three_partitions $emmc_basenode 80 1024 1>&2
           DEV_NODE=`find_part_with_biggest_size "$emmc_basenode" "emmc"` || die "error getting partition with biggest size: $DEV_NODE"
         ;;
         usb|usbxhci|usbotg)
