@@ -32,7 +32,7 @@ setup_firmware()
   local __fw_dst
 
   case $MACHINE in
-      *j721*|*j722*|*j7200*|*am62xx*|*am65*|*j784*|*j742*|*am68*|*am69*|*am62xxsip*|*am62pxx*)
+      *j721*|*j722*|*j7200*|*am65*|*j784*|*j742*|*am68*|*am69*|*am62pxx*)
           # K3 devices don't yet support loading the firmware
           return
       ;;
@@ -992,7 +992,7 @@ toggle_rprocs()
   local __mbox
 
   case $MACHINE in
-      *j721*|*j722*|*j7200*|*j784*|*j742*|*am68*|*am69*|*am62xx*|*am62xxsip*|*am62pxx*)
+      *j721*|*j722*|*j7200*|*j784*|*j742*|*am68*|*am69*|*am62pxx*)
           # K3 devices don't yet support toggling the remote proc
           return
       ;;
