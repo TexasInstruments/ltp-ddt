@@ -45,14 +45,23 @@ check_silicon_rev () {
     done < <(printf '%s\n' "$output")
 
     family=$(cat /sys/devices/soc0/family)
+    machine=$(cat /sys/devices/soc0/machine | cut -d' ' -f3)
     rev=$(cat /sys/devices/soc0/revision)
     sys_devices_SOC_REV="$family $rev"
+    sys_devices_MACHINE_REV="$machine $rev"
 
     sys_socrev=`echo "$sys_devices_SOC_REV" | awk '{print tolower($0)}'`
+    sys_machinerev=`echo "$sys_devices_MACHINE_REV" | awk '{print tolower($0)}'`
     k3conf_socrev=`echo "$k3conf_SOC_REV" | awk '{print tolower($0)}'`
-    printf "SoC rev in /sys=$sys_devices_SOC_REV\nSoC rev reported by k3conf=$k3conf_SOC_REV\n"
+
+    printf "SoC rev in /sys/devices/soc0/family=$sys_devices_SOC_REV\n"
+    printf "SoC rev in /sys/devices/soc0/machine=$sys_devices_MACHINE_REV\n"
+    printf "SoC rev reported by k3conf=$k3conf_SOC_REV\n"
 
     if [[ "$sys_socrev" == "$k3conf_socrev" ]]
+    then
+        echo "Correct silicon revision is reported"
+    elif [[ "$sys_machinerev" == "$k3conf_socrev" ]]
     then
         echo "Correct silicon revision is reported"
     else
