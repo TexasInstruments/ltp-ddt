@@ -1,6 +1,7 @@
 armv8
 j721s2
 am68_sk-fs
+can
 crypto/sa2ul
 crypto/sa2ul/3des
 crypto/sa2ul/aes

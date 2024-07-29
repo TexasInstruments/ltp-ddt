@@ -1,6 +1,7 @@
 armv8
 j721e
 j721e-sk
+can
 crypto/sa2ul
 crypto/sa2ul/3des
 crypto/sa2ul/aes
