@@ -20,59 +20,79 @@ source "blk_device_common.sh"
 
 ############################# Functions #######################################
 
+mmc_get_id(){
+	mode=$1
+	case $mode in
+		LEGACY)
+			id=0;;
+		HS)
+			id=1;;
+		SDR12)
+			id=2;;
+		SDR25)
+			id=3;;
+		SDR50)
+			id=4;;
+		DDR50)
+			id=5;;
+		SDR104)
+			id=6;;
+		*)
+			id=6
+	esac
+	echo "$id"
+}
+
+mmc_get_timespec(){
+	mode=$1
+	id=$(mmc_get_id "${mode}")
+
+	case $id in
+		0)
+			timespec="(legacy";;
+		1)
+			timespec="(sd high-speed";;
+		2|3|4|5|6)
+			timespec="(sd uhs ${mode}";;
+	esac
+	echo "$timespec"
+}
+
 ############# Do the work ###########################################
 device_type=$1
 expected_mode=$2
 
-if [[ "$expected_mode" = "" ]]; then
-  if [[ "$device_type" = "emmc" ]]; then
-    # Get emmc expected speed based on platform
-    case $MACHINE in
-      am57xx-evm |am572x-idk |am574x-idk)
-        expected_mode="DDR52";;
-      dra7xx-evm | dra72x-evm )
-        expected_mode="HS200";;
-      am654x-evm | am654x-idk | j721e* | am62xx* | am62xxsip* | am62axx* | am64xx-evm | am64xx-hsevm)
-        expected_mode="HS200";;
-      j7200* | j721s* | j722s* | j784* | j742* | am69*| am62pxx*)
-        expected_mode="HS400";;
-      *)
-        die "No expected eMMC mode is specified for this platform in ltp-ddt/testcases/ddt/scripts/blk/check_mmc_speed.sh";;
-    esac
-  fi
-
+if [ "$expected_mode" = "" ]; then
+	if [ "$device_type" = "emmc" ]; then
+	# Get emmc expected speed based on platform
+	case $MACHINE in
+		am57xx-evm |am572x-idk |am574x-idk)
+			expected_mode="DDR52";;
+		dra7xx-evm | dra72x-evm )
+			expected_mode="HS200";;
+		am654x-evm | am654x-idk | j721e* | am62xxsip* | am62xx* | am62axx* | am64xx-evm | am64xx-hsevm)
+			expected_mode="HS200";;
+		j7200* | j721s* | j722s* | j784* | j742* | am69*| am62pxx*)
+			expected_mode="HS400";;
+		*)
+			die "No expected eMMC mode is specified for this platform in ltp-ddt/testcases/ddt/scripts/blk/check_mmc_speed.sh";;
+	esac
+	fi
 fi
 
-if [[ "$expected_mode" = "" ]]; then
-  die "There is no expected speed mode is specified for $device_type"
+if [ "$expected_mode" = "" ]; then
+	die "There is no expected speed mode is specified for $device_type"
 fi
 
-if [[ "$device_type" = "emmc" ]]; then
-  expected_timespec="(mmc ${expected_mode}"
-elif [[ "$device_type" = "mmc" ]]; then
-  expected_timespec="(sd uhs ${expected_mode}"
+if [ "$device_type" = "emmc" ]; then
+	expected_timespec="(mmc ${expected_mode}"
+elif [ "$device_type" = "mmc" ]; then
+	expected_timespec=$(mmc_get_timespec ${expected_mode})
 else
-  die "Not support this device_type"
+	die "Not support this device_type"
 fi
 
-mmcios=`printout_mmc_ios` 
+mmcios=$(printout_mmc_ios)
 echo "$mmcios"
-echo "$mmcios" |grep -i "$expected_timespec" && echo "The test pass and mmc ios shows it is running at ${expected_mode} mode" || die "MMC is not running at expected mode: ${expected_mode}"
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+echo "$mmcios" | grep -i "$expected_timespec" || die "MMC is not running at expected mode: ${expected_mode}"
+echo "The test pass and mmc ios shows it is running at ${expected_mode} mode"
