@@ -89,6 +89,7 @@ compare_stats()
 	stats=$1
 	case $stats in
 		error)
+			echo "Dump error stats before compare: [$FINAL_ERRSTAT_TX,$INIT_ERRSTAT_TX,$FINAL_ERRSTAT_RX,$INIT_ERRSTAT_RX]"
 			if [ "$FINAL_ERRSTAT_TX" == "$INIT_ERRSTAT_TX" ] && \
 			[ "$FINAL_ERRSTAT_RX" == "$INIT_ERRSTAT_RX" ]; then
 				echo "TX err stats | Final: $FINAL_ERRSTAT_TX == init: $INIT_ERRSTAT_TX";
@@ -96,6 +97,7 @@ compare_stats()
 			else exit 1; fi;
 		;;
 		three_stage)
+			echo "Dump stats before compare: [$FINAL_STAT_TX,$PREFINAL_STAT_TX,$INIT_STAT_TX,$FINAL_STAT_RX,$PREFINAL_STAT_RX,$INIT_STAT_RX]"
 			if [ "$FINAL_STAT_TX" -gt "$PREFINAL_STAT_TX" ] && \
 			[ "$FINAL_STAT_RX" -gt "$PREFINAL_STAT_RX" ] && \
 			[ "$PREFINAL_STAT_TX" -gt "$INIT_STAT_TX" ] && \
@@ -107,6 +109,7 @@ compare_stats()
 			else exit 1; fi;
 		;;
 		two_stage)
+			echo "Dump stats before compare: [$FINAL_STAT_TX,$INIT_STAT_TX,$FINAL_STAT_RX,$INIT_STAT_RX]"
 			if [ "$FINAL_STAT_TX" -gt "$INIT_STAT_TX" ] && \
 			[ "$FINAL_STAT_RX" -gt "$INIT_STAT_RX" ]; then
 				echo "TX stats | Final: $FINAL_STAT_TX > init: $INIT_STAT_TX";
