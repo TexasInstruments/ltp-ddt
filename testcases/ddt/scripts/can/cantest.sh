@@ -96,10 +96,10 @@ compare_stats()
 			else exit 1; fi;
 		;;
 		three_stage)
-			if [ $FINAL_STAT_TX -gt $PREFINAL_STAT_TX ] && \
-			[ $FINAL_STAT_RX -gt $PREFINAL_STAT_RX ] && \
-			[ $PREFINAL_STAT_TX -gt $INIT_STAT_TX ] && \
-			[ $PREFINAL_STAT_RX -gt $INIT_STAT_RX ]; then
+			if [ "$FINAL_STAT_TX" -gt "$PREFINAL_STAT_TX" ] && \
+			[ "$FINAL_STAT_RX" -gt "$PREFINAL_STAT_RX" ] && \
+			[ "$PREFINAL_STAT_TX" -gt "$INIT_STAT_TX" ] && \
+			[ "$PREFINAL_STAT_RX" -gt "$INIT_STAT_RX" ]; then
 				echo "TX stats | Final: $FINAL_STAT_TX > Prefinal: $PREFINAL_STAT_TX";
 				echo "RX stats | Final: $FINAL_STAT_RX > Prefinal: $PREFINAL_STAT_RX";
 				echo "TX stats | Prefinal: $PREFINAL_STAT_TX > init: $INIT_STAT_TX";
@@ -107,8 +107,8 @@ compare_stats()
 			else exit 1; fi;
 		;;
 		two_stage)
-			if [ $FINAL_STAT_TX -gt $INIT_STAT_TX ] && \
-			[ $FINAL_STAT_RX -gt $INIT_STAT_RX ]; then
+			if [ "$FINAL_STAT_TX" -gt "$INIT_STAT_TX" ] && \
+			[ "$FINAL_STAT_RX" -gt "$INIT_STAT_RX" ]; then
 				echo "TX stats | Final: $FINAL_STAT_TX > init: $INIT_STAT_TX";
 				echo "RX stats | Final: $FINAL_STAT_RX > init: $INIT_STAT_RX";
 			else exit 1; fi;
