@@ -54,6 +54,16 @@ send_packets()
 	fi
 }
 
+wait_for_stats()
+{
+	stat="/proc/net/can/stats"
+	loop="0"
+
+	while [ ! -e "$stat" ] && [ "$loop" -le "5" ]; do do_cmd "sleep 1"; echo "Waiting for $stat" ; loop=$((loop+1)); done;
+	if [ ! -e "$stat" ]; then set_can_interface 'down'; die "Failed to find stats in $stat"; fi;
+
+}
+
 get_stats()
 {
 	stage=$1
@@ -69,6 +79,7 @@ get_stats()
 			FINAL_ERRSTAT_RX=$rx_err;
 		fi
 	else
+		wait_for_stats;
 		txf=$(get_can_stats.sh -s 'TXF');
 		rxf=$(get_can_stats.sh -s 'RXF');
 		if [ "$stage" == 'init' ]; then
