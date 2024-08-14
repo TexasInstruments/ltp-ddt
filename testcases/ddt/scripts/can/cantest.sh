@@ -87,7 +87,7 @@ get_stats()
 			INIT_STAT_RX=$rxf;
 		elif [ "$stage" == 'prefinal' ]; then
 			PREFINAL_STAT_TX=$txf;
-			 PREFINAL_STAT_RX=$rxf;
+			PREFINAL_STAT_RX=$rxf;
 		else
 			FINAL_STAT_TX=$txf;
 			FINAL_STAT_RX=$rxf;
@@ -231,7 +231,7 @@ iface="${iface:=$DEFAULT_CAN_IFACE}"
 brate="${bitrate:=$DEFAULT_BITRATE}"
 dbrate="${dbitrate:=$DEFAULT_BITRATE}"
 
-if ! [ -z $interface ]; then iface=$interface; fi;
+if [ -n "$interface" ]; then iface=$interface; fi;
 
 case $test in
   modular)
