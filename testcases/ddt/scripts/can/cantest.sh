@@ -54,6 +54,16 @@ send_packets()
 	fi
 }
 
+wait_for_stats()
+{
+	stat="/proc/net/can/stats"
+	loop="0"
+
+	while [ ! -e "$stat" ] && [ "$loop" -le "5" ]; do do_cmd "sleep 1"; echo "Waiting for $stat" ; loop=$((loop+1)); done;
+	if [ ! -e "$stat" ]; then set_can_interface 'down'; die "Failed to find stats in $stat"; fi;
+
+}
+
 get_stats()
 {
 	stage=$1
@@ -69,6 +79,7 @@ get_stats()
 			FINAL_ERRSTAT_RX=$rx_err;
 		fi
 	else
+		wait_for_stats;
 		txf=$(get_can_stats.sh -s 'TXF');
 		rxf=$(get_can_stats.sh -s 'RXF');
 		if [ "$stage" == 'init' ]; then
@@ -76,7 +87,7 @@ get_stats()
 			INIT_STAT_RX=$rxf;
 		elif [ "$stage" == 'prefinal' ]; then
 			PREFINAL_STAT_TX=$txf;
-			 PREFINAL_STAT_RX=$rxf;
+			PREFINAL_STAT_RX=$rxf;
 		else
 			FINAL_STAT_TX=$txf;
 			FINAL_STAT_RX=$rxf;
@@ -89,6 +100,7 @@ compare_stats()
 	stats=$1
 	case $stats in
 		error)
+			echo "Dump error stats before compare: [$FINAL_ERRSTAT_TX,$INIT_ERRSTAT_TX,$FINAL_ERRSTAT_RX,$INIT_ERRSTAT_RX]"
 			if [ "$FINAL_ERRSTAT_TX" == "$INIT_ERRSTAT_TX" ] && \
 			[ "$FINAL_ERRSTAT_RX" == "$INIT_ERRSTAT_RX" ]; then
 				echo "TX err stats | Final: $FINAL_ERRSTAT_TX == init: $INIT_ERRSTAT_TX";
@@ -96,10 +108,11 @@ compare_stats()
 			else exit 1; fi;
 		;;
 		three_stage)
-			if [ $FINAL_STAT_TX -gt $PREFINAL_STAT_TX ] && \
-			[ $FINAL_STAT_RX -gt $PREFINAL_STAT_RX ] && \
-			[ $PREFINAL_STAT_TX -gt $INIT_STAT_TX ] && \
-			[ $PREFINAL_STAT_RX -gt $INIT_STAT_RX ]; then
+			echo "Dump stats before compare: [$FINAL_STAT_TX,$PREFINAL_STAT_TX,$INIT_STAT_TX,$FINAL_STAT_RX,$PREFINAL_STAT_RX,$INIT_STAT_RX]"
+			if [ "$FINAL_STAT_TX" -gt "$PREFINAL_STAT_TX" ] && \
+			[ "$FINAL_STAT_RX" -gt "$PREFINAL_STAT_RX" ] && \
+			[ "$PREFINAL_STAT_TX" -gt "$INIT_STAT_TX" ] && \
+			[ "$PREFINAL_STAT_RX" -gt "$INIT_STAT_RX" ]; then
 				echo "TX stats | Final: $FINAL_STAT_TX > Prefinal: $PREFINAL_STAT_TX";
 				echo "RX stats | Final: $FINAL_STAT_RX > Prefinal: $PREFINAL_STAT_RX";
 				echo "TX stats | Prefinal: $PREFINAL_STAT_TX > init: $INIT_STAT_TX";
@@ -107,8 +120,9 @@ compare_stats()
 			else exit 1; fi;
 		;;
 		two_stage)
-			if [ $FINAL_STAT_TX -gt $INIT_STAT_TX ] && \
-			[ $FINAL_STAT_RX -gt $INIT_STAT_RX ]; then
+			echo "Dump stats before compare: [$FINAL_STAT_TX,$INIT_STAT_TX,$FINAL_STAT_RX,$INIT_STAT_RX]"
+			if [ "$FINAL_STAT_TX" -gt "$INIT_STAT_TX" ] && \
+			[ "$FINAL_STAT_RX" -gt "$INIT_STAT_RX" ]; then
 				echo "TX stats | Final: $FINAL_STAT_TX > init: $INIT_STAT_TX";
 				echo "RX stats | Final: $FINAL_STAT_RX > init: $INIT_STAT_RX";
 			else exit 1; fi;
@@ -217,7 +231,7 @@ iface="${iface:=$DEFAULT_CAN_IFACE}"
 brate="${bitrate:=$DEFAULT_BITRATE}"
 dbrate="${dbitrate:=$DEFAULT_BITRATE}"
 
-if ! [ -z $interface ]; then iface=$interface; fi;
+if [ -n "$interface" ]; then iface=$interface; fi;
 
 case $test in
   modular)
