@@ -14,6 +14,7 @@
 
 DEFAULT_BITRATE='1000000'
 DEFAULT_CAN_IFACE='mcu_mcan0'
+TEST_ALL_INTERFACES=false
 
 INIT_STAT_RX=0;
 INIT_STAT_TX=0;
@@ -132,15 +133,6 @@ compare_stats()
 	esac
 }
 
-modular()
-{
-	echo "Running Can Modular Test on $iface"
-	can_interface="/sys/class/net/$iface";
-	if ! [ -d "$can_interface" ]; then die "Check dtb to see if CAN is included"; fi;
-	can_module=$(zcat /proc/config.gz |grep CONFIG_CAN=m);
-	if [ -z "$can_module" ]; then die "Check dtb to see if CAN is included"; fi;
-}
-
 suspend()
 {
 	bitrate=$1
@@ -195,6 +187,40 @@ loopback()
 	echo "==============================================================";
 }
 
+modular_one()
+{
+	can_under_test=$1
+	echo "Running Can Modular Test on $can_under_test"
+	can_interface="/sys/class/net/$can_under_test";
+	if ! [ -d "$can_interface" ]; then die "Check dtb to see if $can_under_test is included"; fi;
+	can_module=$(zcat /proc/config.gz |grep CONFIG_CAN=m);
+	if [ -z "$can_module" ]; then die "Check Configs to see if CAN is included"; fi;
+}
+
+modular_all()
+{
+	echo "Getting CAN Interfaces for $MACHINE"
+	cans=$(get_can_interfaces.sh $MACHINE)
+
+	if [ -z "$cans" ]; then	die "No Can Interface found for the platform $MACHINE";	fi;
+
+	echo "Available Cans for $MACHINE : |$cans|"
+	for can in $cans
+	do
+		modular_one "$can"
+	done
+}
+
+modular()
+{
+	if [[ "$TEST_ALL_INTERFACES" == "true" ]]; then
+		modular_all
+	else
+		modular_one "$iface"
+	fi
+
+}
+
 ################################ CLI Params ####################################
 
 while [ $# -gt 0 ]
@@ -208,6 +234,8 @@ do
 		test="modular_suspend" ;;
 	-l|--loopback)
 		test="loopback" ;;
+	--all_interfaces)
+		TEST_ALL_INTERFACES=true ;;
 	-i|--interface)
 		interface="$2" ; shift;;
 	-b|--bitrate)
