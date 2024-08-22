@@ -17,3 +17,5 @@ CAN_S_FUNC_MODULAR_MAIN_MCAN1 source 'common.sh'; interface='main_mcan1'; do_cmd
 CAN_S_FUNC_MODULAR_MCU_MCAN0 source 'common.sh'; interface='mcu_mcan0'; do_cmd cantest.sh --modular -i $interface
 
 CAN_S_FUNC_MODULAR_MCU_MCAN1 source 'common.sh';interface='mcu_mcan1'; do_cmd cantest.sh --modular -i $interface
+
+CAN_S_FUNC_MODULAR_ALL source 'common.sh'; do_cmd cantest.sh --modular --all_interfaces
