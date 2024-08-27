@@ -1,0 +1,13 @@
+# Testsuite for PCIe testcases on K3 SoCs which utilize the
+# pci-j721e.c driver in Linux with the Cadence PCIe controller
+# for PCIe functionality.
+# Texas Instruments Vendor ID is 0x104C.
+
+# Check RC Gen
+PCI_XS_FUNC_CDNS_GEN2 pcie_tester.sh "test_rc_gen" "104c" "5"
+PCI_XS_FUNC_CDNS_GEN3 pcie_tester.sh "test_rc_gen" "104c" "8"
+
+# Check RC Width
+PCI_XS_FUNC_CDNS_LINK1 pcie_tester.sh "test_rc_width" "104c" "1"
+PCI_XS_FUNC_CDNS_LINK2 pcie_tester.sh "test_rc_width" "104c" "2"
+PCI_XS_FUNC_CDNS_LINK4 pcie_tester.sh "test_rc_width" "104c" "4"
