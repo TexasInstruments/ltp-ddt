@@ -61,19 +61,30 @@ expected_mode=$2
 
 if [ "$expected_mode" = "" ]; then
 	if [ "$device_type" = "emmc" ]; then
-	# Get emmc expected speed based on platform
-	case $MACHINE in
-		am57xx-evm |am572x-idk |am574x-idk)
-			expected_mode="DDR52";;
-		dra7xx-evm | dra72x-evm )
-			expected_mode="HS200";;
-		am654x-evm | am654x-idk | j721e* | am62xxsip* | am62xx* | am62axx* | am64xx-evm | am64xx-hsevm)
-			expected_mode="HS200";;
-		j7200* | j721s* | j722s* | j784* | j742* | am69*| am62pxx*)
-			expected_mode="HS400";;
-		*)
-			die "No expected eMMC mode is specified for this platform in ltp-ddt/testcases/ddt/scripts/blk/check_mmc_speed.sh";;
-	esac
+		# Get emmc expected speed based on platform
+		case $MACHINE in
+			am57xx-evm |am572x-idk |am574x-idk)
+				expected_mode="DDR52";;
+			dra7xx-evm | dra72x-evm )
+				expected_mode="HS200";;
+			am654x-evm | am654x-idk | j721e* | am62xxsip* | am62xx* | am62axx* | am64xx-evm | am64xx-hsevm)
+				expected_mode="HS200";;
+			j7200* | j721s* | j722s* | j784* | j742* | am69*| am62pxx*)
+				expected_mode="HS400";;
+			*)
+				die "No expected eMMC mode is specified for this platform in ltp-ddt/testcases/ddt/scripts/blk/check_mmc_speed.sh";;
+		esac
+	fi
+	if [ "$device_type" = "mmc" ]; then
+		# Get mmc expected speed based on platform
+		case $MACHINE in
+			am62xxsip* | am62xx* | am62axx* | am64xx-evm | am64xx-hsevm | am62pxx* | j7200* | j721s* | j722s* | j784* | j742* | am69*| am68*)
+				expected_mode="SDR104";;
+			j721e)
+				expected_mode="DDR50";;
+			*)
+				die "No expected MMC mode is specified for this platform in ltp-ddt/testcases/ddt/scripts/blk/check_mmc_speed.sh";;
+		esac
 	fi
 fi
 

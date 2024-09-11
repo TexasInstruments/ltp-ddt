@@ -2,6 +2,7 @@
 # @desc Check MMC to see if it works on the speed it should be
 # @requires mmc_host
 
+MMC_S_FUNC_CHECK_SPEED source "common.sh"; do_cmd check_mmc_speed.sh 'mmc'
 MMC_S_FUNC_CHECK_SPEED_SDR104 source "common.sh"; do_cmd check_mmc_speed.sh 'mmc' 'SDR104'
 MMC_S_FUNC_CHECK_SPEED_DDR50 source "common.sh"; do_cmd check_mmc_speed.sh 'mmc' 'DDR50'
 MMC_S_FUNC_CHECK_SPEED_SDR50 source "common.sh"; do_cmd check_mmc_speed.sh 'mmc' 'SDR50'
