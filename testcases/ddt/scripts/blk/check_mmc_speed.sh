@@ -27,33 +27,30 @@ mmc_get_id(){
 			id=0;;
 		HS)
 			id=1;;
-		SDR12)
+		SDR12 | SDR25 | SDR50 | DDR50 | SDR104)
 			id=2;;
-		SDR25)
+		DDR52 | HS200 | HS400)
 			id=3;;
-		SDR50)
-			id=4;;
-		DDR50)
-			id=5;;
-		SDR104)
-			id=6;;
 		*)
-			id=6
+			id=2;;
 	esac
 	echo "$id"
 }
 
 mmc_get_timespec(){
 	mode=$1
+	dev=$2
 	id=$(mmc_get_id "${mode}")
 
 	case $id in
 		0)
 			timespec="(legacy";;
 		1)
-			timespec="(sd high-speed";;
-		2|3|4|5|6)
+			if [ "$dev" = "emmc" ]; then timespec="(mmc high-speed"; else timespec="(sd high-speed"; fi ;;
+		2)
 			timespec="(sd uhs ${mode}";;
+		3)
+			timespec="(mmc ${mode}";;
 	esac
 	echo "$timespec"
 }
@@ -84,10 +81,8 @@ if [ "$expected_mode" = "" ]; then
 	die "There is no expected speed mode is specified for $device_type"
 fi
 
-if [ "$device_type" = "emmc" ]; then
-	expected_timespec="(mmc ${expected_mode}"
-elif [ "$device_type" = "mmc" ]; then
-	expected_timespec=$(mmc_get_timespec ${expected_mode})
+if [ "$device_type" = "emmc" ] || [ "$device_type" = "mmc" ]; then
+	expected_timespec=$(mmc_get_timespec "${expected_mode}" "${device_type}")
 else
 	die "Not support this device_type"
 fi
