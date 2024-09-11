@@ -75,30 +75,30 @@ if [ "$expected_mode" = "" ]; then
 				die "No expected eMMC mode is specified for this platform in ltp-ddt/testcases/ddt/scripts/blk/check_mmc_speed.sh";;
 		esac
 	fi
-	if [ "$device_type" = "mmc" ]; then
-		# Get mmc expected speed based on platform
+	if [ "$device_type" = "sd" ]; then
+		# Get sd expected speed based on platform
 		case $MACHINE in
 			am62xxsip* | am62xx* | am62axx* | am64xx-evm | am64xx-hsevm | am62pxx* | j7200* | j721s* | j722s* | j784* | j742* | am69*| am68*)
 				expected_mode="SDR104";;
 			j721e)
 				expected_mode="DDR50";;
 			*)
-				die "No expected MMC mode is specified for this platform in ltp-ddt/testcases/ddt/scripts/blk/check_mmc_speed.sh";;
+				die "No expected sd mode is specified for this platform in ltp-ddt/testcases/ddt/scripts/blk/check_mmc_speed.sh";;
 		esac
 	fi
 fi
 
 if [ "$expected_mode" = "" ]; then
-	die "There is no expected speed mode is specified for $device_type"
+	die "There is no expected speed mode specified for $device_type"
 fi
 
-if [ "$device_type" = "emmc" ] || [ "$device_type" = "mmc" ]; then
+if [ "$device_type" = "emmc" ] || [ "$device_type" = "sd" ]; then
 	expected_timespec=$(mmc_get_timespec "${expected_mode}" "${device_type}")
 else
-	die "Not support this device_type"
+	die "There is no support for this device_type : $device_type"
 fi
 
 mmcios=$(printout_mmc_ios)
 echo "$mmcios"
-echo "$mmcios" | grep -i "$expected_timespec" || die "MMC is not running at expected mode: ${expected_mode}"
-echo "The test pass and mmc ios shows it is running at ${expected_mode} mode"
+echo "$mmcios" | grep -i "$expected_timespec" || die "${device_type} is not running at expected mode: ${expected_mode}"
+echo "The test passed and mmc ios shows ${device_type} is running at ${expected_mode} mode"
