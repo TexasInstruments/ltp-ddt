@@ -165,11 +165,13 @@ modular_suspend()
 	echo "==============================================================";
 }
 
-loopback()
+loopback_one()
 {
-	bitrate=$1
-	dbitrate=$2
-	do_cmd config_can_interface.sh -i "$iface"  -c 'ip_link' -b "$bitrate" -d "$dbitrate" -l -f;
+	can_under_test="$1"
+	bitrate="$2"
+	dbitrate="$3"
+	set_can_interface 'down';
+	do_cmd config_can_interface.sh -i "$can_under_test"  -c 'ip_link' -b "$bitrate" -d "$dbitrate" -l -f;
 	set_can_interface 'up';
 	send_packets 'start' 'fd';
 	get_stats 'init';
@@ -182,15 +184,40 @@ loopback()
 	echo "==============================================================";
 	echo "Dump transmitted and received frames from: /proc/net/can/stats";
 	compare_stats 'two_stage';
-	echo "Dump Error stats from: /sys/class/net/$iface/statistics";
+	echo "Dump Error stats from: /sys/class/net/$can_under_test/statistics";
 	compare_stats 'error';
 	echo "==============================================================";
+}
+
+loopback_all()
+{
+	bitrate="$1"
+	dbitrate="$2"
+	echo "Getting CAN Interfaces for $MACHINE"
+	cans=$(get_can_interfaces.sh $MACHINE)
+
+	if [ -z "$cans" ]; then	die "No CAN Interface found for the platform $MACHINE";	fi;
+
+	echo "Available CANs for $MACHINE : |$cans|"
+	for can in $cans
+	do
+		loopback_one "$can" "$bitrate" "$dbitrate"
+	done
+}
+
+loopback()
+{
+	if [[ "$TEST_ALL_INTERFACES" == "true" ]]; then
+		loopback_all "$1" "$2"
+	else
+		loopback_one "$iface" "$1" "$2"
+	fi
 }
 
 modular_one()
 {
 	can_under_test=$1
-	echo "Running Can Modular Test on $can_under_test"
+	echo "Running CAN Modular Test on $can_under_test"
 	can_interface="/sys/class/net/$can_under_test";
 	if ! [ -d "$can_interface" ]; then die "Check dtb to see if $can_under_test is included"; fi;
 	can_module=$(zcat /proc/config.gz |grep CONFIG_CAN=m);
@@ -202,9 +229,9 @@ modular_all()
 	echo "Getting CAN Interfaces for $MACHINE"
 	cans=$(get_can_interfaces.sh $MACHINE)
 
-	if [ -z "$cans" ]; then	die "No Can Interface found for the platform $MACHINE";	fi;
+	if [ -z "$cans" ]; then	die "No CAN Interface found for the platform $MACHINE";	fi;
 
-	echo "Available Cans for $MACHINE : |$cans|"
+	echo "Available CANs for $MACHINE : |$cans|"
 	for can in $cans
 	do
 		modular_one "$can"
