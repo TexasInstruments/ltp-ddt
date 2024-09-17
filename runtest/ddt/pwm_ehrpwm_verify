@@ -1,0 +1,17 @@
+# @name ePWM verify test
+# @desc Check in userspace to verify ePWM is instantiated
+# @requires pwm/epwm
+
+PWM_S_MODULAR_EPWM source 'common.sh'; lsmod | grep "ehrpwm" || die "ePWM module is not detected";
+
+PWM_M_SYSFS_EPWM source 'common.sh' ; find /sys/ -iname epwm* | grep "epwm" && exit 0 || die "Did not find ePWM in sysfs";
+PWM_M_SYSFS_CHECK_EPWM0 source 'common.sh' ; find /sys/ -iname epwm0 | grep "epwm" || die "Did not find ePWM0 in sysfs" ; do_cmd "verify_pwm.sh -t 'epwm' -p 'epwm0'";
+PWM_M_SYSFS_CHECK_EPWM1 source 'common.sh' ; find /sys/ -iname epwm1 | grep "epwm" || die "Did not find ePWM1 in sysfs" ; do_cmd "verify_pwm.sh -t 'epwm' -p 'epwm1'";
+PWM_M_SYSFS_CHECK_EPWM2 source 'common.sh' ; find /sys/ -iname epwm2 | grep "epwm" || die "Did not find ePWM2 in sysfs" ; do_cmd "verify_pwm.sh -t 'epwm' -p 'epwm2'";
+PWM_M_SYSFS_CHECK_EPWM3 source 'common.sh' ; find /sys/ -iname epwm3 | grep "epwm" || die "Did not find ePWM3 in sysfs" ; do_cmd "verify_pwm.sh -t 'epwm' -p 'epwm3'";
+PWM_M_SYSFS_CHECK_EPWM4 source 'common.sh' ; find /sys/ -iname epwm4 | grep "epwm" || die "Did not find ePWM4 in sysfs" ; do_cmd "verify_pwm.sh -t 'epwm' -p 'epwm4'";
+PWM_M_SYSFS_CHECK_EPWM5 source 'common.sh' ; find /sys/ -iname epwm5 | grep "epwm" || die "Did not find ePWM5 in sysfs" ; do_cmd "verify_pwm.sh -t 'epwm' -p 'epwm5'";
+PWM_M_SYSFS_CHECK_EPWM6 source 'common.sh' ; find /sys/ -iname epwm6 | grep "epwm" || die "Did not find ePWM6 in sysfs" ; do_cmd "verify_pwm.sh -t 'epwm' -p 'epwm6'";
+PWM_M_SYSFS_CHECK_EPWM7 source 'common.sh' ; find /sys/ -iname epwm7 | grep "epwm" || die "Did not find ePWM7 in sysfs" ; do_cmd "verify_pwm.sh -t 'epwm' -p 'epwm7'";
+PWM_M_SYSFS_CHECK_EPWM8 source 'common.sh' ; find /sys/ -iname epwm8 | grep "epwm" || die "Did not find ePWM8 in sysfs" ; do_cmd "verify_pwm.sh -t 'epwm' -p 'epwm8'";
+PWM_M_SYSFS_CHECK_EPWM_ALL source 'common.sh'; find /sys/ -iname epwm* | grep "epwm" || die "Did not find ePWM in sysfs" ; do_cmd "verify_pwm.sh -t 'epwm' -a";
