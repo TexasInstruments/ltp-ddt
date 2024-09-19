@@ -9,6 +9,7 @@ crypto/sa2ul/aes
 crypto/sa2ul/sha1
 crypto/sa2ul/sha256
 crypto/sa2ul/sha512
+eqep
 gpio
 hwrng
 i2c
