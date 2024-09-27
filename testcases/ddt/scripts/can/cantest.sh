@@ -139,30 +139,31 @@ compare_stats()
 
 suspend()
 {
-	bitrate=$1
-	do_cmd config_can_interface.sh -i "$iface" -c 'ip_link' -b "$bitrate";
-	set_can_interface "$iface" 'up';
-	init_state=$(cat /sys/class/net/"$iface"/operstate);
+	can_iface="$1"
+	bitrate="$2"
+	do_cmd config_can_interface.sh -i "$can_iface" -c 'ip_link' -b "$bitrate";
+	set_can_interface "$can_iface" 'up';
+	init_state=$(cat /sys/class/net/"$can_iface"/operstate);
 	do_cmd "rtcwake -s 5 -m mem";
-	final_state=$(cat /sys/class/net/"$iface"/operstate);
-	set_can_interface "$iface" 'down';
+	final_state=$(cat /sys/class/net/"$can_iface"/operstate);
+	set_can_interface "$can_iface" 'down';
 	if [ "$init_state" != "$final_state" ]; then die "Suspend resume did not restore CAN state"; fi;
 }
 
 modular_suspend()
 {
-	bitrate=$1
-	dbitrate=$2
-	do_cmd config_can_interface.sh -i "$iface" -c 'ip_link' -b "$bitrate" -l;
-	set_can_interface "$iface" 'up';
-	send_packets "$iface" 'start';
-	get_stats "$iface" 'init';
+	can_iface="$1"
+	bitrate="$2"
+	do_cmd config_can_interface.sh -i "$can_iface" -c 'ip_link' -b "$bitrate" -l;
+	set_can_interface "$can_iface" 'up';
+	send_packets "$can_iface" 'start';
+	get_stats "$can_iface" 'init';
 	do_cmd "rtcwake -s 5 -m mem";
-	get_stats "$iface" 'prefinal';
+	get_stats "$can_iface" 'prefinal';
 	do_cmd "sleep 5";
-	get_stats "$iface" 'final';
-	send_packets "$iface" 'stop';
-	set_can_interface "$iface" 'down';
+	get_stats "$can_iface" 'final';
+	send_packets "$can_iface" 'stop';
+	set_can_interface "$can_iface" 'down';
 	echo "==============================================================";
 	echo "Dump transmitted and received frames from: /proc/net/can/stats";
 	compare_stats 'three_stage';
@@ -211,10 +212,13 @@ loopback_all()
 
 loopback()
 {
+	can_iface="$1"
+	bitrate="$2"
+	dbitrate="$3"
 	if [[ "$TEST_ALL_INTERFACES" == "true" ]]; then
-		loopback_all "$1" "$2"
+		loopback_all "$bitrate" "$dbitrate"
 	else
-		loopback_one "$iface" "$1" "$2"
+		loopback_one "$can_iface" "$bitrate" "$dbitrate"
 	fi
 }
 
@@ -244,10 +248,11 @@ modular_all()
 
 modular()
 {
+	can_iface="$1"
 	if [[ "$TEST_ALL_INTERFACES" == "true" ]]; then
 		modular_all
 	else
-		modular_one "$iface"
+		modular_one "$can_iface"
 	fi
 
 }
@@ -294,16 +299,16 @@ if [ -n "$interface" ]; then iface=$interface; fi;
 
 case $test in
   modular)
-	modular
+	modular "$iface"
 	;;
   suspend)
-	suspend $brate
+	suspend "$iface" "$brate"
 	;;
   modular_suspend)
-	modular_suspend $brate
+	modular_suspend "$iface" "$brate"
 	;;
   loopback)
-	loopback $brate $dbrate
+	loopback "$iface" "$brate" "$dbrate"
 	;;
   *)
 	end 1
