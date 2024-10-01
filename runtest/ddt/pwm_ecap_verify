@@ -1,0 +1,11 @@
+# @name eCAP verify test
+# @desc Check in userspace to verify eCAP is instantiated
+# @requires pwm/ecap
+
+PWM_S_MODULAR_ECAP source 'common.sh' ; lsmod | grep "ecap" || die "eCAP module is not detected";
+
+PWM_M_SYSFS_ECAP source 'common.sh' ; find /sys/ -iname ecap | grep "ecap" && exit 0 || die "Did not find eCAP in sysfs";
+PWM_M_SYSFS_CHECK_ECAP0 source 'common.sh' ; find /sys/ -iname ecap0 | grep "ecap" || die "Did not find eCAP0 in sysfs" ; do_cmd "verify_pwm.sh -t 'ecap' -p 'ecap0'";
+PWM_M_SYSFS_CHECK_ECAP1 source 'common.sh' ; find /sys/ -iname ecap1 | grep "ecap" || die "Did not find eCAP1 in sysfs"; do_cmd "verify_pwm.sh -t 'ecap' -p 'ecap1'";
+PWM_M_SYSFS_CHECK_ECAP2 source 'common.sh' ; find /sys/ -iname ecap2 | grep "ecap" || die "Did not find eCAP2 in sysfs"; do_cmd "verify_pwm.sh -t 'ecap' -p 'ecap2'";
+PWM_M_SYSFS_CHECK_ECAP_ALL source 'common.sh'; find /sys/ -iname ecap | grep "ecap" || die "Did not find eCAP in sysfs"; do_cmd "verify_pwm.sh -t 'ecap' -a";
