@@ -55,9 +55,9 @@ do_fio()
   do_cmd mpstat -P ALL $(( $RUNTIME - 5 )) 1 2>&1 > mpstat.out
   do_cmd wait
   cat mpstat.out
-  iowait=`cat mpstat.out|grep -i 'average:\s*all\s*'|awk '{print $6}' `
-  idle=`cat mpstat.out|grep -i 'average:\s*all\s*'|awk '{print $11}' `
-  cpuload=`echo "100 - $iowait - $idle" |bc -l`
+  iowait=$(cat mpstat.out|grep -i 'average:\s*all\s*'|awk '{print $6}' )
+  idle=$(cat mpstat.out|grep -i 'average:\s*all\s*'|awk '{print $11}' )
+  cpuload=$(echo "100 - $iowait - $idle" |bc -l)
   echo "CPUload for rw:$IO_OP with blocksize:$BUFFER_SIZE is: ${cpuload}%"
   rm mpstat.out
 }
@@ -70,13 +70,13 @@ do_dd()
   if [ "$IO_OP" == "read" ]
     then
       echo "=| Read operation |="
-      echo 'READ Command :       timeout -s INT --foreground '${RUNTIME}' dd of=/dev/null if='${DEV_NODE}' bs='${BUFFER_SIZE}' || echo "" &'
-      timeout -s INT --foreground ${RUNTIME} dd of=/dev/null if=$DEV_NODE bs=$BUFFER_SIZE || echo "" &
+      echo 'READ Command :       timeout -s INT --foreground '"${RUNTIME}"' dd of=/dev/null if='"${DEV_NODE}"' bs='"${BUFFER_SIZE}"' || echo "" &'
+      timeout -s INT --foreground "${RUNTIME}" dd of=/dev/null if="$DEV_NODE" bs="$BUFFER_SIZE" || echo "" &
   elif [ "$IO_OP" == "write" ]
     then
       echo "=| Write operation |="
-      echo 'WRITE Command :      timeout -s INT --foreground '${RUNTIME}' dd if=/dev/random of='${DEV_NODE}' bs='${BUFFER_SIZE}' || echo "" &'
-      timeout -s INT --foreground ${RUNTIME} dd if=/dev/random of=$DEV_NODE bs=$BUFFER_SIZE || echo "" &
+      echo 'WRITE Command :      timeout -s INT --foreground '"${RUNTIME}"' dd if=/dev/random of='"${DEV_NODE}"' bs='"${BUFFER_SIZE}"' || echo "" &'
+      timeout -s INT --foreground "${RUNTIME}" dd if=/dev/random of="$DEV_NODE" bs="$BUFFER_SIZE" || echo "" &
   else
     echo "=| Operation not supported |="
   fi
@@ -84,9 +84,9 @@ do_dd()
   do_cmd mpstat -P ALL $(( $RUNTIME - 5 )) 1 2>&1 > mpstat.out
   do_cmd wait
   cat mpstat.out
-  iowait=`cat mpstat.out|grep -i 'average:\s*all\s*'|awk '{print $6}' `
-  idle=`cat mpstat.out|grep -i 'average:\s*all\s*'|awk '{print $11}' `
-  cpuload=`echo "100 - $iowait - $idle" |bc -l`
+  iowait=$(cat mpstat.out|grep -i 'average:\s*all\s*'|awk '{print $6}' )
+  idle=$(cat mpstat.out|grep -i 'average:\s*all\s*'|awk '{print $11}' )
+  cpuload=$(echo "100 - $iowait - $idle" |bc -l)
   echo "CPUload for rw:$IO_OP with blocksize:$BUFFER_SIZE is: ${cpuload}%"
   rm mpstat.out
 }
@@ -126,33 +126,33 @@ esac
 done
 
 ########################### DYNAMICALLY-DEFINED Params ########################
-: ${BUFFER_SIZES:='102400 262144 524288 1048576 5242880'}
-: ${FILE_SIZE:='100'}
-: ${SRCFILE_SIZE:='10'}
-: ${MNT_MODE:='async'}
-: ${TIME_OUT:='30'}
-: ${MNT_POINT:=/mnt/partition_$DEVICE_TYPE}
-: ${FIO_IOENGINE:='libaio'}
-: ${FIO_IODEPTH:=4}
-: ${FIO_NUMJOBS:=1}
-: ${FIO_W_RUNTIME:=60}
-: ${FIO_R_RUNTIME:=60}
+: "${BUFFER_SIZES:='102400 262144 524288 1048576 5242880'}"
+: "${FILE_SIZE:='100'}"
+: "${SRCFILE_SIZE:='10'}"
+: "${MNT_MODE:='async'}"
+: "${TIME_OUT:='30'}"
+: "${MNT_POINT:=/mnt/partition_$DEVICE_TYPE}"
+: "${FIO_IOENGINE:='libaio'}"
+: "${FIO_IODEPTH:=4}"
+: "${FIO_NUMJOBS:=1}"
+: "${FIO_W_RUNTIME:=60}"
+: "${FIO_R_RUNTIME:=60}"
 
 echo "ls -al /dev/disk/by-id"
 ls -al /dev/disk/by-id
 echo "ls -al /dev/disk/by-path"
 ls -al /dev/disk/by-path
 
-if [ -z $DEV_NODE ]; then
-  DEV_NODE=`get_blk_device_node.sh "$DEVICE_TYPE" "$EXTRA_PARAM"` || die "error while getting device node: $DEV_NODE"
+if [ -z "$DEV_NODE" ]; then
+  DEV_NODE=$(get_blk_device_node.sh "$DEVICE_TYPE" "$EXTRA_PARAM") || die "error while getting device node: $DEV_NODE"
   test_print_trc "DEV_NODE return from get_blk_device_node is: $DEV_NODE"
 fi
 
 # translate DEVICE_TYPE to DEV_TYPE (mtd or not)
-DEV_TYPE=`get_device_type_map.sh $DEVICE_TYPE` || die "error while translating device type"
+DEV_TYPE=$(get_device_type_map.sh "$DEVICE_TYPE") || die "error while translating device type"
 # erase mtd device so the test start with a good mtd device
-if [ $DEV_TYPE = 'mtd' ]; then
-  mtd_part=`get_mtd_partnum_from_devnode.sh $DEV_NODE` || die "error getting mtd part number"
+if [ "$DEV_TYPE" = 'mtd' ]; then
+  mtd_part=$(get_mtd_partnum_from_devnode.sh "$DEV_NODE") || die "error getting mtd part number"
   do_cmd flash_eraseall -q "/dev/mtd${mtd_part}"
   do_cmd modprobe mtdblock
   do_cmd modprobe ubi
@@ -175,15 +175,15 @@ test_print_trc "DEVICE_TYPE:${DEVICE_TYPE}"
 do_cmd printout_model "$DEV_NODE" "$DEVICE_TYPE"
 
 # printout mmc ios for mmc test
-if [[ "$DEV_NODE" =~ "mmc" ]]; then
+if [ "$DEV_NODE" =~ "mmc" ]; then
   do_cmd printout_mmc_ios
 fi
 
 # check if input are valid for this machine
-DEVICE_PART_SIZE=`get_blk_device_part_size.sh -d $DEVICE_TYPE -n $DEV_NODE` || die "error while getting device partition size: $DEVICE_PART_SIZE"
+DEVICE_PART_SIZE=$(get_blk_device_part_size.sh -d "$DEVICE_TYPE" -n "$DEV_NODE") || die "error while getting device partition size: $DEVICE_PART_SIZE"
 test_print_trc "Device Partition Size is $DEVICE_PART_SIZE MB"
 #[ $(( $FILE_SIZE * $MB )) -gt $DEVICE_PART_SIZE ] && die "File Size: $FILE_SIZE MB is not less than or equal to Device Partition Size: $DEVICE_PART_SIZE"
-[ $FILE_SIZE -gt $DEVICE_PART_SIZE ] && die "File Size: $FILE_SIZE MB is not less than or equal to Device Partition Size: $DEVICE_PART_SIZE MB"
+[ $FILE_SIZE -gt "$DEVICE_PART_SIZE" ] && die "File Size: $FILE_SIZE MB is not less than or equal to Device Partition Size: $DEVICE_PART_SIZE MB"
 
 # run filesystem perf test
 do_cmd "mkdir -p $MNT_POINT"
@@ -193,13 +193,13 @@ else
   do_cmd blk_device_prepare_format.sh -d "$DEVICE_TYPE" -n "$DEV_NODE" -m "$MNT_POINT" -o "$MNT_MODE"
 fi
 for BUFFER_SIZE in $BUFFER_SIZES; do
-	test_print_trc "BUFFER SIZE = $BUFFER_SIZE"
+  test_print_trc "BUFFER SIZE = $BUFFER_SIZE"
 
-	# find out what is FS in the device
-	if [ -z "$FS_TYPE" ]; then
-		FS_TYPE=`mount | grep $DEV_NODE | cut -d' ' -f5 |head -1`
-		test_print_trc "existing FS_TYPE: ${FS_TYPE}"
-	fi
+  # find out what is FS in the device
+  if [ -z "$FS_TYPE" ]; then
+    FS_TYPE=$(mount | grep "$DEV_NODE" | cut -d' ' -f5 |head -1)
+    test_print_trc "existing FS_TYPE: ${FS_TYPE}"
+  fi
 
   case $PERF_METHOD in
     dd)
@@ -213,21 +213,21 @@ for BUFFER_SIZE in $BUFFER_SIZES; do
     fio)
       # call fio
       # fio --name TEST --directory=/run/media/nvme0n1p3/ --size=10g --rw=write --blocksize=4m --ioengine=libaio --iodepth=4 --direct=1 --group_reporting --runtime=30 --time_base --eta=never
-      do_fio 'write' $FIO_W_RUNTIME --directory=$MNT_POINT
+      do_fio 'write' $FIO_W_RUNTIME --directory="$MNT_POINT"
       sleep 1
-      do_fio 'read' $FIO_R_RUNTIME --directory=$MNT_POINT
+      do_fio 'read' $FIO_R_RUNTIME --directory="$MNT_POINT"
       ;;
     fio_raw)
       # call fio_raw
       # fio --name TEST --filename=/dev/mmcblk0p1 --size=10g --rw=write --blocksize=4m --ioengine=libaio --iodepth=4 --direct=1 --group_reporting --runtime=30 --time_base --eta=never
       do_cmd blk_device_umount.sh -a -n "${DEV_NODE}"
-      do_fio 'write' $FIO_W_RUNTIME --filename=$DEV_NODE
+      do_fio 'write' $FIO_W_RUNTIME --filename="$DEV_NODE"
       sleep 1
-      do_fio 'read' $FIO_R_RUNTIME --filename=$DEV_NODE
+      do_fio 'read' $FIO_R_RUNTIME --filename="$DEV_NODE"
       ;;
     *) 
       test_print_trc "Checking if Buffer Size is valid"
-      [ $BUFFER_SIZE -gt $(( $FILE_SIZE * $MB )) ] && die "Buffer size provided: $BUFFER_SIZE is not less than or equal to File size $FILE_SIZE MB"
+      [ "$BUFFER_SIZE" -gt $(( $FILE_SIZE * $MB )) ] && die "Buffer size provided: $BUFFER_SIZE is not less than or equal to File size $FILE_SIZE MB"
       test_print_trc "Creating src test file..."
       TMP_FILE="/dev/shm/srctest_file_${DEVICE_TYPE}_$$"
       do_cmd "dd if=/dev/urandom of=$TMP_FILE bs=1M count=$SRCFILE_SIZE"
@@ -235,7 +235,7 @@ for BUFFER_SIZE in $BUFFER_SIZES; do
       TEST_FILE="${MNT_POINT}/test_file_$$"
 
       for i in {1..5};do
-        do_cmd filesystem_tests -write -src_file $TMP_FILE -srcfile_size $SRCFILE_SIZE -file ${TEST_FILE} -buffer_size $BUFFER_SIZE -file_size $FILE_SIZE -performance 
+        do_cmd filesystem_tests -write -src_file "$TMP_FILE" -srcfile_size $SRCFILE_SIZE -file "${TEST_FILE}" -buffer_size "$BUFFER_SIZE" -file_size $FILE_SIZE -performance 
       done
       do_cmd "rm -f $TMP_FILE"
       do_cmd "sync"
@@ -247,7 +247,7 @@ for BUFFER_SIZE in $BUFFER_SIZES; do
 
       #do_cmd "mount -t $FS_TYPE -o $MNT_MODE $DEV_NODE $MNT_POINT"
       do_cmd blk_device_do_mount.sh -n "$DEV_NODE" -f "$FS_TYPE" -d "$DEVICE_TYPE" -o "$MNT_MODE" -m "$MNT_POINT"
-      do_cmd filesystem_tests -read -file ${TEST_FILE} -buffer_size $BUFFER_SIZE -file_size $FILE_SIZE -performance 
+      do_cmd filesystem_tests -read -file "${TEST_FILE}" -buffer_size "$BUFFER_SIZE" -file_size $FILE_SIZE -performance 
       do_cmd "sync"
       do_cmd "echo 3 > /proc/sys/vm/drop_caches"
 
@@ -259,7 +259,7 @@ for BUFFER_SIZE in $BUFFER_SIZES; do
       TEST_FILE="${MNT_POINT}/test_file_$$"
       DST_TEST_FILE="${MNT_POINT}/dst_test_file_$$"
       do_cmd "dd if=/dev/urandom of=${TEST_FILE} bs=512K count=$FILE_SIZE"
-      do_cmd filesystem_tests -copy -src_file ${TEST_FILE} -dst_file ${DST_TEST_FILE} -duration ${TIME_OUT} -buffer_size $BUFFER_SIZE -file_size $HALF_FILE_SIZE -performance 
+      do_cmd filesystem_tests -copy -src_file "${TEST_FILE}" -dst_file "${DST_TEST_FILE}" -duration ${TIME_OUT} -buffer_size "$BUFFER_SIZE" -file_size "$HALF_FILE_SIZE" -performance 
       do_cmd "rm -f ${TEST_FILE}"
       do_cmd "rm -f ${DST_TEST_FILE}"
       test_print_trc "Unmount the device"
