@@ -113,11 +113,11 @@ case $DEV_TYPE in
           DEV_NODE="$MTD_BLK_DEV$PART"
         ;;
         mmc)
-          mmc_basenode=`find_mmc_basenode`
-          if [ -z "$mmc_basenode" ]; then
-            die "Could not find mmc basenode"
-          fi
-          DEV_NODE=`find_part_with_biggest_size "$mmc_basenode" "mmc"` || die "error getting partition with biggest size: $DEV_NODE"
+          mmc_basenode=$(find_mmc_basenode)
+          if [ -z "$mmc_basenode" ]; then die "Could not find mmc basenode"; fi
+          # Create two partitions if mmc doesn't have any partition on it OR create test partition if boot/rootfs partitions exist
+          create_three_partitions $mmc_basenode 80 1024 1>&2
+          DEV_NODE=$(find_part_with_biggest_size "$mmc_basenode" "mmc") || die "error getting partition with biggest size: $DEV_NODE"
         ;;
         emmc)
           emmc_basenode=`find_emmc_basenode`

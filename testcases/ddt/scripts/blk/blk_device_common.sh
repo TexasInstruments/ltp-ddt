@@ -80,14 +80,10 @@ get_num_partitions() {
     basenode=$1
     num_partitions=0
     MATCH=$(fdisk -l "$basenode" |grep -E "${basenode}p|${basenode}[1-9]+")
-    for i in $MATCH
+    for item in $MATCH
     do
-      LINE="$i"
-      case $LINE in
-          /dev/mmcblk0p*)
-          num_partitions="$((num_partitions+1))"
-          ;;
-      esac
+      DEVNODE=$(echo "$item" | grep "mmcblk")
+      if [ -n "$DEVNODE"  ]; then num_partitions="$((num_partitions+1))"; fi;
     done
     echo "$num_partitions"
 }
