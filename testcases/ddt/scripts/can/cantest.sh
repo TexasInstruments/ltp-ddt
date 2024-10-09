@@ -36,19 +36,21 @@ usage()
 
 set_can_interface()
 {
-	status=$1
-	do_cmd "ip link set $iface down";
-	do_cmd "ip link set $iface $status";
+	can_iface="$1"
+	status="$2"
+	do_cmd "ip link set $can_iface down";
+	do_cmd "ip link set $can_iface $status";
 }
 
 send_packets()
 {
-	command=$1
-	mode=$2
+	can_iface="$1"
+	command="$2"
+	mode="$3"
 	if [[ $command == 'start' ]]; then
-		do_cmd "candump -d -s 2 $iface &";
-		if [[ $mode == 'fd' ]]; then do_cmd "cangen -b -L 16 $iface &";
-		else do_cmd "cangen -L 16 $iface &"; fi
+		do_cmd "candump -d -s 2 $can_iface &";
+		if [[ $mode == 'fd' ]]; then do_cmd "cangen -b -L 16 $can_iface &";
+		else do_cmd "cangen -L 16 $can_iface &"; fi
 	else
 		do_cmd "killall candump";
 		do_cmd "killall cangen";
@@ -57,21 +59,23 @@ send_packets()
 
 wait_for_stats()
 {
+	can_iface="$1"
 	stat="/proc/net/can/stats"
 	loop="0"
 
 	while [ ! -e "$stat" ] && [ "$loop" -le "5" ]; do do_cmd "sleep 1"; echo "Waiting for $stat" ; loop=$((loop+1)); done;
-	if [ ! -e "$stat" ]; then set_can_interface 'down'; die "Failed to find stats in $stat"; fi;
+	if [ ! -e "$stat" ]; then set_can_interface "$can_iface" 'down'; die "Failed to find stats in $stat"; fi;
 
 }
 
 get_stats()
 {
-	stage=$1
-	type=$2
+	can_iface="$1"
+	stage="$2"
+	type="$3"
 	if [[ $type == 'error' ]]; then
-		tx_err=$(get_can_error_stats.sh -i "$iface" -s 'tx');
-		rx_err=$(get_can_error_stats.sh -i "$iface" -s 'rx');
+		tx_err=$(get_can_error_stats.sh -i "$can_iface" -s 'tx');
+		rx_err=$(get_can_error_stats.sh -i "$can_iface" -s 'rx');
 		if [ "$stage" == 'init' ]; then
 			INIT_ERRSTAT_TX=$tx_err;
 			INIT_ERRSTAT_RX=$rx_err;
@@ -80,7 +84,7 @@ get_stats()
 			FINAL_ERRSTAT_RX=$rx_err;
 		fi
 	else
-		wait_for_stats;
+		wait_for_stats "$can_iface";
 		txf=$(get_can_stats.sh -s 'TXF');
 		rxf=$(get_can_stats.sh -s 'RXF');
 		if [ "$stage" == 'init' ]; then
@@ -135,62 +139,93 @@ compare_stats()
 
 suspend()
 {
-	bitrate=$1
-	do_cmd config_can_interface.sh -i "$iface" -c 'ip_link' -b "$bitrate";
-	set_can_interface 'up';
-	init_state=$(cat /sys/class/net/"$iface"/operstate);
+	can_iface="$1"
+	bitrate="$2"
+	do_cmd config_can_interface.sh -i "$can_iface" -c 'ip_link' -b "$bitrate";
+	set_can_interface "$can_iface" 'up';
+	init_state=$(cat /sys/class/net/"$can_iface"/operstate);
 	do_cmd "rtcwake -s 5 -m mem";
-	final_state=$(cat /sys/class/net/"$iface"/operstate);
-	set_can_interface 'down';
+	final_state=$(cat /sys/class/net/"$can_iface"/operstate);
+	set_can_interface "$can_iface" 'down';
 	if [ "$init_state" != "$final_state" ]; then die "Suspend resume did not restore CAN state"; fi;
 }
 
 modular_suspend()
 {
-	bitrate=$1
-	dbitrate=$2
-	do_cmd config_can_interface.sh -i "$iface" -c 'ip_link' -b "$bitrate" -l;
-	set_can_interface 'up';
-	send_packets 'start';
-	get_stats 'init';
+	can_iface="$1"
+	bitrate="$2"
+	do_cmd config_can_interface.sh -i "$can_iface" -c 'ip_link' -b "$bitrate" -l;
+	set_can_interface "$can_iface" 'up';
+	send_packets "$can_iface" 'start';
+	get_stats "$can_iface" 'init';
 	do_cmd "rtcwake -s 5 -m mem";
-	get_stats 'prefinal';
+	get_stats "$can_iface" 'prefinal';
 	do_cmd "sleep 5";
-	get_stats 'final';
-	send_packets 'stop';
-	set_can_interface 'down';
+	get_stats "$can_iface" 'final';
+	send_packets "$can_iface" 'stop';
+	set_can_interface "$can_iface" 'down';
 	echo "==============================================================";
 	echo "Dump transmitted and received frames from: /proc/net/can/stats";
 	compare_stats 'three_stage';
 	echo "==============================================================";
 }
 
-loopback()
+loopback_one()
 {
-	bitrate=$1
-	dbitrate=$2
-	do_cmd config_can_interface.sh -i "$iface"  -c 'ip_link' -b "$bitrate" -d "$dbitrate" -l -f;
-	set_can_interface 'up';
-	send_packets 'start' 'fd';
-	get_stats 'init';
-	get_stats 'init' 'error';
+	can_under_test="$1"
+	bitrate="$2"
+	dbitrate="$3"
+	set_can_interface "$can_under_test" 'down';
+	do_cmd config_can_interface.sh -i "$can_under_test"  -c 'ip_link' -b "$bitrate" -d "$dbitrate" -l -f;
+	set_can_interface "$can_under_test" 'up';
+	send_packets "$can_under_test" 'start' 'fd';
+	get_stats "$can_under_test" 'init';
+	get_stats "$can_under_test" 'init' 'error';
 	do_cmd "sleep 5";
-	get_stats 'final';
-	get_stats 'final' 'error';
-	send_packets 'stop';
-	set_can_interface 'down';
+	get_stats "$can_under_test" 'final';
+	get_stats "$can_under_test" 'final' 'error';
+	send_packets "$can_under_test" 'stop';
+	set_can_interface "$can_under_test" 'down';
 	echo "==============================================================";
 	echo "Dump transmitted and received frames from: /proc/net/can/stats";
 	compare_stats 'two_stage';
-	echo "Dump Error stats from: /sys/class/net/$iface/statistics";
+	echo "Dump Error stats from: /sys/class/net/$can_under_test/statistics";
 	compare_stats 'error';
 	echo "==============================================================";
+}
+
+loopback_all()
+{
+	bitrate="$1"
+	dbitrate="$2"
+	echo "Getting CAN Interfaces for $MACHINE"
+	cans=$(get_can_interfaces.sh $MACHINE)
+
+	if [ -z "$cans" ]; then	die "No CAN Interface found for the platform $MACHINE";	fi;
+
+	echo "Available CANs for $MACHINE : |$cans|"
+	for can in $cans
+	do
+		loopback_one "$can" "$bitrate" "$dbitrate"
+	done
+}
+
+loopback()
+{
+	can_iface="$1"
+	bitrate="$2"
+	dbitrate="$3"
+	if [[ "$TEST_ALL_INTERFACES" == "true" ]]; then
+		loopback_all "$bitrate" "$dbitrate"
+	else
+		loopback_one "$can_iface" "$bitrate" "$dbitrate"
+	fi
 }
 
 modular_one()
 {
 	can_under_test=$1
-	echo "Running Can Modular Test on $can_under_test"
+	echo "Running CAN Modular Test on $can_under_test"
 	can_interface="/sys/class/net/$can_under_test";
 	if ! [ -d "$can_interface" ]; then die "Check dtb to see if $can_under_test is included"; fi;
 	can_module=$(zcat /proc/config.gz |grep CONFIG_CAN=m);
@@ -202,9 +237,9 @@ modular_all()
 	echo "Getting CAN Interfaces for $MACHINE"
 	cans=$(get_can_interfaces.sh $MACHINE)
 
-	if [ -z "$cans" ]; then	die "No Can Interface found for the platform $MACHINE";	fi;
+	if [ -z "$cans" ]; then	die "No CAN Interface found for the platform $MACHINE";	fi;
 
-	echo "Available Cans for $MACHINE : |$cans|"
+	echo "Available CANs for $MACHINE : |$cans|"
 	for can in $cans
 	do
 		modular_one "$can"
@@ -213,10 +248,11 @@ modular_all()
 
 modular()
 {
+	can_iface="$1"
 	if [[ "$TEST_ALL_INTERFACES" == "true" ]]; then
 		modular_all
 	else
-		modular_one "$iface"
+		modular_one "$can_iface"
 	fi
 
 }
@@ -263,16 +299,16 @@ if [ -n "$interface" ]; then iface=$interface; fi;
 
 case $test in
   modular)
-	modular
+	modular "$iface"
 	;;
   suspend)
-	suspend $brate
+	suspend "$iface" "$brate"
 	;;
   modular_suspend)
-	modular_suspend $brate
+	modular_suspend "$iface" "$brate"
 	;;
   loopback)
-	loopback $brate $dbrate
+	loopback "$iface" "$brate" "$dbrate"
 	;;
   *)
 	end 1

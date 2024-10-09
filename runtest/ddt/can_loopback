@@ -16,3 +16,5 @@ CAN_S_FUNC_LOOPBACK_MAIN_MCAN1_1000000 source 'common.sh'; interface='main_mcan1
 CAN_S_FUNC_LOOPBACK_MCU_MCAN0_1000000 source 'common.sh'; interface='mcu_mcan0'; bitrate=1000000; do_cmd cantest.sh --loopback -i $interface -b $bitrate
 
 CAN_S_FUNC_LOOPBACK_MCU_MCAN1_1000000 source 'common.sh'; interface='mcu_mcan1'; bitrate=1000000; do_cmd cantest.sh --loopback -i $interface -b $bitrate
+
+CAN_S_FUNC_LOOPBACK_ALL source 'common.sh'; do_cmd cantest.sh --loopback --all_interfaces
