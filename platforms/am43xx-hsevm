@@ -62,3 +62,4 @@ hdmi/audio/playback
 ipc
 video/capture/*/v4l2
 kms
+hwspinlock

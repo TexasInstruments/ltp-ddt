@@ -59,3 +59,4 @@ video/capture/*/v4l2
 kms
 watchdog
 vtm
+hwspinlock

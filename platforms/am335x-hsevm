@@ -54,3 +54,4 @@ pwm/backlight
 gpio
 ipc
 kms
+hwspinlock
