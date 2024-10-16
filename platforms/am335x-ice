@@ -40,3 +40,4 @@ pwm/ecap
 gpio
 ipc
 kms
+hwspinlock

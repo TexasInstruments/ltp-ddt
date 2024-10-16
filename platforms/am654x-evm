@@ -62,3 +62,4 @@ displayport
 pwm/backlight
 watchdog
 vtm
+hwspinlock
