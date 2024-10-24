@@ -1,0 +1,15 @@
+deqp-gles31@functional@blend_equation_advanced@srgb@colorburn
+deqp-gles31@functional@blend_equation_advanced@srgb@colordodge
+deqp-gles31@functional@blend_equation_advanced@srgb@darken
+deqp-gles31@functional@blend_equation_advanced@srgb@difference
+deqp-gles31@functional@blend_equation_advanced@srgb@exclusion
+deqp-gles31@functional@blend_equation_advanced@srgb@hardlight
+deqp-gles31@functional@blend_equation_advanced@srgb@hsl_color
+deqp-gles31@functional@blend_equation_advanced@srgb@hsl_hue
+deqp-gles31@functional@blend_equation_advanced@srgb@hsl_luminosity
+deqp-gles31@functional@blend_equation_advanced@srgb@hsl_saturation
+deqp-gles31@functional@blend_equation_advanced@srgb@lighten
+deqp-gles31@functional@blend_equation_advanced@srgb@multiply
+deqp-gles31@functional@blend_equation_advanced@srgb@overlay
+deqp-gles31@functional@blend_equation_advanced@srgb@screen
+deqp-gles31@functional@blend_equation_advanced@srgb@softlight
