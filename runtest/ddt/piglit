@@ -2,16 +2,33 @@
 # @desc Run OpenGLES, Vulkan, and OpenCL conformance tests
 # @requires graphics
 
-PIGLIT_L_ARGB_ALL source 'common.sh'; swapfile_create; piglit run deqp_egl deqp_gles31 deqp_vk results -t ".*argb.*"; piglit_exit=$?; output=$(piglit summary console results -p); if [ $piglit_exit != 0 ] || echo "${output}" | grep -q 'failed$'; then die "${output}"; fi
+PIGLIT_L_ARGB_ALL source 'common.sh'; swapfile_create; piglit run deqp_egl deqp_gles31 deqp_vk results -t ".*argb.*"; piglit_exit=$?; output=$(piglit summary console results -p); if [ $piglit_exit != 0 ] || echo
+PIGLIT_L_BGRA_ALL source 'common.sh'; swapfile_create; piglit run deqp_egl deqp_gles31 deqp_vk results -t ".*bgra.*"; piglit_exit=$?; output=$(piglit summary console results -p); if [ $piglit_exit != 0 ] || echo
+PIGLIT_L_RGBA_ALL source 'common.sh'; swapfile_create; piglit run deqp_egl deqp_gles31 deqp_vk results -t ".*rgba.*"; piglit_exit=$?; output=$(piglit summary console results -p); if [ $piglit_exit != 0 ] || echo
+PIGLIT_L_RGB565_ALL source 'common.sh'; swapfile_create; piglit run deqp_egl deqp_gles31 deqp_vk results -t ".*rgb565.*"; piglit_exit=$?; output=$(piglit summary console results -p); if [ $piglit_exit != 0 ] ||
+PIGLIT_L_SRGB_ALL source 'common.sh'; swapfile_create; piglit run deqp_egl deqp_gles31 deqp_vk results -t ".*srgb.*"; piglit_exit=$?; output=$(piglit summary console results -p); if [ $piglit_exit != 0 ] || echo
+PIGLIT_L_YUV_ALL source 'common.sh'; swapfile_create; piglit run deqp_egl deqp_gles31 deqp_vk results -t ".*yuv.*"; piglit_exit=$?; output=$(piglit summary console results -p); if [ $piglit_exit != 0 ] || echo "
+PIGLIT_L_LINEAR_ALL source 'common.sh'; swapfile_create; piglit run deqp_egl deqp_gles31 deqp_vk results -t ".*linear.*"; piglit_exit=$?; output=$(piglit summary console results -p); if [ $piglit_exit != 0 ] ||
 
-PIGLIT_L_BGRA_ALL source 'common.sh'; swapfile_create; piglit run deqp_egl deqp_gles31 deqp_vk results -t ".*bgra.*"; piglit_exit=$?; output=$(piglit summary console results -p); if [ $piglit_exit != 0 ] || echo "${output}" | grep -q 'failed$'; then die "${output}"; fi
+# SRGB VK Testlists
+PIGLIT_L_SRGB_VK_CPY_CMDS ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x copy_cmds_blit_TESTS.txt -y deqp_vk -z SRGB -i vk 
+PIGLIT_L_SRGB_VK_CORE_CMDS ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x core_cmds_blit_TESTS.txt -y deqp_vk -z SRGB -i vk 
+PIGLIT_L_SRGB_VK_DED_ALOC ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x dedicated_allocation_blit_TESTS.txt -y deqp_vk -z SRGB -i vk 
+PIGLIT_L_SRGB_VK_DY_RNDR ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x dynamic_rendering_TESTS.txt -y deqp_vk -z SRGB -i vk 
+PIGLIT_L_SRGB_VK_IMG_CLR_ML ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x image_clearing_ml_TESTS.txt -y deqp_vk -z SRGB -i vk 
+PIGLIT_L_SRGB_VK_IMG_CLR_SL ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x image_clearing_sl_TESTS.txt -y deqp_vk -z SRGB -i vk 
+PIGLIT_L_SRGB_VK_IMG_FORMAT ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x image_format_properties_TESTS.txt -y deqp_vk -z SRGB -i vk 
+PIGLIT_L_SRGB_VK_MISC ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x misc_TESTS.txt -y deqp_vk -z SRGB -i vk 
+PIGLIT_L_SRGB_VK_RASTRZ ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x rasterization_TESTS.txt -y deqp_vk -z SRGB -i vk 
+PIGLIT_L_SRGB_VK_RNDR_PASS ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x renderpass_TESTS.txt -y deqp_vk -z SRGB -i vk 
+PIGLIT_L_SRGB_VK_SUB_ALOC_1D ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x sub_allocation_1D_TESTS.txt -y deqp_vk -z SRGB -i vk 
+PIGLIT_L_SRGB_VK_TEXTURE ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x texture_TESTS.txt -y deqp_vk -z SRGB -i vk 
 
-PIGLIT_L_RGBA_ALL source 'common.sh'; swapfile_create; piglit run deqp_egl deqp_gles31 deqp_vk results -t ".*rgba.*"; piglit_exit=$?; output=$(piglit summary console results -p); if [ $piglit_exit != 0 ] || echo "${output}" | grep -q 'failed$'; then die "${output}"; fi
-
-PIGLIT_L_RGB565_ALL source 'common.sh'; swapfile_create; piglit run deqp_egl deqp_gles31 deqp_vk results -t ".*rgb565.*"; piglit_exit=$?; output=$(piglit summary console results -p); if [ $piglit_exit != 0 ] || echo "${output}" | grep -q 'failed$'; then die "${output}"; fi
-
-PIGLIT_L_SRGB_ALL source 'common.sh'; swapfile_create; piglit run deqp_egl deqp_gles31 deqp_vk results -t ".*srgb.*"; piglit_exit=$?; output=$(piglit summary console results -p); if [ $piglit_exit != 0 ] || echo "${output}" | grep -q 'failed$'; then die "${output}"; fi
-
-PIGLIT_L_YUV_ALL source 'common.sh'; swapfile_create; piglit run deqp_egl deqp_gles31 deqp_vk results -t ".*yuv.*"; piglit_exit=$?; output=$(piglit summary console results -p); if [ $piglit_exit != 0 ] || echo "${output}" | grep -q 'failed$'; then die "${output}"; fi
-
-PIGLIT_L_LINEAR_ALL source 'common.sh'; swapfile_create; piglit run deqp_egl deqp_gles31 deqp_vk results -t ".*linear.*"; piglit_exit=$?; output=$(piglit summary console results -p); if [ $piglit_exit != 0 ] || echo "${output}" | grep -q 'failed$'; then die "${output}"; fi
+# SRGB GLES Testlists
+PIGLIT_L_SRGB_GLES_BLEND_EQT ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x blend_equation_TESTS.txt -y deqp_gles31 -z SRGB -i gles
+PIGLIT_L_SRGB_GLES_IMG_COMPRESSED ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x image_compressed_TESTS.txt -y deqp_gles31 -z SRGB -i gles
+PIGLIT_L_SRGB_GLES_IMG_MIXED ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x image_mixed_TESTS.txt -y deqp_gles31 -z SRGB -i gles
+PIGLIT_L_SRGB_GLES_IMG_NON_COMPRESSED ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x non_compressed_TESTS.txt -y deqp_gles31 -z SRGB -i gles
+PIGLIT_L_SRGB_GLES_TEXTURE ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x texture_TESTS.txt -y deqp_gles31 -z SRGB -i gles
+PIGLIT_L_SRGB_GLES_NEG_COVERAGE ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x negative_coverage_TESTS.txt -y deqp_gles31 -z SRGB -i gles
+PIGLIT_L_SRGB_GLES_MISC ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x misc_TESTS.txt -y deqp_gles31 -z SRGB -i gles

@@ -1,0 +1,16 @@
+deqp-gles31@functional@fbo@color@texcubearray@srgb8_alpha8
+deqp-gles31@functional@fbo@srgb_write_control@framebuffer_srgb_enabled
+deqp-gles31@functional@fbo@srgb_write_control@framebuffer_srgb_enabled_blend
+deqp-gles31@functional@fbo@srgb_write_control@framebuffer_srgb_enabled_col_attach
+deqp-gles31@functional@fbo@srgb_write_control@framebuffer_srgb_enabled_copy_to_linear
+deqp-gles31@functional@fbo@srgb_write_control@framebuffer_srgb_enabled_render_target_ignore
+deqp-gles31@functional@shaders@framebuffer_fetch@framebuffer_format@srgb8_alpha8
+deqp-gles31@functional@state_query@internal_format@renderbuffer@srgb8_alpha8_samples
+deqp-gles31@functional@state_query@internal_format@texture_2d_multisample@srgb8_alpha8_samples
+deqp-gles31@functional@state_query@internal_format@texture_2d_multisample_array@srgb8_alpha8_samples
+deqp-gles31@functional@state_query@sampler@set_pure_int@texture_srgb_decode
+deqp-gles31@functional@state_query@sampler@set_pure_uint@texture_srgb_decode
+deqp-gles31@functional@state_query@sampler@set_value@texture_srgb_decode_float
+deqp-gles31@functional@state_query@sampler@set_value@texture_srgb_decode_integer
+deqp-gles31@functional@state_query@sampler@set_value@texture_srgb_decode_pure_int
+deqp-gles31@functional@state_query@sampler@set_value@texture_srgb_decode_pure_uint
