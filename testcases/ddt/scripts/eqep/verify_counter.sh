@@ -132,10 +132,13 @@ case $MACHINE in
 	am62axx*)
 		eqep_inst=1
 		;;
-	am62xx*)
+	am62lxx*)
 		eqep_inst=1
 		;;
 	am62pxx*)
+                eqep_inst=1
+                ;;
+	am62xx*)
 		eqep_inst=1
 		;;
 	am64xx*)

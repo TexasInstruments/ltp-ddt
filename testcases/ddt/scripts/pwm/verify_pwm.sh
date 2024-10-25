@@ -132,6 +132,10 @@ case $MACHINE in
 		ecap_inst=3
 		ehrpwm_inst=2
 		;;
+	am62lxx*)
+		ecap_inst=3
+		ehrpwm_inst=3
+		;;
 	am62xx*)
 		ecap_inst=3
 		ehrpwm_inst=2
