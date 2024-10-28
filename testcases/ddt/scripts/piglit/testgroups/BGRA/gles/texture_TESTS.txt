@@ -1,0 +1,6 @@
+deqp-gles31@functional@texture@border_clamp@formats@bgra@gather_size_npot
+deqp-gles31@functional@texture@border_clamp@formats@bgra@gather_size_pot
+deqp-gles31@functional@texture@border_clamp@formats@bgra@linear_size_npot
+deqp-gles31@functional@texture@border_clamp@formats@bgra@linear_size_pot
+deqp-gles31@functional@texture@border_clamp@formats@bgra@nearest_size_npot
+deqp-gles31@functional@texture@border_clamp@formats@bgra@nearest_size_pot

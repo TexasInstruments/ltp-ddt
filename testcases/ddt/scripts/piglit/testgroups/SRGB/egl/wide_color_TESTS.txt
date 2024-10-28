@@ -1,0 +1,2 @@
+deqp-egl@functional@wide_color@pbuffer_8888_colorspace_srgb
+deqp-egl@functional@wide_color@window_8888_colorspace_srgb

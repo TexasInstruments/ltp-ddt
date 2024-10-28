@@ -32,3 +32,53 @@ PIGLIT_L_SRGB_GLES_IMG_NON_COMPRESSED ${LTPROOT}/testcases/ddt/scripts/piglit/te
 PIGLIT_L_SRGB_GLES_TEXTURE ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x texture_TESTS.txt -y deqp_gles31 -z SRGB -i gles
 PIGLIT_L_SRGB_GLES_NEG_COVERAGE ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x negative_coverage_TESTS.txt -y deqp_gles31 -z SRGB -i gles
 PIGLIT_L_SRGB_GLES_MISC ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x misc_TESTS.txt -y deqp_gles31 -z SRGB -i gles
+
+# SRGB EGL Testlists
+PIGLIT_S_SRGB_EGL_WIDE_COLOR ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x wide_color_TESTS.txt -y deqp_egl -z SRGB -i egl
+
+# BGRA GLES Testlists 
+PIGLIT_S_BGRA_GLES_TEXTURE ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x texture_TESTS.txt -y deqp_gles31 -z BGRA -i gles
+
+# RGBA EGL Testlists 
+PIGLIT_S_RGBA_EGL_ALL_TESTS ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x all_egl_TESTS.txt -y deqp_egl -z RGBA -i egl
+
+# RGBA GLES Testlists 
+PIGLIT_L_RGBA_GLES_2D_2D ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x 2d_to_2d_TESTS.txt -y deqp_gles31 -z RGBA -i gles
+PIGLIT_L_RGBA_GLES_2D_3D ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x 2d_to_3d_TESTS.txt -y deqp_gles31 -z RGBA -i gles
+PIGLIT_L_RGBA_GLES_2D_CUBE_MAP ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x 2d_to_cubemap_TESTS.txt -y deqp_gles31 -z RGBA -i gles
+PIGLIT_L_RGBA_GLES_2D_RNDR_BUFFER ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x 2d_to_renderbuffer_TESTS.txt -y deqp_gles31 -z RGBA -i gles
+PIGLIT_L_RGBA_GLES_3D_2D ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x 3d_to_2d_TESTS.txt -y deqp_gles31 -z RGBA -i gles
+PIGLIT_L_RGBA_GLES_3D_3D ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x 3d_to_3d_TESTS.txt -y deqp_gles31 -z RGBA -i gles
+PIGLIT_L_RGBA_GLES_3D_CUBE_MAP ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x 3d_to_cubemap_TESTS.txt -y deqp_gles31 -z RGBA -i gles
+PIGLIT_L_RGBA_GLES_3D_RNDR_BUFFER ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x 3d_to_renderbuffer_TESTS.txt -y deqp_gles31 -z RGBA -i gles
+PIGLIT_L_RGBA_GLES_CUBE_MAP_2D ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x cubemap_to_2d_TESTS.txt -y deqp_gles31 -z RGBA -i gles
+PIGLIT_L_RGBA_GLES_CUBE_MAP_3D ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x cubemap_to_3d_TESTS.txt -y deqp_gles31 -z RGBA -i gles
+PIGLIT_L_RGBA_GLES_CUBE_MAP_CUBE_MAP ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x cubemap_to_cubemap_TESTS.txt -y deqp_gles31 -z RGBA -i gles
+PIGLIT_L_RGBA_GLES_CUBE_MAP_RNDR_BUFFER ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x cubemap_to_renderbuffer_TESTS.txt -y deqp_gles31 -z RGBA -i gles
+PIGLIT_L_RGBA_GLES_IMG_LOAD_STORE ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x image_load_store_TESTS.txt -y deqp_gles31 -z RGBA -i gles
+PIGLIT_L_RGBA_GLES_MISC ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x misc_TESTS.txt -y deqp_gles31 -z RGBA -i gles
+PIGLIT_L_RGBA_GLES_RNDR_BUFFER_2D ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x renderbuffer_to_2d_TESTS.txt -y deqp_gles31 -z RGBA -i gles
+PIGLIT_L_RGBA_GLES_RNDR_BUFFER_3D ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x renderbuffer_to_3d_TESTS.txt -y deqp_gles31 -z RGBA -i gles
+PIGLIT_L_RGBA_GLES_RNDR_BUFFER_CUBE_MAP ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x renderbuffer_to_cubemap_TESTS.txt -y deqp_gles31 -z RGBA -i gles
+PIGLIT_L_RGBA_GLES_RNDR_BUFFER_RNDR_BUFFER ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x renderbuffer_to_renderbuffer_TESTS.txt -y deqp_gles31 -z RGBA -i gles
+PIGLIT_L_RGBA_GLES_TEXTURE ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x texture_TESTS.txt -y deqp_gles31 -z RGBA -i gles
+
+# RGBA VK Testlists 
+PIGLIT_L_RGBA_VK_IMG_FETCH ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x img_fetch_TESTS.txt -y deqp_vk -z RGBA -i vk 
+PIGLIT_L_RGBA_VK_IMG_ROBUST ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x img_robustness_TESTS.txt -y deqp_vk -z RGBA -i vk 
+PIGLIT_L_RGBA_VK_IMG_SAMPLER ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x img_sampler_TESTS.txt -y deqp_vk -z RGBA -i vk 
+PIGLIT_L_RGBA_VK_IMG_STORAGE ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x img_storage_TESTS.txt -y deqp_vk -z RGBA -i vk 
+PIGLIT_L_RGBA_VK_MISC ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x misc_TESTS.txt -y deqp_vk -z RGBA -i vk 
+PIGLIT_L_RGBA_VK_MISS_MATCHED ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x miss_matched_TESTS.txt -y deqp_vk -z RGBA -i vk 
+PIGLIT_L_RGBA_VK_SPARSE_RESOURCE ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x sparse_resouce_TESTS.txt -y deqp_vk -z RGBA -i vk 
+PIGLIT_L_RGBA_VK_SWIZZLE ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x swizzle_TESTS.txt -y deqp_vk -z RGBA -i vk 
+PIGLIT_L_RGBA_VK_TEXTURE ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x texture_TESTS.txt -y deqp_vk -z RGBA -i vk 
+
+# ARGB VK Testlists
+PIGLIT_L_ARGB_VK_PIXEL_4 ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x pixel_4_TESTS.txt -y deqp_vk -z ARGB -i vk 
+PIGLIT_L_ARGB_VK_PIXEL_5 ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x pixel_5_TESTS.txt -y deqp_vk -z ARGB -i vk 
+PIGLIT_L_ARGB_VK_PIXEL_6 ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x pixel_6_TESTS.txt -y deqp_vk -z ARGB -i vk 
+PIGLIT_L_ARGB_VK_PIXEL_8 ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x pixel_8_TESTS.txt -y deqp_vk -z ARGB -i vk 
+PIGLIT_L_ARGB_VK_PIXEL_10 ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x pixel_10_TESTS.txt -y deqp_vk -z ARGB -i vk 
+PIGLIT_L_ARGB_VK_PIXEL_16 ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x pixel_16_TESTS.txt -y deqp_vk -z ARGB -i vk 
+PIGLIT_L_ARGB_VK_PIXEL_32 ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x pixel_32_TESTS.txt -y deqp_vk -z ARGB -i vk 
