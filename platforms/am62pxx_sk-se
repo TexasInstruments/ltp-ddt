@@ -9,6 +9,7 @@ crypto/sa2ul/aes
 crypto/sa2ul/sha1
 crypto/sa2ul/sha256
 crypto/sa2ul/sha512
+eqep
 gpio
 graphics/
 hwrng
@@ -32,6 +33,8 @@ power_mgr/cpufreq/performance
 power_mgr/cpufreq/powersave
 power_mgr/cpufreq/ondemand
 power_mgr/cpuidle
+pwm/ecap
+pwm/epwm
 qspi_master/mtd
 rtc
 smp
