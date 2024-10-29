@@ -2,7 +2,7 @@
 
 source "common.sh"
 
-OPTSTRING=":x:y:"s
+OPTSTRING=":x:y:z:i:"s
 
 while getopts ${OPTSTRING} opt; do
   case ${opt} in
@@ -28,7 +28,6 @@ done
 swapfile_create
 
 piglit run ${TESTPROFILE} results --test-list ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/${TEXTURE}/${API}/${TESTCASE}
-
 
 piglit_exit=$?
 
