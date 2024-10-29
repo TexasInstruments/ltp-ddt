@@ -82,3 +82,12 @@ PIGLIT_L_ARGB_VK_PIXEL_8 ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/
 PIGLIT_L_ARGB_VK_PIXEL_10 ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x pixel_10_TESTS.txt -y deqp_vk -z ARGB -i vk 
 PIGLIT_L_ARGB_VK_PIXEL_16 ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x pixel_16_TESTS.txt -y deqp_vk -z ARGB -i vk 
 PIGLIT_L_ARGB_VK_PIXEL_32 ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x pixel_32_TESTS.txt -y deqp_vk -z ARGB -i vk 
+
+# RGB565 EGL Testlists
+PIGLIT_S_RGB565_EGL_ALL_TESTS ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x all_egl_TESTS.txt -y deqp_egl -z RGB565 -i egl
+
+# RGB565 GLES Testlists 
+PIGLIT_L_RGB565_GLES_ALL_TESTS ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x all_gles_TESTS.txt -y deqp_gles31 -z RGB565 -i gles
+
+# YUV EGL Testlists
+PIGLIT_S_YUV_EGL_ALL_TESTS ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x all_egl_TESTS.txt -y deqp_egl -z YUV -i egl
