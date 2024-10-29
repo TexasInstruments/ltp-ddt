@@ -95,15 +95,33 @@ setup_routes(){
             media-ctl -d /dev/media$id -V "'$CSI_BRIDGE_NAME':0/$CSI_PAD $IMX390_CAM_FMT"
         done
     done
-
-    # CSI2RX ROUTING
+    
+    #CSI2RX ROUTING
     for i in "${!ALL_CSI2RX_FMT_STR[@]}"
     do
         id="$(cut -d',' -f1 <<<"$i")"
         name="$(cut -d',' -f2 <<<"$i")"
-        media-ctl -d /dev/media$id -R "'$name' [${ALL_CSI2RX_FMT_STR[$i]}]"
-    done
+        CSI2RX_NAME=$name
+        media-ctl -d $id -R "'$name' [${ALL_CSI2RX_FMT_STR[$i]}]"
+        # CSI2RX ROUTING & FORMATS
+        for name in `media-ctl -d $id -p | grep entity | grep ov2312 | cut -d ' ' -f 5`; do
+            UB953_NAME=`media-ctl -d $id -p -e "ov2312 $name" | grep ub953 | cut -d "\"" -f 2`
+            UB960_NAME=`media-ctl -d $id -p -e "$UB953_NAME" | grep ub960 | cut -d "\"" -f 2`
+            UB960_PAD=`media-ctl -d $id -p -e "$UB953_NAME" | grep ub960 | cut -d : -f 2 | awk '{print $1}'`
+            CSI_PAD0=`media-ctl -d $id -p -e "$UB960_NAME" | grep $UB960_PAD/0.*[ACTIVE] | cut -d "/" -f 3 | awk '{print $1}'`
+            CSI_PAD1=`media-ctl -d $id -p -e "$UB960_NAME" | grep $UB960_PAD/1.*[ACTIVE] | cut -d "/" -f 3 | awk '{print $1}'`
+            media-ctl -d $id -V "'$CSI2RX_NAME':0/$CSI_PAD0 $OV2312_CAM_FMT"
+            media-ctl -d $id -V "'$CSI2RX_NAME':0/$CSI_PAD1 $OV2312_CAM_FMT"
+        done
 
+        for name in `media-ctl -d $id -p | grep entity | grep imx390 | cut -d ' ' -f 5`; do
+            UB953_NAME=`media-ctl -d $id -p -e "imx390 $name" | grep ub953 | cut -d "\"" -f 2`
+            UB960_NAME=`media-ctl -d $id -p -e "$UB953_NAME" | grep ub960 | cut -d "\"" -f 2`
+            UB960_PAD=`media-ctl -d $id -p -e "$UB953_NAME" | grep ub960 | cut -d : -f 2 | awk '{print $1}'`
+            CSI_PAD=`media-ctl -d $id -p -e "$UB960_NAME" | grep $UB960_PAD/.*[ACTIVE] | cut -d "/" -f 3 | awk '{print $1}'`
+            media-ctl -d $id -V "'$CSI2RX_NAME':0/$CSI_PAD $IMX390_CAM_FMT"
+        done
+    done
 }
 
 setup_imx390(){
