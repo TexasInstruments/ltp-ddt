@@ -1,0 +1,2 @@
+deqp-gles2@capability@extensions@other@gl_ext_read_format_bgra
+deqp-gles2@capability@extensions@uncompressed_texture_formats@gl_ext_texture_format_bgra8888

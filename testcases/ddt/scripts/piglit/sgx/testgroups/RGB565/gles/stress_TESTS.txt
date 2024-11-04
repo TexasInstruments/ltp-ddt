@@ -1,0 +1,1 @@
+deqp-gles2@stress@special_float@framebuffer@write_rgb565

@@ -10,84 +10,112 @@ PIGLIT_L_SRGB_ALL source 'common.sh'; swapfile_create; piglit run deqp_egl deqp_
 PIGLIT_L_YUV_ALL source 'common.sh'; swapfile_create; piglit run deqp_egl deqp_gles31 deqp_vk results -t ".*yuv.*"; piglit_exit=$?; output=$(piglit summary console results -p); if [ $piglit_exit != 0 ] || echo "
 PIGLIT_L_LINEAR_ALL source 'common.sh'; swapfile_create; piglit run deqp_egl deqp_gles31 deqp_vk results -t ".*linear.*"; piglit_exit=$?; output=$(piglit summary console results -p); if [ $piglit_exit != 0 ] ||
 
+# ---- Rogue Architecture Testing ----
+
 # SRGB VK Testlists
-PIGLIT_L_SRGB_VK_CPY_CMDS ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x copy_cmds_blit_TESTS.txt -y deqp_vk -z SRGB -i vk 
-PIGLIT_L_SRGB_VK_CORE_CMDS ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x core_cmds_blit_TESTS.txt -y deqp_vk -z SRGB -i vk 
-PIGLIT_L_SRGB_VK_DED_ALOC ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x dedicated_allocation_blit_TESTS.txt -y deqp_vk -z SRGB -i vk 
-PIGLIT_L_SRGB_VK_DY_RNDR ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x dynamic_rendering_TESTS.txt -y deqp_vk -z SRGB -i vk 
-PIGLIT_L_SRGB_VK_IMG_CLR_ML ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x image_clearing_ml_TESTS.txt -y deqp_vk -z SRGB -i vk 
-PIGLIT_L_SRGB_VK_IMG_CLR_SL ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x image_clearing_sl_TESTS.txt -y deqp_vk -z SRGB -i vk 
-PIGLIT_L_SRGB_VK_IMG_FORMAT ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x image_format_properties_TESTS.txt -y deqp_vk -z SRGB -i vk 
-PIGLIT_L_SRGB_VK_MISC ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x misc_TESTS.txt -y deqp_vk -z SRGB -i vk 
-PIGLIT_L_SRGB_VK_RASTRZ ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x rasterization_TESTS.txt -y deqp_vk -z SRGB -i vk 
-PIGLIT_L_SRGB_VK_RNDR_PASS ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x renderpass_TESTS.txt -y deqp_vk -z SRGB -i vk 
-PIGLIT_L_SRGB_VK_SUB_ALOC_1D ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x sub_allocation_1D_TESTS.txt -y deqp_vk -z SRGB -i vk 
-PIGLIT_L_SRGB_VK_TEXTURE ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x texture_TESTS.txt -y deqp_vk -z SRGB -i vk 
+PIGLIT_L_SRGB_VK_CPY_CMDS ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x copy_cmds_blit_TESTS.txt -y deqp_vk -z SRGB -i vk -a rogue
+PIGLIT_L_SRGB_VK_CORE_CMDS ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x core_cmds_blit_TESTS.txt -y deqp_vk -z SRGB -i vk -a rogue
+PIGLIT_L_SRGB_VK_DED_ALOC ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x dedicated_allocation_blit_TESTS.txt -y deqp_vk -z SRGB -i vk -a rogue 
+PIGLIT_L_SRGB_VK_DY_RNDR ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x dynamic_rendering_TESTS.txt -y deqp_vk -z SRGB -i vk -a rogue
+PIGLIT_L_SRGB_VK_IMG_CLR_ML ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x image_clearing_ml_TESTS.txt -y deqp_vk -z SRGB -i vk -a rogue
+PIGLIT_L_SRGB_VK_IMG_CLR_SL ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x image_clearing_sl_TESTS.txt -y deqp_vk -z SRGB -i vk -a rogue
+PIGLIT_L_SRGB_VK_IMG_FORMAT ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x image_format_properties_TESTS.txt -y deqp_vk -z SRGB -i vk -a rogue
+PIGLIT_L_SRGB_VK_MISC ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x misc_TESTS.txt -y deqp_vk -z SRGB -i vk -a rogue
+PIGLIT_L_SRGB_VK_RASTRZ ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x rasterization_TESTS.txt -y deqp_vk -z SRGB -i vk -a rogue
+PIGLIT_L_SRGB_VK_RNDR_PASS ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x renderpass_TESTS.txt -y deqp_vk -z SRGB -i vk -a rogue
+PIGLIT_L_SRGB_VK_SUB_ALOC_1D ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x sub_allocation_1D_TESTS.txt -y deqp_vk -z SRGB -i vk -a rogue
+PIGLIT_L_SRGB_VK_TEXTURE ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x texture_TESTS.txt -y deqp_vk -z SRGB -i vk -a rogue
 
 # SRGB GLES Testlists
-PIGLIT_L_SRGB_GLES_BLEND_EQT ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x blend_equation_TESTS.txt -y deqp_gles31 -z SRGB -i gles
-PIGLIT_L_SRGB_GLES_IMG_COMPRESSED ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x image_compressed_TESTS.txt -y deqp_gles31 -z SRGB -i gles
-PIGLIT_L_SRGB_GLES_IMG_MIXED ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x image_mixed_TESTS.txt -y deqp_gles31 -z SRGB -i gles
-PIGLIT_L_SRGB_GLES_IMG_NON_COMPRESSED ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x non_compressed_TESTS.txt -y deqp_gles31 -z SRGB -i gles
-PIGLIT_L_SRGB_GLES_TEXTURE ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x texture_TESTS.txt -y deqp_gles31 -z SRGB -i gles
-PIGLIT_L_SRGB_GLES_NEG_COVERAGE ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x negative_coverage_TESTS.txt -y deqp_gles31 -z SRGB -i gles
-PIGLIT_L_SRGB_GLES_MISC ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x misc_TESTS.txt -y deqp_gles31 -z SRGB -i gles
+PIGLIT_L_SRGB_GLES_BLEND_EQT ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x blend_equation_TESTS.txt -y deqp_gles31 -z SRGB -i gles -a rogue
+PIGLIT_L_SRGB_GLES_IMG_COMPRESSED ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x image_compressed_TESTS.txt -y deqp_gles31 -z SRGB -i gles -a rogue
+PIGLIT_L_SRGB_GLES_IMG_MIXED ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x image_mixed_TESTS.txt -y deqp_gles31 -z SRGB -i gles -a rogue
+PIGLIT_L_SRGB_GLES_IMG_NON_COMPRESSED ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x non_compressed_TESTS.txt -y deqp_gles31 -z SRGB -i gles -a rogue
+PIGLIT_L_SRGB_GLES_TEXTURE ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x texture_TESTS.txt -y deqp_gles31 -z SRGB -i gles -a rogue
+PIGLIT_L_SRGB_GLES_NEG_COVERAGE ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x negative_coverage_TESTS.txt -y deqp_gles31 -z SRGB -i gles -a rogue
+PIGLIT_L_SRGB_GLES_MISC ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x misc_TESTS.txt -y deqp_gles31 -z SRGB -i gles -a rogue
 
 # SRGB EGL Testlists
-PIGLIT_S_SRGB_EGL_WIDE_COLOR ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x wide_color_TESTS.txt -y deqp_egl -z SRGB -i egl
+PIGLIT_S_SRGB_EGL_WIDE_COLOR ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x wide_color_TESTS.txt -y deqp_egl -z SRGB -i egl -a rogue
 
 # BGRA GLES Testlists 
-PIGLIT_S_BGRA_GLES_TEXTURE ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x texture_TESTS.txt -y deqp_gles31 -z BGRA -i gles
+PIGLIT_S_BGRA_GLES_TEXTURE ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x texture_TESTS.txt -y deqp_gles31 -z BGRA -i gles -a rogue
 
 # RGBA EGL Testlists 
-PIGLIT_S_RGBA_EGL_ALL_TESTS ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x all_egl_TESTS.txt -y deqp_egl -z RGBA -i egl
+PIGLIT_S_RGBA_EGL_ALL_TESTS ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x all_egl_TESTS.txt -y deqp_egl -z RGBA -i egl -a rogue
 
 # RGBA GLES Testlists 
-PIGLIT_L_RGBA_GLES_2D_2D ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x 2d_to_2d_TESTS.txt -y deqp_gles31 -z RGBA -i gles
-PIGLIT_L_RGBA_GLES_2D_3D ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x 2d_to_3d_TESTS.txt -y deqp_gles31 -z RGBA -i gles
-PIGLIT_L_RGBA_GLES_2D_CUBE_MAP ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x 2d_to_cubemap_TESTS.txt -y deqp_gles31 -z RGBA -i gles
-PIGLIT_L_RGBA_GLES_2D_RNDR_BUFFER ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x 2d_to_renderbuffer_TESTS.txt -y deqp_gles31 -z RGBA -i gles
-PIGLIT_L_RGBA_GLES_3D_2D ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x 3d_to_2d_TESTS.txt -y deqp_gles31 -z RGBA -i gles
-PIGLIT_L_RGBA_GLES_3D_3D ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x 3d_to_3d_TESTS.txt -y deqp_gles31 -z RGBA -i gles
-PIGLIT_L_RGBA_GLES_3D_CUBE_MAP ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x 3d_to_cubemap_TESTS.txt -y deqp_gles31 -z RGBA -i gles
-PIGLIT_L_RGBA_GLES_3D_RNDR_BUFFER ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x 3d_to_renderbuffer_TESTS.txt -y deqp_gles31 -z RGBA -i gles
-PIGLIT_L_RGBA_GLES_CUBE_MAP_2D ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x cubemap_to_2d_TESTS.txt -y deqp_gles31 -z RGBA -i gles
-PIGLIT_L_RGBA_GLES_CUBE_MAP_3D ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x cubemap_to_3d_TESTS.txt -y deqp_gles31 -z RGBA -i gles
-PIGLIT_L_RGBA_GLES_CUBE_MAP_CUBE_MAP ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x cubemap_to_cubemap_TESTS.txt -y deqp_gles31 -z RGBA -i gles
-PIGLIT_L_RGBA_GLES_CUBE_MAP_RNDR_BUFFER ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x cubemap_to_renderbuffer_TESTS.txt -y deqp_gles31 -z RGBA -i gles
-PIGLIT_L_RGBA_GLES_IMG_LOAD_STORE ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x image_load_store_TESTS.txt -y deqp_gles31 -z RGBA -i gles
-PIGLIT_L_RGBA_GLES_MISC ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x misc_TESTS.txt -y deqp_gles31 -z RGBA -i gles
-PIGLIT_L_RGBA_GLES_RNDR_BUFFER_2D ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x renderbuffer_to_2d_TESTS.txt -y deqp_gles31 -z RGBA -i gles
-PIGLIT_L_RGBA_GLES_RNDR_BUFFER_3D ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x renderbuffer_to_3d_TESTS.txt -y deqp_gles31 -z RGBA -i gles
-PIGLIT_L_RGBA_GLES_RNDR_BUFFER_CUBE_MAP ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x renderbuffer_to_cubemap_TESTS.txt -y deqp_gles31 -z RGBA -i gles
-PIGLIT_L_RGBA_GLES_RNDR_BUFFER_RNDR_BUFFER ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x renderbuffer_to_renderbuffer_TESTS.txt -y deqp_gles31 -z RGBA -i gles
-PIGLIT_L_RGBA_GLES_TEXTURE ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x texture_TESTS.txt -y deqp_gles31 -z RGBA -i gles
+PIGLIT_L_RGBA_GLES_2D_2D ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x 2d_to_2d_TESTS.txt -y deqp_gles31 -z RGBA -i gles -a rogue
+PIGLIT_L_RGBA_GLES_2D_3D ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x 2d_to_3d_TESTS.txt -y deqp_gles31 -z RGBA -i gles -a rogue
+PIGLIT_L_RGBA_GLES_2D_CUBE_MAP ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x 2d_to_cubemap_TESTS.txt -y deqp_gles31 -z RGBA -i gles -a rogue
+PIGLIT_L_RGBA_GLES_2D_RNDR_BUFFER ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x 2d_to_renderbuffer_TESTS.txt -y deqp_gles31 -z RGBA -i gles -a rogue
+PIGLIT_L_RGBA_GLES_3D_2D ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x 3d_to_2d_TESTS.txt -y deqp_gles31 -z RGBA -i gles -a rogue
+PIGLIT_L_RGBA_GLES_3D_3D ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x 3d_to_3d_TESTS.txt -y deqp_gles31 -z RGBA -i gles -a rogue
+PIGLIT_L_RGBA_GLES_3D_CUBE_MAP ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x 3d_to_cubemap_TESTS.txt -y deqp_gles31 -z RGBA -i gles -a rogue
+PIGLIT_L_RGBA_GLES_3D_RNDR_BUFFER ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x 3d_to_renderbuffer_TESTS.txt -y deqp_gles31 -z RGBA -i gles -a rogue
+PIGLIT_L_RGBA_GLES_CUBE_MAP_2D ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x cubemap_to_2d_TESTS.txt -y deqp_gles31 -z RGBA -i gles -a rogue
+PIGLIT_L_RGBA_GLES_CUBE_MAP_3D ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x cubemap_to_3d_TESTS.txt -y deqp_gles31 -z RGBA -i gles -a rogue
+PIGLIT_L_RGBA_GLES_CUBE_MAP_CUBE_MAP ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x cubemap_to_cubemap_TESTS.txt -y deqp_gles31 -z RGBA -i gles -a rogue
+PIGLIT_L_RGBA_GLES_CUBE_MAP_RNDR_BUFFER ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x cubemap_to_renderbuffer_TESTS.txt -y deqp_gles31 -z RGBA -i gles -a rogue
+PIGLIT_L_RGBA_GLES_IMG_LOAD_STORE ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x image_load_store_TESTS.txt -y deqp_gles31 -z RGBA -i gles -a rogue
+PIGLIT_L_RGBA_GLES_MISC ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x misc_TESTS.txt -y deqp_gles31 -z RGBA -i gles -a rogue
+PIGLIT_L_RGBA_GLES_RNDR_BUFFER_2D ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x renderbuffer_to_2d_TESTS.txt -y deqp_gles31 -z RGBA -i gles -a rogue
+PIGLIT_L_RGBA_GLES_RNDR_BUFFER_3D ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x renderbuffer_to_3d_TESTS.txt -y deqp_gles31 -z RGBA -i gles -a rogue
+PIGLIT_L_RGBA_GLES_RNDR_BUFFER_CUBE_MAP ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x renderbuffer_to_cubemap_TESTS.txt -y deqp_gles31 -z RGBA -i gles -a rogue
+PIGLIT_L_RGBA_GLES_RNDR_BUFFER_RNDR_BUFFER ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x renderbuffer_to_renderbuffer_TESTS.txt -y deqp_gles31 -z RGBA -i gles -a rogue
+PIGLIT_L_RGBA_GLES_TEXTURE ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x texture_TESTS.txt -y deqp_gles31 -z RGBA -i gles -a rogue
 
 # RGBA VK Testlists 
-PIGLIT_L_RGBA_VK_IMG_FETCH ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x img_fetch_TESTS.txt -y deqp_vk -z RGBA -i vk 
-PIGLIT_L_RGBA_VK_IMG_ROBUST ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x img_robustness_TESTS.txt -y deqp_vk -z RGBA -i vk 
-PIGLIT_L_RGBA_VK_IMG_SAMPLER ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x img_sampler_TESTS.txt -y deqp_vk -z RGBA -i vk 
-PIGLIT_L_RGBA_VK_IMG_STORAGE ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x img_storage_TESTS.txt -y deqp_vk -z RGBA -i vk 
-PIGLIT_L_RGBA_VK_MISC ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x misc_TESTS.txt -y deqp_vk -z RGBA -i vk 
-PIGLIT_L_RGBA_VK_MISS_MATCHED ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x miss_matched_TESTS.txt -y deqp_vk -z RGBA -i vk 
-PIGLIT_L_RGBA_VK_SPARSE_RESOURCE ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x sparse_resouce_TESTS.txt -y deqp_vk -z RGBA -i vk 
-PIGLIT_L_RGBA_VK_SWIZZLE ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x swizzle_TESTS.txt -y deqp_vk -z RGBA -i vk 
-PIGLIT_L_RGBA_VK_TEXTURE ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x texture_TESTS.txt -y deqp_vk -z RGBA -i vk 
+PIGLIT_L_RGBA_VK_IMG_FETCH ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x img_fetch_TESTS.txt -y deqp_vk -z RGBA -i vk -a rogue
+PIGLIT_L_RGBA_VK_IMG_ROBUST ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x img_robustness_TESTS.txt -y deqp_vk -z RGBA -i vk -a rogue
+PIGLIT_L_RGBA_VK_IMG_SAMPLER ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x img_sampler_TESTS.txt -y deqp_vk -z RGBA -i vk -a rogue
+PIGLIT_L_RGBA_VK_IMG_STORAGE ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x img_storage_TESTS.txt -y deqp_vk -z RGBA -i vk -a rogue
+PIGLIT_L_RGBA_VK_MISC ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x misc_TESTS.txt -y deqp_vk -z RGBA -i vk -a rogue
+PIGLIT_L_RGBA_VK_MISS_MATCHED ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x miss_matched_TESTS.txt -y deqp_vk -z RGBA -i vk -a rogue
+PIGLIT_L_RGBA_VK_SPARSE_RESOURCE ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x sparse_resouce_TESTS.txt -y deqp_vk -z RGBA -i vk -a rogue
+PIGLIT_L_RGBA_VK_SWIZZLE ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x swizzle_TESTS.txt -y deqp_vk -z RGBA -i vk -a rogue
+PIGLIT_L_RGBA_VK_TEXTURE ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x texture_TESTS.txt -y deqp_vk -z RGBA -i vk -a rogue
 
 # ARGB VK Testlists
-PIGLIT_L_ARGB_VK_PIXEL_4 ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x pixel_4_TESTS.txt -y deqp_vk -z ARGB -i vk 
-PIGLIT_L_ARGB_VK_PIXEL_5 ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x pixel_5_TESTS.txt -y deqp_vk -z ARGB -i vk 
-PIGLIT_L_ARGB_VK_PIXEL_6 ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x pixel_6_TESTS.txt -y deqp_vk -z ARGB -i vk 
-PIGLIT_L_ARGB_VK_PIXEL_8 ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x pixel_8_TESTS.txt -y deqp_vk -z ARGB -i vk 
-PIGLIT_L_ARGB_VK_PIXEL_10 ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x pixel_10_TESTS.txt -y deqp_vk -z ARGB -i vk 
-PIGLIT_L_ARGB_VK_PIXEL_16 ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x pixel_16_TESTS.txt -y deqp_vk -z ARGB -i vk 
-PIGLIT_L_ARGB_VK_PIXEL_32 ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x pixel_32_TESTS.txt -y deqp_vk -z ARGB -i vk 
+PIGLIT_L_ARGB_VK_PIXEL_4 ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x pixel_4_TESTS.txt -y deqp_vk -z ARGB -i vk -a rogue
+PIGLIT_L_ARGB_VK_PIXEL_5 ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x pixel_5_TESTS.txt -y deqp_vk -z ARGB -i vk -a rogue
+PIGLIT_L_ARGB_VK_PIXEL_6 ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x pixel_6_TESTS.txt -y deqp_vk -z ARGB -i vk -a rogue
+PIGLIT_L_ARGB_VK_PIXEL_8 ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x pixel_8_TESTS.txt -y deqp_vk -z ARGB -i vk -a rogue
+PIGLIT_L_ARGB_VK_PIXEL_10 ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x pixel_10_TESTS.txt -y deqp_vk -z ARGB -i vk -a rogue
+PIGLIT_L_ARGB_VK_PIXEL_16 ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x pixel_16_TESTS.txt -y deqp_vk -z ARGB -i vk -a rogue
+PIGLIT_L_ARGB_VK_PIXEL_32 ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x pixel_32_TESTS.txt -y deqp_vk -z ARGB -i vk -a rogue
 
 # RGB565 EGL Testlists
-PIGLIT_S_RGB565_EGL_ALL_TESTS ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x all_egl_TESTS.txt -y deqp_egl -z RGB565 -i egl
+PIGLIT_S_RGB565_EGL_ALL_TESTS ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x all_egl_TESTS.txt -y deqp_egl -z RGB565 -i egl -a rogue
 
 # RGB565 GLES Testlists 
-PIGLIT_L_RGB565_GLES_ALL_TESTS ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x all_gles_TESTS.txt -y deqp_gles31 -z RGB565 -i gles
+PIGLIT_L_RGB565_GLES_ALL_TESTS ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x all_gles_TESTS.txt -y deqp_gles31 -z RGB565 -i gles -a rogue
 
 # YUV EGL Testlists
-PIGLIT_S_YUV_EGL_ALL_TESTS ${LTPROOT}/testcases/ddt/scripts/piglit/testgroups/bin/piglit_execute_test.sh -x all_egl_TESTS.txt -y deqp_egl -z YUV -i egl
+PIGLIT_S_YUV_EGL_ALL_TESTS ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x all_egl_TESTS.txt -y deqp_egl -z YUV -i egl -a rogue
+
+
+# ---- SGX Architecture Testing ----
+
+# BGRA GLES Testlists
+PIGLIT_SGX_S_BGRA_GLES_ALL_TESTS ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x all_gles_TESTS.txt -y deqp_gles2 -z BGRA -i gles -a sgx
+
+# RGB565 GLES Testlists
+PIGLIT_SGX_S_RGB565_GLES_FBO ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x fbo_TESTS.txt -y deqp_gles2 -z RGB565 -i gles -a sgx
+PIGLIT_SGX_S_RGB565_GLES_STRESS ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x stress_TESTS.txt -y deqp_gles2 -z RGB565 -i gles -a sgx
+PIGLIT_SGX_S_RGB565_GLES_TEXTURE ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x texture_TESTS.txt -y deqp_gles2 -z RGB565 -i gles -a sgx
+
+# RGB565 EGL Testlists
+PIGLIT_SGX_S_RGB565_EGL_COLOR_CLEAR ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x color_clears_TESTS.txt -y deqp_egl -z RGB565 -i egl -a sgx
+PIGLIT_SGX_S_RGB565_EGL_CREATE ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x create_TESTS.txt -y deqp_egl -z RGB565 -i egl -a sgx
+PIGLIT_SGX_S_RGB565_EGL_IMG ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x image_TESTS.txt -y deqp_egl -z RGB565 -i egl -a sgx
+PIGLIT_SGX_S_RGB565_EGL_QUERY ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x query_TESTS.txt -y deqp_egl -z RGB565 -i egl -a sgx
+PIGLIT_SGX_S_RGB565_EGL_RENDER ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x render_TESTS.txt -y deqp_egl -z RGB565 -i egl -a sgx
+PIGLIT_SGX_S_RGB565_EGL_SURFACELESS ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x surfaceless_TESTS.txt -y deqp_egl -z RGB565 -i egl -a sgx
+
+# SRGB GLES Testlists
+PIGLIT_SGX_S_SRGB_ALL_GLES_TESTS ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x all_gles_TESTS.txt -y deqp_gles2 -z SRGB -i gles -a sgx
+
+# YUV EGL Testlists 
+PIGLIT_SGX_S_YUV_ALL_EGL_TESTS ${LTPROOT}/testcases/ddt/scripts/piglit/rogue/testgroups/bin/piglit_execute_test.sh -x all_egl_TESTS.txt -y deqp_egl -z YUV -i egl -a sgx
+

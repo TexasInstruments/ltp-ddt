@@ -1,0 +1,3 @@
+deqp-egl@functional@surfaceless_context@rgb565_depth_no_stencil
+deqp-egl@functional@surfaceless_context@rgb565_depth_stencil
+deqp-egl@functional@surfaceless_context@rgb565_no_depth_no_stencil
