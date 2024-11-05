@@ -1,16 +1,11 @@
 # @name Check EMMC speed and CQE status
 # @desc Check EMMC to see if it works on the speed it should be and if CQE is enabled
-# @requires emmc
+# @requires mmc_host
 # @setup_requires emmc
 
 EMMC_S_FUNC_CHECK_SPEED source "common.sh"; do_cmd check_mmc_speed.sh "emmc"
-
 EMMC_S_FUNC_CHECK_SPEED_HS400 source "common.sh"; do_cmd check_mmc_speed.sh "emmc" "HS400"
 EMMC_S_FUNC_CHECK_SPEED_HS200 source "common.sh"; do_cmd check_mmc_speed.sh "emmc" "HS200"
 EMMC_S_FUNC_CHECK_SPEED_DDR52 source "common.sh"; do_cmd check_mmc_speed.sh "emmc" "DDR52"
 EMMC_S_FUNC_CHECK_SPEED_MMC_HS source "common.sh"; do_cmd check_mmc_speed.sh "emmc" "HS"
 EMMC_S_FUNC_CHECK_SPEED_LEGACY source "common.sh"; do_cmd check_mmc_speed.sh "emmc" "LEGACY"
-
-#EMMC_S_FUNC_CHECK_CQE source "common.sh"; do_cmd "dmesg | grep 'Command Queue Engine enabled' " || die "Command Queue Engine is not enabled"
-EMMC_S_FUNC_CHECK_CQE source "common.sh"; do_cmd check_emmc_cqe.sh "emmc" 
-

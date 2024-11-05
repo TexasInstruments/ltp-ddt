@@ -1,0 +1,7 @@
+# @name Check CQE status
+# @desc Check EMMC to see if CQE is enabled
+# @requires mmc_host
+# @setup_requires emmc
+
+#EMMC_S_FUNC_CHECK_CQE source "common.sh"; do_cmd "dmesg | grep 'Command Queue Engine enabled' " || die "Command Queue Engine is not enabled"
+EMMC_S_FUNC_CHECK_CQE source "common.sh"; do_cmd check_emmc_cqe.sh "emmc"
