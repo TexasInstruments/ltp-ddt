@@ -1,0 +1,15 @@
+deqp-egl@functional@create_context@rgb565_depth_no_stencil
+deqp-egl@functional@create_context@rgb565_depth_stencil
+deqp-egl@functional@create_context@rgb565_no_depth_no_stencil
+deqp-egl@functional@create_context_ext@gles_20@rgb565_depth_no_stencil
+deqp-egl@functional@create_context_ext@gles_20@rgb565_depth_stencil
+deqp-egl@functional@create_context_ext@gles_20@rgb565_no_depth_no_stencil
+deqp-egl@functional@create_context_ext@gles_30@rgb565_depth_no_stencil
+deqp-egl@functional@create_context_ext@gles_30@rgb565_depth_stencil
+deqp-egl@functional@create_context_ext@gles_30@rgb565_no_depth_no_stencil
+deqp-egl@functional@create_surface@pbuffer@rgb565_depth_no_stencil
+deqp-egl@functional@create_surface@pbuffer@rgb565_depth_stencil
+deqp-egl@functional@create_surface@pbuffer@rgb565_no_depth_no_stencil
+deqp-egl@functional@create_surface@window@rgb565_depth_no_stencil
+deqp-egl@functional@create_surface@window@rgb565_depth_stencil
+deqp-egl@functional@create_surface@window@rgb565_no_depth_no_stencil
