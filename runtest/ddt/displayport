@@ -17,6 +17,6 @@ DP_S_FUNC_PLAYBACK_1280x720 source 'audio_display_functions.sh' ; modes=( $(get_
 
 DP_S_FUNC_PLAYBACK_1024x768 source 'audio_display_functions.sh' ; modes=( $(get_video_connector_info dp 1024x768) ); do_cmd 'disp_audio_test dp modes 30'
 
-DP_S_FUNC_PLAYBACK_800x600 source 'audio_display_functions.sh' ; modes=( $(get_video_connector_info dp 800x600) ); do_cmd 'disp_audio_test dp modes 30'
+DP_S_FUNC_PLAYBACK_800x600 source 'audio_display_functions.sh' ; modes=( $(get_video_connector_info "(dp|edp)" 800x600) ); do_cmd 'disp_audio_test "(dp|edp)" modes 30'
 
 DP_S_FUNC_PLAYBACK_640x480 source 'audio_display_functions.sh' ; modes=( $(get_video_connector_info dp 640x480) ); do_cmd 'disp_audio_test dp modes 30'
