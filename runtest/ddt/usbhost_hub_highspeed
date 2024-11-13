@@ -4,4 +4,10 @@
 # @setup_requires usbhosthub_usbhostaudio_usbhosthid
 
 
-USBHOST_S_FUNC_HIGHSPEED_HUB_MULTI_SPEED_0001 source 'common.sh' ; do_cmd install_modules.sh 'usb' ; hub_enum=`lsusb -t|grep Class=Hub |grep Driver=hub`; echo "HUB $hub_enum"; highspeed_enum=`lsusb -t|grep Class=Hub |grep 480M`; echo "HIGHSPEED $highspeed_enum"; fullspeed_enum=`lsusb -t|grep Class=Audio |grep 12M`; echo "FULLSPEED $fullspeed_enum"; lowspeed_enum=`lsusb -t|grep 1.5M`;echo "LOWSPEED $lowspeed_enum"; if [[ -z hub_enum ]] || [[ -z highspeed_num ]]; [[ -z fullspeed_enum ]]; [[ -z lowspeed_enum ]];then die "Failed enumeration at expected speeds"; fi 
+USBHOST_S_FUNC_HIGHSPEED_HUB_MULTI_SPEED_0001 source 'common.sh' ; do_cmd install_modules.sh 'usb' ; hub_enum=`lsusb -t|grep Class=Hub |grep Driver=hub`; echo "HUB $hub_enum"; highspeed_enum=`lsusb -t|grep Class=Hub |grep 480M`; echo "HIGHSPEED $highspeed_enum"; fullspeed_enum=`lsusb -t|grep Class=Audio |grep 12M`; echo "FULLSPEED $fullspeed_enum"; lowspeed_enum=`lsusb -t|grep 1.5M`;echo "LOWSPEED $lowspeed_enum"; if [[ -z "$hub_enum" ]] || [[ -z "$highspeed_enum" ]] || [[ -z "$fullspeed_enum" ]] || [[ -z "$lowspeed_enum" ]];then die "Failed enumeration at expected speeds"; fi 
+
+USBHOST_S_FUNC_HIGHSPEED_HUB_HIGHSPEED_0001 source 'common.sh' ; do_cmd install_modules.sh 'usb' ; hub_enum=`lsusb -t|grep Class=Hub |grep Driver=hub`; echo "HUB $hub_enum"; highspeed_enum=`lsusb -t|grep Class=Hub |grep 480M`; echo "HIGHSPEED $highspeed_enum"; if [[ -z "$hub_enum" ]] || [[ -z "$highspeed_enum" ]];then die "Failed enumeration at expected speeds"; fi
+
+USBHOST_S_FUNC_HIGHSPEED_HUB_FULLSPEED_0001 source 'common.sh' ; do_cmd install_modules.sh 'usb' ; hub_enum=`lsusb -t|grep Class=Hub |grep Driver=hub`; echo "HUB $hub_enum"; fullspeed_enum=`lsusb -t|grep Class=Audio |grep 12M`; echo "FULLSPEED $fullspeed_enum"; if [[ -z "$hub_enum" ]] || [[ -z "$fullspeed_enum" ]];then die "Failed enumeration at expected speeds"; fi
+
+USBHOST_S_FUNC_HIGHSPEED_HUB_LOWSPEED_0001 source 'common.sh' ; do_cmd install_modules.sh 'usb' ; hub_enum=`lsusb -t|grep Class=Hub |grep Driver=hub`; echo "HUB $hub_enum"; lowspeed_enum=`lsusb -t|grep 1.5M`;echo "LOWSPEED $lowspeed_enum"; if [[ -z "$hub_enum" ]] || [[ -z "$lowspeed_enum" ]];then die "Failed enumeration at expected speeds"; fi
