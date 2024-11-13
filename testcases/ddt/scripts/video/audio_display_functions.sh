@@ -92,7 +92,7 @@ get_video_connector_info()
   esac
   for conn in "${__conn_ids[@]}"
   do
-    __info=$(echo -e "$conn" | grep -i $'\t'connected$'\t'$__conn_type)
+    __info=$(echo -e "$conn" | grep -Ei $'\t'connected$'\t'$__conn_type)
     if [ $? -eq 0 ]; then
       __c_id=$(echo "$conn" | cut -d $'\t' -f 1)
       __val_inf=$(get_section_val "$conn" __conn_inf[@] "~")
