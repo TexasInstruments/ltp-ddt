@@ -404,8 +404,17 @@ static void init_device(char *camera_name,int test_pattern_val)
             exit(EXIT_FAILURE);
         }
     } else if(strcmp(camera_name,"IMX390")==0) {
+        get_tp_ref_file(ref_file, test_pattern_val, "imx390");
         IMX390_info.tp[test_pattern_val].simple_check=1;
         IMX390_info.tp[test_pattern_val].direct_compare=1;
+
+        fd_ref_tp = fopen(ref_file, "rb");
+        if (NULL == fd_ref_tp)
+        {
+            fprintf(stderr, "Cannot open '%s': %d, %s\\n",
+                    ref_file, errno, strerror(errno));
+            exit(EXIT_FAILURE);
+        }
     }
     change_test_pattern(fd_subdev,test_pattern_val);
     init_mmap();
