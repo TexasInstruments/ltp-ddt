@@ -33,16 +33,16 @@
 GREEN='\033[0;32m'
 NOCOLOR='\033[0m'
 
+IMX219_CAM_FMT='[fmt:SRGGB10_1X10/640x480]'
+IMX390_CAM_FMT='[fmt:SRGGB12_1X12/1936x1100 field: none]'
+OV2312_CAM_FMT='[fmt:SBGGI10_1X10/1600x1300 field: none]'
+OV5640_CAM_FMT='[fmt:UYVY8_1X16/640x480]'
 
 declare -A ALL_UB960_FMT_STR
 declare -A ALL_CDNS_FMT_STR
 declare -A ALL_CSI2RX_FMT_STR
 
 setup_routes(){
-
-    OV2312_CAM_FMT='[fmt:SBGGI10_1X10/1600x1300 field: none]'
-    IMX390_CAM_FMT='[fmt:SRGGB12_1X12/1936x1100 field: none]'
-
     for i in "${!ALL_UB960_FMT_STR[@]}"
     do
         id="$(cut -d',' -f1 <<<"$i")"
@@ -64,7 +64,6 @@ setup_routes(){
             UB960_PAD=`media-ctl -d /dev/media$id -p -e "$UB953_NAME" | grep ub960 | cut -d : -f 2 | awk '{print $1}'`
             media-ctl -d /dev/media$id -V "'$UB960_NAME':$UB960_PAD $IMX390_CAM_FMT"
         done
-
     done
 
     # CDNS ROUTING
@@ -95,37 +94,36 @@ setup_routes(){
             media-ctl -d /dev/media$id -V "'$CSI_BRIDGE_NAME':0/$CSI_PAD $IMX390_CAM_FMT"
         done
     done
-    
+
     #CSI2RX ROUTING
     for i in "${!ALL_CSI2RX_FMT_STR[@]}"
     do
         id="$(cut -d',' -f1 <<<"$i")"
         name="$(cut -d',' -f2 <<<"$i")"
         CSI2RX_NAME=$name
-        media-ctl -d $id -R "'$name' [${ALL_CSI2RX_FMT_STR[$i]}]"
+        media-ctl -d /dev/media$id -R "'$name' [${ALL_CSI2RX_FMT_STR[$i]}]"
         # CSI2RX ROUTING & FORMATS
-        for name in `media-ctl -d $id -p | grep entity | grep ov2312 | cut -d ' ' -f 5`; do
-            UB953_NAME=`media-ctl -d $id -p -e "ov2312 $name" | grep ub953 | cut -d "\"" -f 2`
-            UB960_NAME=`media-ctl -d $id -p -e "$UB953_NAME" | grep ub960 | cut -d "\"" -f 2`
-            UB960_PAD=`media-ctl -d $id -p -e "$UB953_NAME" | grep ub960 | cut -d : -f 2 | awk '{print $1}'`
-            CSI_PAD0=`media-ctl -d $id -p -e "$UB960_NAME" | grep $UB960_PAD/0.*[ACTIVE] | cut -d "/" -f 3 | awk '{print $1}'`
-            CSI_PAD1=`media-ctl -d $id -p -e "$UB960_NAME" | grep $UB960_PAD/1.*[ACTIVE] | cut -d "/" -f 3 | awk '{print $1}'`
-            media-ctl -d $id -V "'$CSI2RX_NAME':0/$CSI_PAD0 $OV2312_CAM_FMT"
-            media-ctl -d $id -V "'$CSI2RX_NAME':0/$CSI_PAD1 $OV2312_CAM_FMT"
+        for name in `media-ctl -d /dev/media$id -p | grep entity | grep ov2312 | cut -d ' ' -f 5`; do
+            UB953_NAME=`media-ctl -d /dev/media$id -p -e "ov2312 $name" | grep ub953 | cut -d "\"" -f 2`
+            UB960_NAME=`media-ctl -d /dev/media$id -p -e "$UB953_NAME" | grep ub960 | cut -d "\"" -f 2`
+            UB960_PAD=`media-ctl -d /dev/media$id -p -e "$UB953_NAME" | grep ub960 | cut -d : -f 2 | awk '{print $1}'`
+            CSI_PAD0=`media-ctl -d /dev/media$id -p -e "$UB960_NAME" | grep $UB960_PAD/0.*[ACTIVE] | cut -d "/" -f 3 | awk '{print $1}'`
+            CSI_PAD1=`media-ctl -d /dev/media$id -p -e "$UB960_NAME" | grep $UB960_PAD/1.*[ACTIVE] | cut -d "/" -f 3 | awk '{print $1}'`
+            media-ctl -d /dev/media$id -V "'$CSI2RX_NAME':0/$CSI_PAD0 $OV2312_CAM_FMT"
+            media-ctl -d /dev/media$id -V "'$CSI2RX_NAME':0/$CSI_PAD1 $OV2312_CAM_FMT"
         done
 
-        for name in `media-ctl -d $id -p | grep entity | grep imx390 | cut -d ' ' -f 5`; do
-            UB953_NAME=`media-ctl -d $id -p -e "imx390 $name" | grep ub953 | cut -d "\"" -f 2`
-            UB960_NAME=`media-ctl -d $id -p -e "$UB953_NAME" | grep ub960 | cut -d "\"" -f 2`
-            UB960_PAD=`media-ctl -d $id -p -e "$UB953_NAME" | grep ub960 | cut -d : -f 2 | awk '{print $1}'`
-            CSI_PAD=`media-ctl -d $id -p -e "$UB960_NAME" | grep $UB960_PAD/.*[ACTIVE] | cut -d "/" -f 3 | awk '{print $1}'`
-            media-ctl -d $id -V "'$CSI2RX_NAME':0/$CSI_PAD $IMX390_CAM_FMT"
+        for name in `media-ctl -d /dev/media$id -p | grep entity | grep imx390 | cut -d ' ' -f 5`; do
+            UB953_NAME=`media-ctl -d /dev/media$id -p -e "imx390 $name" | grep ub953 | cut -d "\"" -f 2`
+            UB960_NAME=`media-ctl -d /dev/media$id -p -e "$UB953_NAME" | grep ub960 | cut -d "\"" -f 2`
+            UB960_PAD=`media-ctl -d /dev/media$id -p -e "$UB953_NAME" | grep ub960 | cut -d : -f 2 | awk '{print $1}'`
+            CSI_PAD=`media-ctl -d /dev/media$id -p -e "$UB960_NAME" | grep $UB960_PAD/.*[ACTIVE] | cut -d "/" -f 3 | awk '{print $1}'`
+            media-ctl -d /dev/media$id -V "'$CSI2RX_NAME':0/$CSI_PAD $IMX390_CAM_FMT"
         done
     done
 }
 
 setup_imx390(){
-    IMX390_CAM_FMT='[fmt:SRGGB12_1X12/1936x1100 field: none]'               
 
     i=0
     for media_id in {0..3}; do
@@ -190,6 +188,13 @@ setup_imx390(){
         ln -snf $CAM_DEV $CAM_DEV_NAME
         ln -snf $CAM_SUBDEV $CAM_SUBDEV_NAME
 
+        v4l2-ctl -d $CAM_SUBDEV_NAME --set-ctrl red_balance=256
+        v4l2-ctl -d $CAM_SUBDEV_NAME --set-ctrl blue_balance=256
+
+        CAM_RESOLUTION=`echo $IMX390_CAM_FMT | cut -d / -f 2 | cut -d " " -f 1`
+        CAM_FMT=`echo $IMX390_CAM_FMT | cut -d : -f 2 | cut -d _ -f 1`
+        yavta -s $CAM_RESOLUTION -f $CAM_FMT $CAM_DEV &> /dev/null
+
         #echo -e "${GREEN}IMX390 Camera $i detected${NOCOLOR}"
         #echo "    device = $CAM_DEV_NAME"
         #echo "    name = imx390"
@@ -205,8 +210,6 @@ setup_imx390(){
 }
 
 setup_ov2312(){
-    OV2312_CAM_FMT='[fmt:SBGGI10_1X10/1600x1300 field: none]'
-
     i=0
     for media_id in {0..3}; do
     # UB953 FORMATS
@@ -266,6 +269,9 @@ setup_ov2312(){
         ln -snf $RGB_CAM_DEV $RGB_CAM_DEV_NAME
         ln -snf $CAM_SUBDEV $CAM_SUBDEV_NAME
 
+        v4l2-ctl -d$IR_CAM_DEV -v width=1600,height=1300,pixelformat=BGI0
+        v4l2-ctl -d$RGB_CAM_DEV -v width=1600,height=1300,pixelformat=BGI0
+
         echo -e "${GREEN}OV2312 Camera $i detected${NOCOLOR}"
         echo "    device IR = $IR_CAM_DEV_NAME"
         echo "    device RGB = $RGB_CAM_DEV_NAME"
@@ -278,10 +284,10 @@ setup_ov2312(){
         ((i++))
     done
     done
+
 }
 
 setup_imx219(){
-    IMX219_CAM_FMT='[fmt:SRGGB10_1X10/640x480]'
     count=0
     for media_id in {0..3}; do
     for name in `media-ctl -d /dev/media$media_id -p | grep entity | grep imx219 | cut -d ' ' -f 5`; do
@@ -289,12 +295,12 @@ setup_imx219(){
         media-ctl -d /dev/media$media_id --set-v4l2 ''"\"imx219 $name\""':0 '$IMX219_CAM_FMT''
 
         CSI_BRIDGE_NAME=`media-ctl -d /dev/media$media_id -p -e "imx219 $name" | grep csi-bridge | cut -d "\"" -f 2`
-        media-ctl -d /dev/media$media_id --set-v4l2 ''\"$CSI_BRIDGE_NAME\"':0/0 '$IMX219_CAM_FMT''
-
         CSI2RX_NAME=`media-ctl -d /dev/media$media_id -p -e "$CSI_BRIDGE_NAME" | grep "ticsi2rx\"" | cut -d "\"" -f 2`
-        media-ctl -d /dev/media$media_id --set-v4l2 ''\"$CSI2RX_NAME\"':0/0 '$IMX219_CAM_FMT''
-
         CSI2RX_CONTEXT_NAME="$CSI2RX_NAME context 0"
+
+        media-ctl -d /dev/media$media_id --set-v4l2 ''"\"$CSI_BRIDGE_NAME\""':0 '$IMX219_CAM_FMT''
+        media-ctl -d /dev/media$media_id --set-v4l2 ''"\"$CSI2RX_NAME\""':0 '$IMX219_CAM_FMT''
+
 
         CAM_DEV=`media-ctl -d /dev/media$media_id -p -e "$CSI2RX_CONTEXT_NAME" | grep video | awk '{print $4}'`
         CAM_DEV_NAME=/dev/video-rpi-cam$count
@@ -318,7 +324,6 @@ setup_imx219(){
 }
 
 setup_ov5640(){
-    OV5640_CAM_FMT='[fmt:UYVY8_1X16/640x480]'
     count=0
     for media_id in {0..3}; do
     for name in `media-ctl -d /dev/media$media_id -p | grep entity | grep ov5640 | cut -d ' ' -f 5`; do
@@ -326,12 +331,11 @@ setup_ov5640(){
         media-ctl -d /dev/media$media_id --set-v4l2 ''"\"ov5640 $name\""':0 '$OV5640_CAM_FMT''
 
         CSI_BRIDGE_NAME=`media-ctl -d /dev/media$media_id -p -e "ov5640 $name" | grep csi-bridge | cut -d "\"" -f 2`
-        media-ctl -d /dev/media$media_id --set-v4l2 ''\"$CSI_BRIDGE_NAME\"':0/0 '$OV5640_CAM_FMT''
-
         CSI2RX_NAME=`media-ctl -d /dev/media$media_id -p -e "$CSI_BRIDGE_NAME" | grep "ticsi2rx\"" | cut -d "\"" -f 2`
-        media-ctl -d /dev/media$media_id --set-v4l2 ''\"$CSI2RX_NAME\"':0/0 '$OV5640_CAM_FMT''
-
         CSI2RX_CONTEXT_NAME="$CSI2RX_NAME context 0"
+
+        media-ctl -d /dev/media$media_id --set-v4l2 ''"\"$CSI_BRIDGE_NAME\""':0 '$OV5640_CAM_FMT''
+        media-ctl -d /dev/media$media_id --set-v4l2 ''"\"$CSI2RX_NAME\""':0 '$OV5640_CAM_FMT''
 
         CAM_DEV=`media-ctl -d /dev/media$media_id -p -e "$CSI2RX_CONTEXT_NAME" | grep video | awk '{print $4}'`
         CAM_DEV_NAME=/dev/video-ov5640-cam$count
