@@ -46,7 +46,7 @@ then
         driver="am65-cpts";
 fi
 
-echo "Executing test: $testname for driver: $driver" >&2;
+echo "Executing test: $test_to_run for driver: $driver" >&2;
 if [[ -z "$optargs" ]]
 then
         result=$($test_to_run $driver);
