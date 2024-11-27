@@ -7,7 +7,7 @@ ETH_XS_FUNC_ICSSG_IRQ_PACING source "common.sh"; icssg_run_basic_tests.sh "icssg
 ETH_XS_FUNC_ICSSG_MCAST source "common.sh"; icssg_run_basic_tests.sh "icssg-prueth" test_drv_mcast_adddel
 ETH_XS_FUNC_ICSSG_PING source "common.sh"; icssg_run_basic_tests.sh "icssg-prueth" test_drv_ping
 ETH_XS_FUNC_ICSSG_PROMISC source "common.sh"; icssg_run_basic_tests.sh "icssg-prueth" test_drv_promisc
-ETH_XS_FUNC_ICSSG_PPS source "common.sh"; icssg_run_basic_tests.sh "icssg-prueth" test_drv_pps
+ETH_XS_FUNC_ICSSG_PPS source "common.sh"; icssg_run_basic_tests.sh "icss-iep" test_drv_pps
 ETH_XS_FUNC_ICSSG_PAUSE source "common.sh"; icssg_run_basic_tests.sh "icssg-prueth" test_drv_pause
 ETH_XS_FUNC_ICSSG_NWAY source "common.sh"; icssg_run_basic_tests.sh "icssg-prueth" test_drv_nway
 ETH_XS_FUNC_ICSSG_10_MBPS source "common.sh"; icssg_run_basic_tests.sh "icssg-prueth" test_drv_10mbps
