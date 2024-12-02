@@ -21,80 +21,92 @@ source "common.sh"  # Import do_cmd(), die() and other functions
 #        should be located in /lib/firmware folder of the file system
 setup_firmware()
 {
-  local __fw_pattern=$1
-  local __fw_dir='/lib/firmware'
-  local __fw_file
-  local __rprocs=$(ls /sys/class/remoteproc)
-  local __rp
-  local __fw
-  local __new_pattern
-  local __fw_type
-  local __fw_dst
+	local __fw_pattern=$1
+	local __fw_dir='/lib/firmware'
+	local __fw_file
+	local __rprocs=$(ls /sys/class/remoteproc)
+	local __rp
+	local __fw
+	local __new_pattern
+	local __fw_type
+	local __fw_dst
 
-  case $MACHINE in
-      *j721*|*j722*|*j7200*|*am65*|*j784*|*j742*|*am68*|*am69*|*am62pxx*)
-          # K3 devices don't yet support loading the firmware
-          return
-      ;;
-  esac
+	case $MACHINE in
+		*j721*|*j722*|*j7200*|*j784*|*j742*|*am68*|*am69*|*am62pxx*)
+		return
+	;;
+	esac
 
-  for __rp in $__rprocs
-  do
-    __fw_dst="/sys/class/remoteproc/${__rp}/firmware"
-    __fw=$((cat /sys/class/remoteproc/${__rp}/device/of_node/firmware-name 2>/dev/null) || cat $__fw_dst)
-    case $__fw in
-      *dsp*)
-        __fw_type=dsp
-        __new_pattern=$(find_firmware_id "$__fw" dsp)
+	for __rp in $__rprocs
+	do
+		__fw_dst="/sys/class/remoteproc/${__rp}/firmware"
+		__fw=$((cat /sys/class/remoteproc/${__rp}/device/of_node/firmware-name 2>/dev/null) || cat $__fw_dst)
+		case $__fw in
+		*dsp*)
+			__fw_type=dsp
+			__new_pattern=$(find_firmware_id "$__fw" dsp)
+		;;
+		*ipu*)
+			__fw_type=ipu
+			__new_pattern=$(find_firmware_id "$__fw" ipu)
+		;;
+		*txpru*)
+			__fw_type=TX_PRU
+			__new_pattern=$(find_firmware_id "$__fw" txpru)
+		;;
+		*pru*)
+			__fw_type=PRU
+			__new_pattern=$(find_firmware_id "$__fw" pru)
         ;;
-      *ipu*)
-        __fw_type=ipu
-        __new_pattern=$(find_firmware_id "$__fw" ipu)
-        ;;
-      *pru*)
-        __fw_type=PRU
-        __new_pattern=$(find_firmware_id "$__fw" pru)
-        ;;
-      *rtu*)
-        __fw_type=RTU
-        __new_pattern=$(find_firmware_id "$__fw" rtu)
-        ;;
-      *mcu*|*r5f*)
-        __fw_type=r5f
-        __new_pattern=$(find_firmware_id "$__fw" r5f | tr a-z A-Z)
-        ;;
-      *mcu*|*m4f*)
-        __fw_type=m4f
-        __new_pattern=$(find_firmware_id "$__fw" m4f | tr a-z A-Z)
-        ;;
-      am335x-pm-firmware*)
-        continue
-        ;;
-      *)
-        __fw_type=.*
-        __new_pattern=.*
-        ;;
-    esac
+		*rtu*)
+			__fw_type=RTU
+			__new_pattern=$(find_firmware_id "$__fw" rtu)
+		;;
+		*r5f*)
+			__fw_type=r5f
+			__new_pattern=$(find_firmware_id "$__fw" r5f | tr a-z A-Z)
+		;;
+		*m4f*)
+			__fw_type=m4f
+			__new_pattern=$(find_firmware_id "$__fw" m4f | tr a-z A-Z)
+		;;
+		am335x-pm-firmware*)
+			continue
+		;;
+		*)
+			__fw_type=.*
+			__new_pattern=.*
+		;;
+		esac
 
-    __fw_file=$(find ${__fw_dir} -type f -iname "${__fw_pattern}" | grep "${__fw_type}" | grep "${__new_pattern}")
-    if [[ -z $__fw_file ]] && [[ $SOC != *"am654"* ]]
-    then
-      __fw_file=$(find ${__fw_dir} -type f -iname "${__fw_pattern}")
-    fi
-    __n_l=$(echo -n "$__fw_file" | wc -l)
-    if [[ !  -z  $__fw_file ]] && [[ "$__n_l" -eq 0 ]]
-    then
-      echo "Setting ${__fw_file:14} on $__fw_dst ..."
-      echo "${__fw_file:14}" > $__fw_dst
-    else
-      echo "Could not find fw matching $__fw_pattern for $__fw_dst"
-    fi
-  done
+		__fw_file=$(find ${__fw_dir} -type f -iname "${__fw_pattern}" | grep "${__fw_type}" | grep "${__new_pattern}")
+		if [[ -z $__fw_file ]] && [[ $SOC != *"am654"* ]] && [[ $SOC == *"am64"* ]]; then
+			overwritefw="n"
+			__fw_file=$(find ${__fw_dir} -type f -iname "${__fw_pattern}")
+		elif [[ -z $__fw_file ]] && [[ $__fw_type == "TX_PRU" ]] ; then
+			if [[ $SOC == *"am654"* ]] || [[ $SOC == *"am64"* ]]; then
+				overwritefw="y"
+				__fw_file=$__fw
+			fi
+		else
+			overwritefw="n"
+		fi
+		__n_l=$(echo -n "$__fw_file" | wc -l)
+		if [[ !  -z  $__fw_file ]] && [[ "$__n_l" -eq 0 ]] && [[ $overwritefw == "n" ]]; then
+			echo "Setting ${__fw_file:14} on $__fw_dst ..."
+			echo "${__fw_file:14}" > $__fw_dst
+		elif [[ !  -z  $__fw ]] && [[ "$__n_l" -eq 0 ]] && [[ $overwritefw == "y" ]]; then
+			echo "Overwrite, setting |$__fw_file| on |$__fw_dst| ..."
+			echo "${__fw_file}" > $__fw_dst
+		else
+			echo "Could not find fw matching $__fw_pattern for $__fw_dst"
+		fi
+	done
 }
 
 find_firmware_id()
 {
-  echo "$1" | grep -i -o "$2[^_-]*" | grep -o '[0-9].*'
+	echo "$1" | grep -i -o -E "$2([0-9]*)([_])?([0-9])?" | grep -o '[0-9].*'
 }
 
 # Function to rmod the rpmsg loadable modules so that new firmware can 
@@ -105,9 +117,8 @@ rm_ipc_mods()
   local __modules=(rpmsg_rpc rpmsg_proto rpmsg_client_sample omap_remoteproc ti_k3_r5_remoteproc keystone_remoteproc remoteproc virtio_rpmsg_bus rpmsg_core)
 
   case $MACHINE in
-    *j721*|*j722*|*j7200*|*am64xx*|*am62xx*|*am65*|*j784*|*j742*|*am68*|*am69*|*am62xxsip*|*am62pxx*)
+    *j721*|*j722*|*j7200*|*am65*|*j784*|*j742*|*am68*|*am69*)
 
-      # K3 devices do not yet support module unloading for remote procs because the firmware cannot be reloaded
       return
     ;;
   esac
@@ -139,8 +150,8 @@ ins_ipc_mods()
         modprobe ${__mod}
       done
     ;;
-    *j721*|*j722*|*j7200*|*am64xx*|*am62xx*|*am65*|*j784*|*j742*|*am68*|*am69*|*am62xxsip*|*am62pxx*)
-      # K3 devices do not yet support module loading for remote procs because the firmware cannot be reloaded
+    *j721*|*j722*|*j7200*|*j784*|*j742*|*am68*|*am69*)
+
       return
     ;;
     *)
@@ -231,10 +242,20 @@ reset_rproc_mpm()
 
 ins_pru_mods()
 {
-  local __modules=(pruss pru_rproc prueth)
+  case $MACHINE in
+    am57*|am43xx*|am335x*)
+      local __modules=(pruss pru_rproc prueth rpmsg_pru)
+    ;;
+    am65*|am64*)
+      local __modules=(pruss pru_rproc icssg_prueth rpmsg_pru)
+    ;;
+    am62xxsip*|am62xx*)
+      local __modules=(pruss pru_rproc rpmsg_pru)
+    ;;
+  esac
 
   case $MACHINE in
-    am57*|am43xx*|am335x*|k2g*|am65*|am64*|am62xx*|*am62xxsip*|*am62pxx*)
+    am57*|am43xx*|am335x*|am65*|am64*|am62xxsip*|am62xx*)
       for __mod in ${__modules[@]}
       do
         modprobe ${__mod}
@@ -247,6 +268,11 @@ ins_pru_mods()
 rm_pru_mods()
 {
   local __modules=(prueth icssg_prueth rpmsg_pru pru_rproc pruss)
+  case $MACHINE in
+    *am65*|*am64*)
+      return
+    ;;
+  esac
 
   for __mod in ${__modules[@]}
   do
@@ -992,8 +1018,7 @@ toggle_rprocs()
   local __mbox
 
   case $MACHINE in
-      *j721*|*j722*|*j7200*|*j784*|*j742*|*am68*|*am69*|*am62pxx*)
-          # K3 devices don't yet support toggling the remote proc
+      *j721*|*j722*|*j7200*|*j784*|*j742*|*am68*|*am69*)
           return
       ;;
   esac
@@ -1122,10 +1147,13 @@ list_rprocs()
     j7200)
       echo "41000000.r5f 5c00000.r5f"
     ;;
-    am64xx|am62xx|am62xxsip)
+    am64xx)
       echo "78000000.r5f 78400000.r5f 5000000.m4fss"
     ;;
-    am62pxx)
+    am62xxsip|am62xx)
+      echo "78000000.r5f 5000000.m4fss"
+    ;;
+    am62pxx|am62axx)
       echo "78000000.r5f 79000000.r5f"
     ;;
     j722)

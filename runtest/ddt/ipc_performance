@@ -1,6 +1,5 @@
 # @name IPC  performance test script.
 # @desc Test does IPC Performance test.
-
 # @requires ipc 
 
 IPC_S_FUNC_RPMSG_RPC source ipc_funcs.sh; rm_ipc_mods; ins_ipc_mods rpmsg_rpc; toggle_rprocs stop ; setup_firmware 'test_omx_*'; toggle_rprocs start ; num_proc=$(get_num_remote_procs); rpmsg_rpc_test -p $num_proc
@@ -22,7 +21,7 @@ IPC_S_FUNC_RPMSG_PROTO_RECOVERY source ipc_funcs.sh; rm_ipc_mods; ins_ipc_mods r
 IPC_S_FUNC_RPMSG_PROTO_KILL_RECOVERY source ipc_funcs.sh; rm_ipc_mods; ins_ipc_mods rpmsg_proto; toggle_rprocs stop ; setup_firmware 'messageq_single.*'; toggle_rprocs start; start_lad  || die "lad did not start" ; num_proc=$(get_num_remote_procs); rpmsg_recovery_event rec_cmd; rpmsg_proto_msgqapp_test $num_proc 8000 2; rpmsg_proto_msgqapp_test $num_proc 8000 5 "$rec_cmd"; sleep 5; ; kill_lad; start_lad; rpmsg_proto_msgqapp_test $num_proc
 
 IPC_S_FUNC_PRU_LOAD source ipc_funcs.sh; prus=( `list_prus` ) ; ifdown_eth; toggle_rprocs stop; rm_pru_mods; ins_pru_mods; ifdown_eth; toggle_rprocs stop; setup_firmware '*U_RPMsg_Echo_Interrupt*'; dmesg -c > /dev/null; toggle_rprocs start; sleep 5; probe_info=$(dmesg); num_loaded=$(echo -e "$probe_info" | grep -c -i 'PRU rproc node.*probed successfully'); [[ $num_loaded -eq ${#prus[@]} ]] || die "PRUs did not load successfully $probe_info ====== $num_loaded != ${#prus[@]} ======"
-IPC_S_FUNC_PRU_ECHO source ipc_funcs.sh; prus=( `list_prus` ) ; ifdown_eth; toggle_rprocs stop r5f; rm_pru_mods; ins_pru_mods; ifdown_eth; toggle_rprocs stop r5f; setup_firmware '*U_RPMsg_Echo_Interrupt*'; toggle_rprocs start r5f; sleep 5; rpmsg_pru_test || die "PRU test failed";
+IPC_S_FUNC_PRU_ECHO source ipc_funcs.sh; ifdown_eth; toggle_rprocs stop r5f; rm_pru_mods; ins_pru_mods; ifdown_eth; toggle_rprocs stop r5f; setup_firmware '*U_RPMsg_Echo_Interrupt*'; toggle_rprocs start r5f; sleep 5; rpmsg_pru_test || die "PRU test failed";
 
 IPC_S_FUNC_RPMSG_PROTO_MPM source ipc_funcs.sh; rm_ipc_mods; ins_ipc_mods_mpm rpmsg_proto; load_rproc_mpm 'messageq_single.*'; start_lad  || die "lad did not start"; num_proc=$(get_num_remote_procs); rpmsg_proto_msgqapp_test $num_proc
 IPC_S_PERF_RPMSG_PROTO_MPM_BENCH_8BYTES source ipc_funcs.sh; rm_ipc_mods; ins_ipc_mods_mpm rpmsg_proto; load_rproc_mpm 'messageq_single.*'; start_lad  || die "lad did not start"; num_proc=$(get_num_remote_procs); rpmsg_proto_msgqbench_test $num_proc
