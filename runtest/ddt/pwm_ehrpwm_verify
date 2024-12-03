@@ -1,6 +1,6 @@
 # @name ePWM verify test
 # @desc Check in userspace to verify ePWM is instantiated
-# @requires pwm/epwm
+# @requires pwm/ehrpwm
 
 PWM_S_MODULAR_EPWM source 'common.sh'; lsmod | grep "ehrpwm" || die "ePWM module is not detected";
 
