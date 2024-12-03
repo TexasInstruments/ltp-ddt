@@ -3,6 +3,5 @@
 # @requires pwm/dmtimer
 
 PWM_S_MODULAR_DMTIMER source 'common.sh' ; lsmod | grep "dmtimer" || die "OMAP dmtimer module is not detected";
-
 PWM_M_SYSFS_DMTIMER source 'common.sh' ; find /sys/ -iname dmtimer* | grep "dmtimer" && exit 0 || die "Did not find dmtimer in sysfs";
 PWM_M_SYSFS_CHECK_DMTIMER_ALL source 'common.sh'; find /sys/ -iname dmtimer* | grep "dmtimer" || die "Did not find dmtimer in sysfs"; do_cmd "verify_pwm_timer.sh -t 'dmtimer' -a";

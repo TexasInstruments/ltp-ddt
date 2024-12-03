@@ -1,9 +1,9 @@
-#! /bin/sh
-############################################################################### 
+#! /bin/bash
+###############################################################################
 # Copyright (C) 2011 Texas Instruments Incorporated - http://www.ti.com/
-#  
+#
 # This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License as 
+# modify it under the terms of the GNU General Public License as
 # published by the Free Software Foundation version 2.
 # 
 # This program is distributed "as is" WITHOUT ANY WARRANTY of any
@@ -12,87 +12,74 @@
 # GNU General Public License for more details.
 ###############################################################################
 # @history 2012-01-02: First version
-# @desc Verification of PWM funtionality 
-#       Following modules can be tested with this script
-#		a. eCap
-#		b. eHRPWM
-#		c. Haptics motor controlled by eHRPWM
-#		d. Backlight controlled by eCap
-#       Results must be validated based on 
-#		a. Output waveform shown on CRO in case of eCap and eHRPWM
-#       b. LCD display brightness variation in case of backlight
-#		c. Vibrator noise in case of Haptics
+# @desc Verification of PWM funtionality
+# Following modules can be tested with this script
+#	a. ecap
+#	b. ehrpwm
+#	c. Haptics motor controlled by eHRPWM
+#	d. Backlight controlled by eCap
+# Results must be validated based on
+#	a. Output waveform shown on CRO in case of eCap and eHRPWM
+#	b. LCD display brightness variation in case of backlight
+#	c. Vibrator noise in case of Haptics
 
 source "common.sh"  # Import do_cmd(), die() and other functions
+PWMPATH="/sys/class/pwm/";
 
 ############################# Functions #######################################
 
 usage()
 {
-    cat <<-EOF >&2
-	    usage: ./${0##*/} [-t device_type] [-d duty][-D duty_type] [-p period] [-P period_type] [-r polarity] [-T time_delay] [-v bright_val]
-	    -t device_type      Type of device. ehrpwm,ecap,backlight
-	    -d duty				Duty cycle value. e.g. 50 For % or 0.5 for Seconds
-	    -D duty_type		Type of value that -d duty has. seconds or percentage
-		-p period          Period value. e.g. 200 For Hz or 0.004 for seconds
-		-P period_type     Type of value that -p period has. frequency or seconds
-		-r polarity        Polarity of duty second. 0 for +ve 1 for -ve
-		-T time_delay      Duration for which driver is run. e.g. 3 for seconds
-		-v bright_val      Value to be set for device_type backlight
+	cat <<-EOF >&2
+		usage: ./${0##*/} [-t device_type] [-d duty][-D duty_type] [-p period] [-P period_type] [-r polarity] [-T time_delay] [-v bright_val]
+		-t device_type		Type of device. ehrpwm,ecap,backlight
+		-d duty				Duty cycle value. e.g. 0.02 for Seconds
+		-p period			Period value. e.g. 0.05 for seconds
+		-r polarity			Polarity of duty second. e.g. normal or inversed
+		-T time_delay		Duration for which driver is run. e.g. 3 for seconds
+		-v bright_val		Value to be set for device_type backlight
 	EOF
 	exit 0
 }
 
-
 ################################ CLI Params ####################################
 # Please use getopts
-while getopts  :h:d:D:p:P:r:t:T:v: arg
+while getopts  :h:d:p:r:t:T:v:e: arg
 do case $arg in
-        h)      usage="$OPTARG";;
+		h)		usage; exit 1;;
 		d)		duty="$OPTARG";;
 		p)		period="$OPTARG";;
 		r)		polarity="$OPTARG";;
 		t)		device_type="$OPTARG";;
-		P)		period_type="$OPTARG";;
-		D)		duty_type="$OPTARG";;
 		T)		time_delay="$OPTARG";;
 		v)		bright_val="$OPTARG";;
-	    :)      die "$0: Must supply an argument to -$OPTARG.";;
-	    \?)     die "Invalid Option -$OPTARG ";;
+		e)		pwms="$OPTARG";;
+		:)		die "$0: Must supply an argument to -$OPTARG.";;
+		\?)		die "Invalid Option -$OPTARG ";;
 esac
 done
 # Define default values if possible
 ############################ Default Values for Params ###############################
 
-: ${duty:='50'}
-: ${period:='200'}
-: ${polarity='0'}
-: ${period_type='frequency'}
-: ${duty_type='percentage'}
-: ${time_delay='3'}
-: ${bright_val='5'}
+: "${period:=".05"}"
+: "${duty:=".02"}"
+: "${polarity="normal"}"
+: "${time_delay="3"}"
+: "${bright_val="5"}"
 
 ############################ USER-DEFINED Params ###############################
 # Try to avoid defining values here, instead see if possible
-# to determine the value dynamically. ARCH, DRIVER, SOC and MACHINE are 
+# to determine the value dynamically. ARCH, DRIVER, SOC and MACHINE are
 # initilized and exported by runltp script based on platform option (-P)
-case $ARCH in
-esac
-case $DRIVER in
-esac
-case $SOC in
-esac
 case $MACHINE in
-	am335x-evm)
+	am62*)
 		ecap_instance=0
-		ehrpwm_instance=2
-		ehrpwm_channel=1
-		;;
-	am180x-evm)
-		ecap_instance=2
-		ehrpwm_instance=1
-		ehrpwm_channel=1
-		;;
+		ehrpwm_instance=0
+	;;
+	am64*)
+		ecap_instance=0
+		ehrpwm_instance=0
+	;;
 esac
 # Define default values for variables being overriden
 
@@ -100,81 +87,76 @@ esac
 # DO NOT HARDCODE any value. If you need to use a specific value for your setup
 # use USER-DEFINED Params section above.
 
+get_pwmchip()
+{
+	pwm=$1
+	for subfolder in "$PWMPATH"*; do
+		ueventfile="$subfolder/device/uevent";
+		dev_path=$(grep "$pwm" "$ueventfile")
+		if [ -n "$dev_path" ]; then pwmchip="${subfolder:15:8}"; fi
+	done
+	echo "$pwmchip"
+}
+
 case $device_type in
-	ecap)
-		device="ecap.$ecap_instance"
-	;;
-	ehrpwm)
-		device="ehrpwm.$ehrpwm_instance\\:$ehrpwm_channel"
+	ecap|ehrpwm)
+		count=0
+		for pwm in ${pwms//|/ }; do
+			if [ $count -lt 1 ]; then pwmchip=$(get_pwmchip "$pwm"); fi
+			((count+=1))
+		done
 	;;
 	backlight)
-		device="backlight"
+		"Running backlight test"
 	;;
 	*)
 		usage
 esac
 
-# Set brightness value in case device is backlight
-	if [[ "$device_type" == "backlight" ]]  ;
-	then
-                backlight_device=`find_pwm_backlight_device.sh`
-		do_cmd "echo $bright_val > /sys/devices/platform/$backlight_device/backlight/$backlight_device/brightness" || die "setting brightness failed"
-		sleep $time_delay
-		exit 0
-	fi
-# Do a request to aquire the device
-	req_status=`do_cmd "cat /sys/class/pwm/$device/request"`
-	case $req_status in
-		*requested*)
-			test_print_trc "Device already requested, Releasing device for re-request"
-			do_cmd "echo 0 > /sys/class/pwm/$device/request" || die "Release device failed"
-			do_cmd "echo 1 > /sys/class/pwm/$device/request" || die "Request failed"
-			;;
-		*free*)
-			test_print_trc "Device is free, requesting the device"
-			do_cmd "echo 1 > /sys/class/pwm/$device/request" || die "Request failed"
-			;;
-	esac
+#Set brightness value in case device is backlight
+if [ "$device_type" = "backlight" ];
+then
+	backlight_device=$(find_pwm_backlight_device.sh)
+	do_cmd "echo $bright_val > /sys/devices/platform/$backlight_device/backlight/$backlight_device/brightness" || die "setting brightness failed"
+	sleep $time_delay
+	exit 0
+fi
+
+pwm_instance="-1"
+if [ "$device_type" == "ehrpwm" ]; then pwm_instance=$ehrpwm_instance;
+elif [ "$device_type" == "ecap" ]; then pwm_instance=$ecap_instance;
+else die "Device type not supported yet"
+fi
+
+if [ "$pwm_instance" == "-1" ]; then echo "Nothing to test"; exit 1; fi
+
+pwm_device=$pwmchip
+
+# Export PWM line for use with sysfs
+do_cmd "echo $pwm_instance > /sys/class/pwm/$pwm_device/export" || die "Export PWM line failed"
+pwm_device="${pwm_device}/pwm${pwm_instance}"
 
 # Configure the device ecap or eHRPWM
-	do_cmd "echo $polarity > /sys/class/pwm/$device/polarity" || die "Setting polarity failed"
+if [ "$device_type" == "ehrpwm" ]; then
+do_cmd "echo $polarity > /sys/class/pwm/$pwm_device/polarity" || die "Setting polarity failed"
+fi
 
-	if test "$period_type" = "frequency" 
-	then
-		do_cmd "echo $period > /sys/class/pwm/$device/period_freq" || die "setting period_freq failed"
-		do_cmd "cat /sys/class/pwm/$device/period_freq" || die "print period_freq failed"
-	fi
-	if test "$period_type" = "seconds" ;
-	then
-		period=`echo "$period * 1000000000" | bc -l`
-		period=${period%.*}
-		do_cmd "echo $period > /sys/class/pwm/$device/period_ns" || die "setting period_ns failed"
-		do_cmd "cat /sys/class/pwm/$device/period_ns" || die "print period_ns failed"
-	fi
-	
-	if test "$duty_type" = "percentage" ; 
-	then
-		do_cmd "echo $duty > /sys/class/pwm/$device/duty_percent" || die "setting duty_percent failed"
-		do_cmd "cat /sys/class/pwm/$device/duty_percent" || die "print duty_percent failed"
-	fi
+period_ns=$(echo "$period * 1000000000" | bc -l)
+period_ns=${period_ns%.*}
+do_cmd "echo $period_ns > /sys/class/pwm/$pwm_device/period" || die "setting period failed"
+do_cmd "cat /sys/class/pwm/$pwm_device/period" || die "print period failed"
 
-	if test "$duty_type" = "seconds"  ;
-	then
-		duty=`echo "$duty * 1000000000" | bc -l`
-		duty=${duty%.*}
-		do_cmd "echo $duty > /sys/class/pwm/$device/duty_ns" || die "setting duty_ns failed"
-		do_cmd "cat /sys/class/pwm/$device/duty_ns" || die "print duty_ns failed"
-	fi
-	test_print_trc "Starting device $device"
-	do_cmd "echo 1 > /sys/class/pwm/$device/run" || die "Run failed" 
+duty_ns=$(echo "$duty * 1000000000" | bc -l)
+duty_ns=${duty_ns%.*}
+do_cmd "echo $duty_ns > /sys/class/pwm/$pwm_device/duty_cycle" || die "setting duty_cycle failed"
+do_cmd "cat /sys/class/pwm/$pwm_device/duty_cycle" || die "print duty_cycle failed"
 
-	sleep $time_delay
+test_print_trc "Starting device $pwm_device"
+do_cmd "echo 1 > /sys/class/pwm/$pwm_device/enable" || die "Run failed"
+sleep $time_delay
+test_print_trc "Stopping device $pwm_device"
+do_cmd "echo 0 > /sys/class/pwm/$pwm_device/enable" || die "Stop failed"
 
-	test_print_trc "Stopping device $device"
-	do_cmd "echo 0 > /sys/class/pwm/$device/run" || die "Stop failed"
-
-# Release the device once done with test case
-	test_print_trc "Releasing device $device"
-	do_cmd "echo 0 > /sys/class/pwm/$device/request" || die "Release device failed"
-
-
+# Unexport PWM line
+test_print_trc "Unexport PWM line for: $pwm_device"
+do_cmd "echo $pwm_instance > /sys/class/pwm/$pwmchip/unexport" || die "Export PWM line failed"

@@ -3,7 +3,6 @@
 # @requires pwm/ehrpwm
 
 PWM_S_MODULAR_EPWM source 'common.sh'; lsmod | grep "ehrpwm" || die "ePWM module is not detected";
-
 PWM_M_SYSFS_EPWM source 'common.sh' ; find /sys/ -iname epwm* | grep "epwm" && exit 0 || die "Did not find ePWM in sysfs";
 PWM_M_SYSFS_CHECK_EPWM0 source 'common.sh' ; find /sys/ -iname epwm0 | grep "epwm" || die "Did not find ePWM0 in sysfs" ; do_cmd "verify_pwm.sh -t 'epwm' -p 'epwm0'";
 PWM_M_SYSFS_CHECK_EPWM1 source 'common.sh' ; find /sys/ -iname epwm1 | grep "epwm" || die "Did not find ePWM1 in sysfs" ; do_cmd "verify_pwm.sh -t 'epwm' -p 'epwm1'";

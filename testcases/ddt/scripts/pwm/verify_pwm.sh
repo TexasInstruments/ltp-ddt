@@ -168,7 +168,7 @@ case $cmd in
 				echo "Running verify_pwm test for: $type, test PWM=|$testpwm|..."
 				pwm=$(get_pwm_sysfs $testpwm)
 				pwmresult=$(echo "$SYSFS_PWMS" | grep -o "$pwm")
-				if [ -n "$pwmresult" ] && [ "$pwmresult" != " " ]; then echo "Found PWM: |$pwmresult|"; else die "Did not find PWM: |$testpwm|"; fi
+				if [ -n "$pwmresult" ]; then echo "Found PWM: |$pwmresult|"; else die "Did not find PWM: |$testpwm|"; fi
 				;;
 			T)
 				echo "Running verify_pwm test for: $type, test all PWMs..."
@@ -191,12 +191,12 @@ case $cmd in
 	get_ehrpwms)
 		SYM_PWMS=$(find_pwms_from_symbols epwm)
 		ENU_PWMS=$(check_for_enumeration)
-		if [ -n "$ENU_PWMS" ] && [ "$ENU_PWMS" != " " ]; then echo "$ENU_PWMS"; else die "Did not find ePWMs, exit"; fi
+		if [ -n "$ENU_PWMS" ]; then echo "$ENU_PWMS"; else die "Did not find ePWMs, exit"; fi
 		;;
 	get_ecappwms)
 		SYM_PWMS=$(find_pwms_from_symbols ecap)
 		ENU_PWMS=$(check_for_enumeration)
-		if [ -n "$ENU_PWMS" ] && [ "$ENU_PWMS" != " " ]; then echo "$ENU_PWMS"; else die "Did not find ECAP PWMs, exit"; fi
+		if [ -n "$ENU_PWMS" ]; then echo "$ENU_PWMS"; else die "Did not find ECAP PWMs, exit"; fi
 		;;
 	*)
 		usage

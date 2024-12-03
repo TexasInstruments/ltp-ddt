@@ -1,7 +1,7 @@
 # @name backlight
 # @desc Testing backlight change by varying parameter value.
-#       Verification must be done manually looking at the LCD
-#       Backlight brightness varies according to the values sypplied
+# Verification must be done manually looking at the LCD
+# Backlight brightness varies according to the values sypplied
 # @requires pwm/backlight
 
 PWM_S_FUNC_BACKLIGHT_00	source 'common.sh' ; do_cmd 'pwm.sh -t backlight -v 0';
