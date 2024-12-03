@@ -19,6 +19,7 @@ ENU_PWMS="";
 PWMPATH="/sys/class/pwm/";
 SYMPATH="/sys/firmware/devicetree/base/__symbols__/";
 
+DEF_CMD="verify"
 DEF_TYPE="ecap"
 DEF_ALLPWMS="F"
 DEF_TESTPWM="ecap0"
@@ -29,6 +30,7 @@ usage()
 {
 	cat <<-EOF >&2
 		usage: ./${0##*/}	[-t device_type]
+		-c command			Command to run, can be any of verify,get
 		-t device_type		Type of device, can be any of ehrpwm,ecap
 		-a all_pwms			Verify all PWM instances for any of ehrpwm,ecap
 		-p pwms				Verify existance of specific PWM, can be any of ehrpwm,ecap type
@@ -99,6 +101,8 @@ check_for_enumeration()
 while [ $# -gt 0 ]
 do
 	case $1 in
+	-c|--cmd)
+		cmd="$2" ; shift;;
 	-t|--device_type)
 		type="$2" ; shift;;
 	-a|--all_pwms)
@@ -118,6 +122,7 @@ done
 # Define default values if possible
 ############################ Default Values for Params ###############################
 
+cmd="${cmd:=$DEF_CMD}"
 type="${type:=$DEF_TYPE}"
 allpwms="${allpwms:=$DEF_ALLPWMS}"
 testpwm="${testpwm:=$DEF_TESTPWM}"
@@ -156,28 +161,42 @@ esac
 
 get_enumerated_pwms_sysfs
 
-case $allpwms in
-	F)
-		echo "Running verify_pwm test for: $type, test PWM=|$testpwm|..."
-		pwm=$(get_pwm_sysfs $testpwm)
-		pwmresult=$(echo "$SYSFS_PWMS" | grep -o "$pwm")
-		if [ -n "$pwmresult" ] && [ "$pwmresult" != " " ]; then echo "Found PWM: |$pwmresult|"; else die "Did not find PWM: |$testpwm|"; fi
-		;;
-	T)
-		echo "Running verify_pwm test for: $type, test all PWMs..."
-		SYM_PWMS=$(find_pwms_from_symbols $type)
-		ENU_PWMS=$(check_for_enumeration)
-		npwms=$?
-		case $type in
-			ecap)
-				if [ "$npwms" != "$ecap_inst" ]; then die "For |$type| did not find expected |$ecap_inst| PWMs, found |$npwms| PWMs"; else echo "Found the expected |$npwms| |$type| instances: |$ENU_PWMS|"; fi
-			;;
-			epwm)
-				if [ "$npwms" != "$ehrpwm_inst" ]; then die "For |$type| did not find expected |$ehrpwm_inst| PWMs, found |$npwms| PWMs"; else echo "Found the expected |$npwms| |$type| instances: |$ENU_PWMS|"; fi
-			;;
+case $cmd in
+	verify)
+		case $allpwms in
+			F)
+				echo "Running verify_pwm test for: $type, test PWM=|$testpwm|..."
+				pwm=$(get_pwm_sysfs $testpwm)
+				pwmresult=$(echo "$SYSFS_PWMS" | grep -o "$pwm")
+				if [ -n "$pwmresult" ] && [ "$pwmresult" != " " ]; then echo "Found PWM: |$pwmresult|"; else die "Did not find PWM: |$testpwm|"; fi
+				;;
+			T)
+				echo "Running verify_pwm test for: $type, test all PWMs..."
+				SYM_PWMS=$(find_pwms_from_symbols $type)
+				ENU_PWMS=$(check_for_enumeration)
+				npwms=$?
+				case $type in
+					ecap)
+						if [ "$npwms" != "$ecap_inst" ]; then die "For |$type| did not find expected |$ecap_inst| PWMs, found |$npwms| PWMs"; else echo "Found the expected |$npwms| |$type| instances: |$ENU_PWMS|"; fi ;;
+					epwm)
+						if [ "$npwms" != "$ehrpwm_inst" ]; then die "For |$type| did not find expected |$ehrpwm_inst| PWMs, found |$npwms| PWMs"; else echo "Found the expected |$npwms| |$type| instances: |$ENU_PWMS|"; fi ;;
+					*)
+						usage
+				esac
+				;;
 			*)
 				usage
 		esac
+		;;
+	get_ehrpwms)
+		SYM_PWMS=$(find_pwms_from_symbols epwm)
+		ENU_PWMS=$(check_for_enumeration)
+		if [ -n "$ENU_PWMS" ] && [ "$ENU_PWMS" != " " ]; then echo "$ENU_PWMS"; else die "Did not find ePWMs, exit"; fi
+		;;
+	get_ecappwms)
+		SYM_PWMS=$(find_pwms_from_symbols ecap)
+		ENU_PWMS=$(check_for_enumeration)
+		if [ -n "$ENU_PWMS" ] && [ "$ENU_PWMS" != " " ]; then echo "$ENU_PWMS"; else die "Did not find ECAP PWMs, exit"; fi
 		;;
 	*)
 		usage
