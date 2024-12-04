@@ -3,13 +3,13 @@ am62xx
 am62xx_sk-se
 adc/tscadc
 can
+counter/eqep
 crypto/sa2ul
 crypto/sa2ul/3des
 crypto/sa2ul/aes
 crypto/sa2ul/sha1
 crypto/sa2ul/sha256
 crypto/sa2ul/sha512
-eqep
 gpio
 graphics/
 hwrng

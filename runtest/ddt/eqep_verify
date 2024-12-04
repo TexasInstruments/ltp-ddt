@@ -1,9 +1,8 @@
 # @name eQEP verify test
 # @desc Check in userspace to verify eqep is instantiated
-# @requires eqep
+# @requires counter/eqep
 
 EQEP_S_MODULAR_EQEP source 'common.sh' ; lsmod | grep "eqep" || die "eQEP module is not detected";
-
 EQEP_M_SYSFS_EQEP source 'common.sh' ; find /sys/ -iname eqep* | grep "eqep" && exit 0 || die "Did not find eqep in sysfs";
 EQEP_M_SYSFS_CHECK_EQEP0 source 'common.sh' ; find /sys/ -iname eqep0 | grep "eqep" || die "Did not find eqep0 in sysfs" ; do_cmd "verify_counter.sh -t 'eqep' -c 'eqep0'";
 EQEP_M_SYSFS_CHECK_EQEP1 source 'common.sh' ; find /sys/ -iname eqep1 | grep "eqep" || die "Did not find eqep1 in sysfs"; do_cmd "verify_counter.sh -t 'eqep' -c 'eqep1'";
