@@ -1,0 +1,5 @@
+# @name cpsw-proxy-client-test-suite
+# @desc Test suite for all cpsw-proxy-client driver related tests with EthFw
+# @requires net.
+
+CPSW_Proxy_Client_XS_FUNC_PING  eth_drv_tester.sh "test_drv_ping" "cpsw-proxy-client"
