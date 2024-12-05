@@ -136,8 +136,8 @@ case $MACHINE in
 		eqep_inst=1
 		;;
 	am62pxx*)
-                eqep_inst=1
-                ;;
+		eqep_inst=1
+		;;
 	am62xx*)
 		eqep_inst=1
 		;;

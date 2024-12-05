@@ -3,7 +3,7 @@ am62lxx
 am62lxx_evm-se
 adc/tscadc
 can
-eqep
+counter/eqep
 gpio
 hwrng
 hyperflash/mtd
