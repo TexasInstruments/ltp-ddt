@@ -17,15 +17,12 @@ interfaces=$(get_eth_list)
 down_interfaces=0;
 for iface in $interfaces
 do
-        if [[ "$driver" == "$(get_if_drv $iface)" ]]
+        interface_state=$(get_state $iface)
+        if [[ "up" != $interface_state ]]
         then
-                interface_state=$(get_state $iface)
-                if [[ "up" != $interface_state ]]
-                then
-                        down_interfaces=$(($down_interfaces+1));
-                        echo "Trying to bring interface $iface up" >&2;
-                        ifconfig $iface up;
-                fi
+                down_interfaces=$(($down_interfaces+1));
+                echo "Trying to bring interface $iface up" >&2;
+                ifconfig $iface up;
         fi
 done
 
@@ -38,7 +35,18 @@ fi
 
 result=0;
 
-echo "Executing test: $testname for driver: $driver" >&2;
+### Testing PPS requires enabling PPS for both IEP and CPTS drivers.
+### IEP driver: For testing PPS signal of ICSSG.
+### CPTS driver: Since HW_PUSH events are bring used to generate pps
+### events, this drivers pps source needs to be enabled and tested.
+### Hence the driver needs to be overwritten accordingly for PPS testcase.
+if [[ "$test_to_run" == "test_drv_pps" ]]
+then
+        test_run_pps $driver;
+        driver="am65-cpts";
+fi
+
+echo "Executing test: $test_to_run for driver: $driver" >&2;
 if [[ -z "$optargs" ]]
 then
         result=$($test_to_run $driver);

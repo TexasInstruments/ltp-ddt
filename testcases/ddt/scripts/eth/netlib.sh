@@ -175,6 +175,57 @@ get_ptp_drv () {
 	echo $driver;
 }
 
+### Get ptp device for a given driver
+get_drv_ptp () {
+	driver=$1
+	# Find ptp sources. No ptp sources => Fail.
+	num_ptp_sources=$(ls -l /dev/ptp* | wc -l)
+	if [[ "$num_ptp_sources" == 0 ]]
+	then
+		echo 0;
+		return;
+	fi
+	index=0
+	while [ $index -ne $num_ptp_sources ]
+	do
+		ptp_dev=$(echo "ptp$index");
+		ptp_drv=$(get_ptp_drv $ptp_dev);
+		if [[ "$driver" == "$ptp_drv" ]]
+		then
+			echo $ptp_dev;
+			return;
+		fi
+		index=$(($index+1));
+	done
+
+	echo 0;
+}
+
+### Get pps source from ptp device
+get_ptp_pps () {
+	ptp_dev=$1
+	pps_src=$(dmesg | grep $ptp_dev | grep pps | awk '{print $4}' | cut -d ':' -f1)
+	echo "${FUNCNAME[0]}: For PTP Dev: $ptp_dev, PPS source is: $pps_src" >&2;
+	echo $pps_src;
+}
+
+### Run PPS for a given driver
+test_run_pps () {
+	driver=$1;
+	echo "Enable PPS for driver: $driver" >&1;
+	# Find ptp device for this driver. No ptp device => Fail.
+	ptp_dev=$(get_drv_ptp $driver);
+	if [[ "$ptp_dev" == 0 ]]
+	then
+		echo "${FUNCNAME[0]}: Failure! No ptp device found for the driver: $driver" >&2;
+		echo 0;
+		return;
+	fi
+	# Request pps generation
+	echo 1 > /sys/class/ptp/$ptp_dev/pps_enable;
+	echo "${FUNCNAME[0]}: PPS has been generated for $ptp_dev" >&2;
+}
+
 ### Get tx packet count of interface
 get_tx_count () {
 	interface=$1
@@ -1192,30 +1243,31 @@ test_drv_promisc () {
 test_drv_pps () {
 	driver=$1
 	echo "${FUNCNAME[0]}: Testing for driver: $driver" >&2;
-	# Find pps sources. No pps sources => Fail.
-	num_pps_sources=$(ls -l /dev/pps* | wc -l)
-	if [[ $num_pps_sources == 0 ]]
+	# Find ptp device for this driver. No ptp device => Fail.
+	ptp_dev=$(get_drv_ptp $driver);
+	if [[ "$ptp_dev" == 0 ]]
+	then
+		echo "${FUNCNAME[0]}: Failure! No ptp device found for the driver: $driver" >&2;
+		echo 0;
+		return;
+	fi
+
+	# Find pps source for the ptp device. No pps source => Fail.
+	pps_src=$(get_ptp_pps $ptp_dev);
+	if [[ "$pps_src" == 0 ]]
+	then
+		echo "${FUNCNAME[0]}: Failure! No pps source found for the ptp device: $ptp_dev" >&2;
+		echo 0;
+		return;
+	fi
+
+	# Test PPS with given pps_src and ptp_dev
+	check=$(test_pps $ptp_dev $pps_src);
+	if [[ "$check" == 0 ]]
 	then
 		echo 0;
 		return;
 	fi
-	index=0
-	while [ $index -ne $num_pps_sources ]
-	do
-		pps_src=$(echo "pps$index");
-		ptp_dev=$(get_pps_ptp $pps_src);
-		ptp_drv=$(get_ptp_drv $ptp_dev);
-		if [[ "$driver" == "$ptp_drv" ]]
-		then
-			check=$(test_pps $ptp_dev $pps_src);
-			if [[ $check == 0 ]]
-			then
-				echo 0;
-				return;
-			fi
-		fi
-		index=$(($index+1));
-	done
 	echo "${FUNCNAME[0]}: TEST PASSED" >&2;
 	echo 1;
 }
