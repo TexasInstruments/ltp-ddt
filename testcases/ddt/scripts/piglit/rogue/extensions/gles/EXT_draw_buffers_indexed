@@ -1,0 +1,6 @@
+deqp-gles31@functional@debug@negative_coverage@callbacks@fragment@stencil_op
+deqp-gles31@functional@debug@negative_coverage@callbacks@fragment@stencil_op_separate
+deqp-gles31@functional@debug@negative_coverage@get_error@fragment@stencil_op
+deqp-gles31@functional@debug@negative_coverage@get_error@fragment@stencil_op_separate
+deqp-gles31@functional@debug@negative_coverage@log@fragment@stencil_op
+deqp-gles31@functional@debug@negative_coverage@log@fragment@stencil_op_separate

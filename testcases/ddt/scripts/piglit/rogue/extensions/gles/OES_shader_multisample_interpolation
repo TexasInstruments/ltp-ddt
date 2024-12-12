@@ -1,0 +1,3 @@
+deqp-gles31@functional@debug@negative_coverage@callbacks@shader_directive@shader_multisample_interpolation
+deqp-gles31@functional@debug@negative_coverage@get_error@shader_directive@shader_multisample_interpolation
+deqp-gles31@functional@debug@negative_coverage@log@shader_directive@shader_multisample_interpolation

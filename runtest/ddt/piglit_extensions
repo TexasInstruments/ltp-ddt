@@ -1,0 +1,25 @@
+# @name Piglit conformance tests
+# @desc Run OpenGLES, Vulkan, and OpenCL conformance tests based on extensions support
+# @requires graphics
+
+
+# GLES Extensions 
+OES_draw_elements_base_vertex piglit_execution.sh -x OES_draw_elements_base_vertex -y deqp_gles31 -z gles -a rogue
+EXT_texture_cube_map_array piglit_execution.sh -x EXT_texture_cube_map_array -y deqp_gles31 -z gles -a rogue
+EXT_texture_buffer piglit_execution.sh -x EXT_texture_buffer -y deqp_gles31 -z gles -a rogue
+EXT_texture_border_clamp piglit_execution.sh -x EXT_texture_border_clamp -y deqp_gles31 -z gles -a rogue
+EXT_tessellation_shader piglit_execution.sh -x EXT_tessellation_shader -y deqp_gles31 -z gles -a rogue
+EXT_shader_io_blocks piglit_execution.sh -x EXT_shader_io_blocks -y deqp_gles31 -z gles -a rogue
+EXT_primitive_bounding_box piglit_execution.sh -x EXT_primitive_bounding_box -y deqp_gles31 -z gles -a rogue
+EXT_gpu_shader5 piglit_execution.sh -x EXT_gpu_shader5 -y deqp_gles31 -z gles -a rogue
+EXT_geometry_shader piglit_execution.sh -x EXT_geometry_shader -y deqp_gles31 -z gles -a rogue
+EXT_draw_buffers_indexed piglit_execution.sh -x EXT_draw_buffers_indexed -y deqp_gles31 -z gles -a rogue
+EXT_copy_image piglit_execution.sh -x EXT_copy_image -y deqp_gles31 -z gles -a rogue
+OES_texture_storage_multisample_2d_array piglit_execution.sh -x OES_texture_storage_multisample_2d_array -y deqp_gles31 -z gles -a rogue
+OES_texture_stencil8 piglit_execution.sh -x OES_texture_stencil8 -y deqp_gles31 -z gles -a rogue
+OES_shader_multisample_interpolation piglit_execution.sh -x OES_shader_multisample_interpolation -y deqp_gles31 -z gles -a rogue
+OES_shader_image_atomic piglit_execution.sh -x OES_shader_image_atomic -y deqp_gles31 -z gles -a rogue
+OES_sample_variables piglit_execution.sh -x OES_sample_variables -y deqp_gles31 -z gles -a rogue
+OES_sample_shading piglit_execution.sh -x OES_sample_shading -y deqp_gles31 -z gles -a rogue
+KHR_blend_equation_advanced piglit_execution.sh -x KHR_blend_equation_advanced -y deqp_gles31 -z gles -a rogue
+KHR_texture_compression_astc_ldr piglit_execution.sh -x KHR_texture_compression_astc_ldr -y deqp_gles31 -z gles -a rogue
