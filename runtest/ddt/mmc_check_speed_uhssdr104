@@ -1,7 +1,0 @@
-# @name Check MMCSD speed
-# @desc Check MMC to see if it works on the speed it should be
-# @requires mmc_host
-# @setup_requires uhssdr104 
-
-MMC_S_FUNC_CHECK_SPEED_SDR104 source "common.sh"; do_cmd check_mmc_speed.sh 'mmc' 'SDR104'
-

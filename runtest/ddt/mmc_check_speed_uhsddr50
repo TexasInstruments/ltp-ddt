@@ -1,7 +1,0 @@
-# @name Check MMCSD speed
-# @desc Check MMC to see if it works on the speed it should be
-# @requires mmc_host
-# @setup_requires uhsddr50 
-
-MMC_S_FUNC_CHECK_SPEED_DDR50 source "common.sh"; do_cmd check_mmc_speed.sh 'mmc' 'DDR50'
-
