@@ -41,7 +41,7 @@ piglit_exit=$?
 
 output=$(piglit summary console results -p)
 
-if [ $piglit_exit != 0 ] || echo "${output}" | grep -q 'failed$'
+if [ $piglit_exit != 0 ] || echo "${output}" | grep -qE 'fail|crash|skip|timeout'
 then
     die "${output}"
 fi
