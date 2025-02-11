@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*
  * Copyright (C) 2012 Linux Test Project, Inc.
  * Copyright (C) 2023-2024 Cyril Hrubis <chrubis@suse.cz>
@@ -53,6 +53,7 @@ static void test_invalid_fd(struct tst_fd *fd)
 	case TST_FD_MEMFD:
 	case TST_FD_MEMFD_SECRET:
 	case TST_FD_PROC_MAPS:
+	case TST_FD_PIDFD:
 		return;
 	default:
 		break;
@@ -61,7 +62,7 @@ static void test_invalid_fd(struct tst_fd *fd)
 	int exp_errnos[] = {EBADF, EINVAL, ESPIPE};
 
 	TST_EXP_FAIL_ARR(readahead(fd->fd, 0, getpagesize()), exp_errnos,
-			"readahead() on %s", tst_fd_desc(fd));
+			ARRAY_SIZE(exp_errnos), "readahead() on %s", tst_fd_desc(fd));
 }
 
 static void test_readahead(void)

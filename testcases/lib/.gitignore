@@ -23,3 +23,5 @@
 /tst_sleep
 /tst_supported_fs
 /tst_timeout_kill
+/tst_res_
+/tst_run_shell

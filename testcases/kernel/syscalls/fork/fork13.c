@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0
+// SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (C) 2010  Red Hat, Inc.
  * Copyright (C) 2022 Cyril Hrubis <chrubis@suse.cz>
@@ -110,7 +110,7 @@ static void check(void)
 static struct tst_test test = {
 	.needs_root = 1,
 	.forks_child = 1,
-	.max_runtime = 600,
+	.runtime = 600,
 	.test_all = check,
 	.save_restore = (const struct tst_path_val[]) {
 		{"/proc/sys/kernel/pid_max", PID_MAX_STR, TST_SR_TBROK},

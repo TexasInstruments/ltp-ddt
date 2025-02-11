@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0
+// SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) 2000 Silicon Graphics, Inc.  All Rights Reserved.
  * Copyright (c) 2009-2013 Cyril Hrubis chrubis@suse.cz
@@ -31,7 +31,6 @@
 #include "tst_pid.h"
 #include "tst_cmd.h"
 #include "tst_cpu.h"
-#include "tst_clone.h"
 #include "old_device.h"
 #include "old_tmpdir.h"
 #include "tst_minmax.h"
@@ -64,23 +63,6 @@
 					/* that can be set to one of the following */
 					/* strings to control tst_res output */
 					/* If not set, TOUT_VERBOSE_S is assumed */
-
-/*
- * fork() can't be used on uClinux systems, so use FORK_OR_VFORK instead,
- * which will run vfork() on uClinux.
- * mmap() doesn't support MAP_PRIVATE on uClinux systems, so use
- * MAP_PRIVATE_EXCEPT_UCLINUX instead, which will skip the option on uClinux.
- * If MAP_PRIVATE really is required, the test can not be run on uClinux.
- */
-#ifdef UCLINUX
-# define FORK_OR_VFORK			tst_vfork
-# define MAP_PRIVATE_EXCEPT_UCLINUX	0
-/* tst_old_flush() + vfork() */
-pid_t tst_vfork(void);
-#else
-# define FORK_OR_VFORK			tst_fork
-# define MAP_PRIVATE_EXCEPT_UCLINUX	MAP_PRIVATE
-#endif
 
 /*
  * Macro to use for making functions called only once in
@@ -183,10 +165,6 @@ extern int tst_count;
 
 /* lib/tst_sig.c */
 void tst_sig(int fork_flag, void (*handler)(), void (*cleanup)());
-
-/* lib/self_exec.c */
-void maybe_run_child(void (*child)(), const char *fmt, ...);
-int self_exec(const char *argv0, const char *fmt, ...);
 
 /* lib/tst_mkfs.c
  *

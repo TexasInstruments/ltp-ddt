@@ -7,7 +7,8 @@
 /*\
  * [Description]
  *
- * This test case checks whether swapon(2) system call returns
+ * This test case checks whether swapon(2) system call returns:
+ *
  * - ENOENT when the path does not exist
  * - EINVAL when the path exists but is invalid
  * - EPERM when user is not a superuser
@@ -20,6 +21,12 @@
 #include "lapi/syscalls.h"
 #include "libswap.h"
 
+#define MNTPOINT	"mntpoint"
+#define TEST_FILE	MNTPOINT"/testswap"
+#define NOTSWAP_FILE	MNTPOINT"/notswap"
+#define SWAP_FILE	MNTPOINT"/swapfile"
+#define USED_FILE	MNTPOINT"/alreadyused"
+
 static uid_t nobody_uid;
 static int do_swapoff;
 
@@ -29,9 +36,9 @@ static struct tcase {
 	char *path;
 } tcases[] = {
 	{"Path does not exist", ENOENT, "./doesnotexist"},
-	{"Invalid path", EINVAL, "./notswap"},
-	{"Permission denied", EPERM, "./swapfile01"},
-	{"File already used", EBUSY, "./alreadyused"},
+	{"Invalid path", EINVAL, NOTSWAP_FILE},
+	{"Permission denied", EPERM, SWAP_FILE},
+	{"File already used", EBUSY, USED_FILE},
 };
 
 static void setup(void)
@@ -41,13 +48,13 @@ static void setup(void)
 	nobody = SAFE_GETPWNAM("nobody");
 	nobody_uid = nobody->pw_uid;
 
-	is_swap_supported("./tstswap");
+	is_swap_supported(TEST_FILE);
 
-	SAFE_TOUCH("notswap", 0777, NULL);
-	make_swapfile("swapfile01", 0);
-	make_swapfile("alreadyused", 0);
+	SAFE_TOUCH(NOTSWAP_FILE, 0777, NULL);
+	MAKE_SMALL_SWAPFILE(SWAP_FILE);
+	MAKE_SMALL_SWAPFILE(USED_FILE);
 
-	if (tst_syscall(__NR_swapon, "alreadyused", 0))
+	if (tst_syscall(__NR_swapon, USED_FILE, 0))
 		tst_res(TWARN | TERRNO, "swapon(alreadyused) failed");
 	else
 		do_swapoff = 1;
@@ -55,7 +62,7 @@ static void setup(void)
 
 static void cleanup(void)
 {
-	if (do_swapoff && tst_syscall(__NR_swapoff, "alreadyused"))
+	if (do_swapoff && tst_syscall(__NR_swapoff, USED_FILE))
 		tst_res(TWARN | TERRNO, "swapoff(alreadyused) failed");
 }
 
@@ -78,8 +85,10 @@ static void verify_swapon(unsigned int i)
 }
 
 static struct tst_test test = {
+	.mntpoint = MNTPOINT,
+	.mount_device = 1,
+	.all_filesystems = 1,
 	.needs_root = 1,
-	.needs_tmpdir = 1,
 	.test = verify_swapon,
 	.tcnt = ARRAY_SIZE(tcases),
 	.setup = setup,

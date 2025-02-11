@@ -40,8 +40,8 @@
  *
  *****************************************************************************/
 
-#include <librttest.h>
-#include <libstats.h>
+#include "librttest.h"
+#include "libstats.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -731,4 +731,50 @@ void latency_trace_stop(void)
 void latency_trace_print(void)
 {
 	read_and_print("/proc/latency_trace", STDOUT_FILENO);
+}
+
+static int trace_marker_fd = -1;
+
+void trace_marker_prep(void)
+{
+	if (trace_marker_fd != -1)
+		return;
+	trace_marker_fd = open("/sys/kernel/tracing/trace_marker", O_RDWR, 0);
+}
+
+int trace_marker_write(char *buf, int len)
+{
+	if (trace_marker_fd == -1)
+		trace_marker_prep();
+
+	if (trace_marker_fd < 0)
+		return -1;
+
+	return write(trace_marker_fd, buf, len);
+}
+
+#define TRACE_BUF_LEN 256
+static char trace_buf[TRACE_BUF_LEN];
+
+int atrace_marker_write(char *tag, char *msg)
+{
+	/* Uses atrace format perfetto can visualize */
+	snprintf(trace_buf, TRACE_BUF_LEN, "I|%i|%s: %s\n", getpid(), tag, msg);
+	return trace_marker_write(trace_buf,
+				  strnlen(trace_buf, TRACE_BUF_LEN));
+}
+
+int get_numcpus(void)
+{
+	long numcpus_conf = sysconf(_SC_NPROCESSORS_CONF);
+	size_t size = CPU_ALLOC_SIZE(numcpus_conf);
+	int cpu_count;
+	cpu_set_t *cpuset = CPU_ALLOC(numcpus_conf);
+
+	CPU_ZERO_S(size, cpuset);
+	/* Get the number of cpus accessible to the current process */
+	sched_getaffinity(0, size, cpuset);
+	cpu_count = CPU_COUNT_S(size, cpuset);
+	CPU_FREE(cpuset);
+	return cpu_count;
 }

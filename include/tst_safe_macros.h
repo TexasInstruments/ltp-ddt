@@ -1,11 +1,12 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later
- * Copyright (c) 2010-2018 Linux Test Project
+ * Copyright (c) 2010-2024 Linux Test Project
  * Copyright (c) 2011-2015 Cyril Hrubis <chrubis@suse.cz>
  */
 
 #ifndef TST_SAFE_MACROS_H__
 #define TST_SAFE_MACROS_H__
 
+#include <stdlib.h>
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/time.h>
@@ -13,6 +14,7 @@
 #include <sys/stat.h>
 #include <sys/vfs.h>
 #include <sys/sysinfo.h>
+#include <sys/uio.h>
 #include <fcntl.h>
 #include <libgen.h>
 #include <signal.h>
@@ -24,6 +26,7 @@
 #include "safe_stdio_fn.h"
 #include "safe_macros_fn.h"
 #include "tst_cmd.h"
+#include "tst_safe_macros_inline.h"
 
 int safe_access(const char *filename, const int lineno, const char *pathname,
 		   int mode);
@@ -72,6 +75,11 @@ int safe_dup2(const char *file, const int lineno, int oldfd, int newfd);
 
 #define SAFE_MALLOC(size) \
 	safe_malloc(__FILE__, __LINE__, NULL, (size))
+
+void *safe_calloc(const char *file, const int lineno, size_t nmemb, size_t size);
+
+#define SAFE_CALLOC(nmemb, size) \
+	safe_calloc(__FILE__, __LINE__, (nmemb), (size))
 
 void *safe_realloc(const char *file, const int lineno, void *ptr, size_t size);
 
@@ -263,234 +271,40 @@ int safe_getgroups(const char *file, const int lineno, int size, gid_t list[]);
 	            "fcntl(%i,%s,...) failed", fd, #cmd), 0 \
 	 : tst_ret_;})
 
-/*
- * following functions are inline because the behaviour may depend on
- * -D_FILE_OFFSET_BITS=64 compile flag
- */
+void tst_prot_to_str(const int prot, char *buf);
 
 static inline void *safe_mmap(const char *file, const int lineno,
-                              void *addr, size_t length,
-                              int prot, int flags, int fd, off_t offset)
+	void *addr, size_t length, int prot, int flags, int fd, off_t offset)
 {
 	void *rval;
+	char prot_buf[512];
+
+	tst_prot_to_str(prot, prot_buf);
+
+	tst_res_(file, lineno, TDEBUG,
+		"mmap(%p, %zu, %s(%x), %d, %d, %lld)",
+		addr, length, prot_buf, prot, flags, fd, (long long int)offset);
 
 	rval = mmap(addr, length, prot, flags, fd, offset);
 	if (rval == MAP_FAILED) {
 		tst_brk_(file, lineno, TBROK | TERRNO,
-			"mmap(%p,%zu,%d,%d,%d,%ld) failed",
-			addr, length, prot, flags, fd, (long) offset);
+			"mmap(%p,%zu,%s(%x),%d,%d,%ld) failed",
+			addr, length, prot_buf, prot, flags, fd, (long) offset);
 	}
 
 	return rval;
 }
+
+
 #define SAFE_MMAP(addr, length, prot, flags, fd, offset) \
 	safe_mmap(__FILE__, __LINE__, (addr), (length), (prot), \
 	(flags), (fd), (offset))
 
-static inline int safe_ftruncate(const char *file, const int lineno,
-                                 int fd, off_t length)
-{
-	int rval;
+int safe_mprotect(const char *file, const int lineno,
+	char *addr, size_t len, int prot);
 
-	rval = ftruncate(fd, length);
-
-	if (rval == -1) {
-		tst_brk_(file, lineno, TBROK | TERRNO,
-			"ftruncate(%d,%ld) failed", fd, (long)length);
-	} else if (rval) {
-		tst_brk_(file, lineno, TBROK | TERRNO,
-			"Invalid ftruncate(%d,%ld) return value %d", fd,
-			(long)length, rval);
-	}
-
-	return rval;
-}
-#define SAFE_FTRUNCATE(fd, length) \
-	safe_ftruncate(__FILE__, __LINE__, (fd), (length))
-
-static inline int safe_posix_fadvise(const char *file, const int lineno,
-                                int fd, off_t offset, off_t len, int advice)
-{
-	int rval;
-
-	rval = posix_fadvise(fd, offset, len, advice);
-
-	if (rval)
-		tst_brk_(file, lineno, TBROK,
-			"posix_fadvise(%d,%ld,%ld,%d) failed: %s",
-			fd, (long)offset, (long)len, advice, tst_strerrno(rval));
-
-	return rval;
-}
-#define SAFE_POSIX_FADVISE(fd, offset, len, advice) \
-	safe_posix_fadvise(__FILE__, __LINE__, (fd), (offset), (len), (advice))
-
-static inline int safe_truncate(const char *file, const int lineno,
-                                const char *path, off_t length)
-{
-	int rval;
-
-	rval = truncate(path, length);
-
-	if (rval == -1) {
-		tst_brk_(file, lineno, TBROK | TERRNO,
-			"truncate(%s,%ld) failed", path, (long)length);
-	} else if (rval) {
-		tst_brk_(file, lineno, TBROK | TERRNO,
-			"Invalid truncate(%s,%ld) return value %d", path,
-			(long)length, rval);
-	}
-
-	return rval;
-}
-#define SAFE_TRUNCATE(path, length) \
-	safe_truncate(__FILE__, __LINE__, (path), (length))
-
-static inline int safe_stat(const char *file, const int lineno,
-                            const char *path, struct stat *buf)
-{
-	int rval;
-
-	rval = stat(path, buf);
-
-	if (rval == -1) {
-		tst_brk_(file, lineno, TBROK | TERRNO,
-			"stat(%s,%p) failed", path, buf);
-	} else if (rval) {
-		tst_brk_(file, lineno, TBROK | TERRNO,
-			"Invalid stat(%s,%p) return value %d", path, buf,
-			rval);
-	}
-
-	return rval;
-}
-#define SAFE_STAT(path, buf) \
-	safe_stat(__FILE__, __LINE__, (path), (buf))
-
-static inline int safe_fstat(const char *file, const int lineno,
-                             int fd, struct stat *buf)
-{
-	int rval;
-
-	rval = fstat(fd, buf);
-
-	if (rval == -1) {
-		tst_brk_(file, lineno, TBROK | TERRNO,
-			"fstat(%d,%p) failed", fd, buf);
-	} else if (rval) {
-		tst_brk_(file, lineno, TBROK | TERRNO,
-			"Invalid fstat(%d,%p) return value %d", fd, buf, rval);
-	}
-
-	return rval;
-}
-#define SAFE_FSTAT(fd, buf) \
-	safe_fstat(__FILE__, __LINE__, (fd), (buf))
-
-static inline int safe_lstat(const char *file, const int lineno,
-	const char *path, struct stat *buf)
-{
-	int rval;
-
-	rval = lstat(path, buf);
-
-	if (rval == -1) {
-		tst_brk_(file, lineno, TBROK | TERRNO,
-			"lstat(%s,%p) failed", path, buf);
-	} else if (rval) {
-		tst_brk_(file, lineno, TBROK | TERRNO,
-			"Invalid lstat(%s,%p) return value %d", path, buf,
-			rval);
-	}
-
-	return rval;
-}
-#define SAFE_LSTAT(path, buf) \
-	safe_lstat(__FILE__, __LINE__, (path), (buf))
-
-static inline int safe_statfs(const char *file, const int lineno,
-                              const char *path, struct statfs *buf)
-{
-	int rval;
-
-	rval = statfs(path, buf);
-
-	if (rval == -1) {
-		tst_brk_(file, lineno, TBROK | TERRNO,
-			"statfs(%s,%p) failed", path, buf);
-	} else if (rval) {
-		tst_brk_(file, lineno, TBROK | TERRNO,
-			"Invalid statfs(%s,%p) return value %d", path, buf,
-			rval);
-	}
-
-	return rval;
-}
-#define SAFE_STATFS(path, buf) \
-	safe_statfs(__FILE__, __LINE__, (path), (buf))
-
-static inline off_t safe_lseek(const char *file, const int lineno,
-                               int fd, off_t offset, int whence)
-{
-	off_t rval;
-
-	rval = lseek(fd, offset, whence);
-
-	if (rval == (off_t) -1) {
-		tst_brk_(file, lineno, TBROK | TERRNO,
-			"lseek(%d,%ld,%d) failed", fd, (long)offset, whence);
-	} else if (rval < 0) {
-		tst_brk_(file, lineno, TBROK | TERRNO,
-			"Invalid lseek(%d,%ld,%d) return value %ld", fd,
-			(long)offset, whence, (long)rval);
-	}
-
-	return rval;
-}
-#define SAFE_LSEEK(fd, offset, whence) \
-	safe_lseek(__FILE__, __LINE__, (fd), (offset), (whence))
-
-static inline int safe_getrlimit(const char *file, const int lineno,
-                                 int resource, struct rlimit *rlim)
-{
-	int rval;
-
-	rval = getrlimit(resource, rlim);
-
-	if (rval == -1) {
-		tst_brk_(file, lineno, TBROK | TERRNO,
-			"getrlimit(%d,%p) failed", resource, rlim);
-	} else if (rval) {
-		tst_brk_(file, lineno, TBROK | TERRNO,
-			"Invalid getrlimit(%d,%p) return value %d", resource,
-			rlim, rval);
-	}
-
-	return rval;
-}
-#define SAFE_GETRLIMIT(resource, rlim) \
-	safe_getrlimit(__FILE__, __LINE__, (resource), (rlim))
-
-static inline int safe_setrlimit(const char *file, const int lineno,
-                                 int resource, const struct rlimit *rlim)
-{
-	int rval;
-
-	rval = setrlimit(resource, rlim);
-
-	if (rval == -1) {
-		tst_brk_(file, lineno, TBROK | TERRNO,
-			"setrlimit(%d,%p) failed", resource, rlim);
-	} else if (rval) {
-		tst_brk_(file, lineno, TBROK | TERRNO,
-			"Invalid setrlimit(%d,%p) return value %d", resource,
-			rlim, rval);
-	}
-
-	return rval;
-}
-#define SAFE_SETRLIMIT(resource, rlim) \
-	safe_setrlimit(__FILE__, __LINE__, (resource), (rlim))
+#define SAFE_MPROTECT(addr, len, prot) \
+	safe_mprotect(__FILE__, __LINE__, (addr), (len), (prot))
 
 typedef void (*sighandler_t)(int);
 sighandler_t safe_signal(const char *file, const int lineno,
@@ -653,9 +467,20 @@ int safe_unshare(const char *file, const int lineno, int flags);
 int safe_setns(const char *file, const int lineno, int fd, int nstype);
 #define SAFE_SETNS(fd, nstype) safe_setns(__FILE__, __LINE__, (fd), (nstype))
 
+/*
+ * SAFE_CMD() is a wrapper for tst_cmd(). It runs a command passed via argv[]
+ * and handles non-zero exit (exits with 'TBROK') and 'ENOENT' (the program not
+ * in '$PATH', exits with 'TCONF').
+ *
+ * @param argv[] a 'NULL' terminated array of strings starting with the program
+ * name which is followed by optional arguments.
+ * @param stdout_path: path where to redirect stdout. Set NULL if redirection is
+ * not needed.
+ * @param stderr_path: path where to redirect stderr. Set NULL if redirection is
+ * not needed.
+ */
 void safe_cmd(const char *file, const int lineno, const char *const argv[],
 	const char *stdout_path, const char *stderr_path);
-
 #define SAFE_CMD(argv, stdout_path, stderr_path) \
 	safe_cmd(__FILE__, __LINE__, (argv), (stdout_path), (stderr_path))
 /*
@@ -674,4 +499,37 @@ int safe_sysinfo(const char *file, const int lineno, struct sysinfo *info);
 
 void safe_print_file(const char *file, const int lineno, char *path);
 
-#endif /* SAFE_MACROS_H__ */
+int safe_sscanf(const char *file, const int lineno, const char *restrict buffer,
+	const char *restrict format, ...);
+#define SAFE_SSCANF(buffer, format, ...) \
+	safe_sscanf(__FILE__, __LINE__, (buffer), (format),	##__VA_ARGS__)
+
+int safe_prctl(const char *file, const int lineno,
+	int option, unsigned long arg2, unsigned long arg3,
+	unsigned long arg4, unsigned long arg5);
+#define SAFE_PRCTL(option, arg2, arg3, arg4, arg5) \
+	safe_prctl(__FILE__, __LINE__, (option), (arg2), (arg3), (arg4), (arg5))
+
+int safe_symlinkat(const char *file, const int lineno,
+	const char *oldpath, const int newdirfd, const char *newpath);
+
+#define SAFE_SYMLINKAT(oldpath, newdirfd, newpath) \
+	safe_symlinkat(__FILE__, __LINE__, (oldpath), (newdirfd), (newpath))
+
+ssize_t safe_readv(const char *file, const int lineno, char len_strict,
+	int fildes, const struct iovec *iov, int iovcnt);
+#define SAFE_READV(len_strict, fildes, iov, iovcnt) \
+	safe_readv(__FILE__, __LINE__, (len_strict), (fildes), \
+		(iov), (iovcnt))
+
+ssize_t safe_writev(const char *file, const int lineno, char len_strict,
+	int fildes, const struct iovec *iov, int iovcnt);
+#define SAFE_WRITEV(len_strict, fildes, iov, iovcnt) \
+	safe_writev(__FILE__, __LINE__, (len_strict), (fildes), \
+		(iov), (iovcnt))
+
+char *safe_ptsname(const char *const file, const int lineno, int masterfd);
+#define SAFE_PTSNAME(masterfd) \
+	safe_ptsname(__FILE__, __LINE__, (masterfd))
+
+#endif /* TST_SAFE_MACROS_H__ */

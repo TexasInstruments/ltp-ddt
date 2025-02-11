@@ -48,6 +48,7 @@ static void setup(void)
 
 	SAFE_PIPE(pipe);
 	const int buffer_size = SAFE_FCNTL(pipe[1], F_GETPIPE_SZ);
+
 	SAFE_CLOSE(pipe[0]);
 	SAFE_CLOSE(pipe[1]);
 
@@ -59,8 +60,9 @@ static void setup(void)
 	tst_res(TINFO, "Creating %i pipes", pipe_count);
 
 	SAFE_GETRLIMIT(RLIMIT_NOFILE, &nfd);
-	if (nfd.rlim_max < (unsigned long)pipe_count)
+	if (nfd.rlim_max < (unsigned long)pipe_count * 2 + 3)
 		tst_brk(TCONF, "NOFILE limit max too low: %lu < %i", nfd.rlim_max, pipe_count);
+
 	if (nfd.rlim_cur < nfd.rlim_max) {
 		nfd.rlim_cur = nfd.rlim_max;
 		SAFE_SETRLIMIT(RLIMIT_NOFILE, &nfd);
@@ -75,11 +77,14 @@ static void setup(void)
 
 static void cleanup(void)
 {
-	for (int i = 0; i < pipe_count * 2; i++)
-		if (pipes[i] > 0)
-			SAFE_CLOSE(pipes[i]);
-	if (pipes)
+	if (pipes) {
+		for (int i = 0; i < pipe_count * 2; i++) {
+			if (pipes[i] > 0)
+				SAFE_CLOSE(pipes[i]);
+		}
 		free(pipes);
+	}
+
 	if (buffer)
 		free(buffer);
 }

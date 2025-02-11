@@ -174,7 +174,7 @@ int kvm_find_free_descriptor(const struct segment_descriptor *table,
 	const struct segment_descriptor *ptr;
 	size_t i;
 
-	for (i = 0, ptr = table; i < size; i++, ptr++) {
+	for (i = 1, ptr = table + 1; i < size; i++, ptr++) {
 		if (!(ptr->flags_lo & SEGFLAG_PRESENT))
 			return i;
 
@@ -392,4 +392,22 @@ struct kvm_svm_vcpu *kvm_create_svm_vcpu(int (*guest_main)(void),
 	memset(ret, 0, sizeof(struct kvm_svm_vcpu));
 	ret->vmcb = vmcb;
 	return ret;
+}
+
+void kvm_svm_vmload(struct kvm_vmcb *buf)
+{
+	asm (
+		"vmload %0\n"
+		:
+		: "a" (buf)
+	);
+}
+
+void kvm_svm_vmsave(struct kvm_vmcb *buf)
+{
+	asm (
+		"vmsave %0\n"
+		:
+		: "a" (buf)
+	);
 }

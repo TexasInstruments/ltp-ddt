@@ -2,7 +2,10 @@
 /*
  * Copyright (c) 2017 Cyril Hrubis <chrubis@suse.cz>
  */
-/*
+
+/*\
+ * [Description]
+ *
  * Basic test for the BLKROSET and BLKROGET ioctls.
  *
  * - Set the device read only, read the value back.
@@ -81,6 +84,7 @@ static void cleanup(void)
 }
 
 static struct tst_test test = {
+	.timeout = 1,
 	.format_device = 1,
 	.needs_root = 1,
 	.setup = setup,

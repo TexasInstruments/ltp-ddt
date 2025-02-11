@@ -3,8 +3,11 @@
  * Copyright (c) 2018 SUSE Linux.  All Rights Reserved.
  * Author: Jan Kara <jack@suse.cz>
  * Chnaged to use fzsync library by Cyril Hrubis <chrubis@suse.cz>
+ */
+
+/*\
+ * [Description]
  *
- * DESCRIPTION
  * Test for inotify mark connector destruction race.
  *
  * Kernels prior to 4.17 have a race when the last fsnotify mark on the inode
@@ -12,7 +15,7 @@
  * inode. When the race is hit, the kernel crashes or loops.
  *
  * The problem has been fixed by commit:
- * d90a10e2444b "fsnotify: Fix fsnotify_mark_connector race"
+ * d90a10e2444b ("fsnotify: Fix fsnotify_mark_connector race").
  */
 
 #include "config.h"
@@ -94,7 +97,7 @@ static struct tst_test test = {
 	.setup = setup,
 	.cleanup = cleanup,
 	.test_all = verify_inotify,
-	.max_runtime = 150,
+	.runtime = 150,
 	.tags = (const struct tst_tag[]) {
 		{"linux-git", "d90a10e2444b"},
 		{}

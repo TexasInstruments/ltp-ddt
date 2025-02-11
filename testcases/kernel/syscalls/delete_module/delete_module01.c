@@ -14,6 +14,7 @@
  * Install dummy_del_mod.ko and delete it with delete_module(2).
  */
 
+#include <stdlib.h>
 #include "tst_test.h"
 #include "tst_module.h"
 #include "lapi/syscalls.h"
@@ -25,6 +26,8 @@ static int module_loaded;
 
 static void do_delete_module(void)
 {
+	tst_requires_module_signature_disabled();
+
 	if (!module_loaded) {
 		tst_module_load(MODULE_NAME_KO, NULL);
 		module_loaded = 1;

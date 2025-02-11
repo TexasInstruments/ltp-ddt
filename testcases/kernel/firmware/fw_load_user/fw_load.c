@@ -102,7 +102,6 @@ static void help(void)
 
 void setup(int argc, char *argv[])
 {
-	
 	tst_parse_opts(argc, argv, options, help);
 
 	if (nflag) {
@@ -113,6 +112,7 @@ void setup(int argc, char *argv[])
 	}
 
 	tst_require_root();
+	tst_requires_module_signature_disabled();
 
 	char fw_size_param[19];
 	snprintf(fw_size_param, 19, "fw_size=%d", fw_size);

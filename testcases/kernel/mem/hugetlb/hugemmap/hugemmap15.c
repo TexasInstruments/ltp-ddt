@@ -47,7 +47,7 @@ static void cacheflush(void *p)
 {
 #if defined(__powerpc__)
 	asm volatile("dcbst 0,%0; sync; icbi 0,%0; isync" : : "r"(p));
-#elif defined(__arm__) || defined(__aarch64__)
+#elif defined(__arm__) || defined(__aarch64__) || defined(__riscv)
 	__clear_cache(p, p + COPY_SIZE);
 #else
 	(void)p;
@@ -204,7 +204,7 @@ static void run_test(void)
 	SAFE_SIGACTION(SIGBUS, &sa, NULL);
 	SAFE_SIGACTION(SIGSEGV, &sa, NULL);
 
-	fd = tst_creat_unlinked(MNTPOINT, 0);
+	fd = tst_creat_unlinked(MNTPOINT, 0, 0600);
 
 	for (i = 0; i < NUM_REPETITIONS; i++)
 		if (test_once(fd))

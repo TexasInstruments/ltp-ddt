@@ -173,6 +173,10 @@ static char *next_token2(FILE *f, char *buf, size_t buf_len, struct data_node *d
 		case '[':
 		case ']':
 		case '#':
+		case '|':
+		case '+':
+		case '*':
+		case '%':
 			if (i) {
 				ungetc(c, f);
 				goto exit;
@@ -234,6 +238,20 @@ static FILE *open_file(const char *dir, const char *fname)
 	return f;
 }
 
+/**
+ * List of includes to be skipped.
+ *
+ * These define many macros or include many include files that are mostly
+ * useless to values expanded in tst_test structure. Or macros that shouldn't
+ * be expanded at all.
+ */
+static const char *skip_includes[] = {
+	"\"tst_test.h\"",
+	"\"config.h\"",
+	"\"tst_taint.h\"",
+	NULL
+};
+
 static FILE *open_include(FILE *f)
 {
 	char buf[256], *fname;
@@ -245,6 +263,20 @@ static FILE *open_include(FILE *f)
 
 	if (buf[0] != '"')
 		return NULL;
+
+	for (i = 0; skip_includes[i]; i++) {
+		if (!strcmp(skip_includes[i], buf)) {
+			if (verbose)
+				fprintf(stderr, "INCLUDE SKIP %s\n", buf);
+			return NULL;
+		}
+	}
+
+	if (!strncmp(buf, "\"lapi/", 6)) {
+		if (verbose)
+			fprintf(stderr, "INCLUDE SKIP %s\n", buf);
+		return NULL;
+	}
 
 	fname = buf + 1;
 
@@ -286,43 +318,6 @@ static void close_include(FILE *inc)
 	fclose(inc);
 }
 
-static int parse_array(FILE *f, struct data_node *node)
-{
-	const char *token;
-
-	for (;;) {
-		if (!(token = next_token(f, NULL)))
-			return 1;
-
-		if (!strcmp(token, "{")) {
-			struct data_node *ret = data_node_array();
-			parse_array(f, ret);
-
-			if (data_node_array_len(ret))
-				data_node_array_add(node, ret);
-			else
-				data_node_free(ret);
-
-			continue;
-		}
-
-		if (!strcmp(token, "}"))
-			return 0;
-
-		if (!strcmp(token, ","))
-			continue;
-
-		if (!strcmp(token, "NULL"))
-			continue;
-
-		struct data_node *str = data_node_string(token);
-
-		data_node_array_add(node, str);
-	}
-
-	return 0;
-}
-
 static void try_apply_macro(char **res)
 {
 	ENTRY macro = {
@@ -340,6 +335,96 @@ static void try_apply_macro(char **res)
 		fprintf(stderr, "APPLYING MACRO %s=%s\n", ret->key, (char*)ret->data);
 
 	*res = ret->data;
+}
+
+static void finalize_array_entry(char **entry, struct data_node *node)
+{
+	if (!*entry)
+		return;
+
+	data_node_array_add(node, data_node_string(*entry));
+
+	free(*entry);
+	*entry = NULL;
+}
+
+static void str_append(char **res, char *append)
+{
+	char *cur_str = *res;
+
+	if (!cur_str) {
+		*res = strdup(append);
+		if (!*res)
+			goto err;
+		return;
+	}
+
+	if (asprintf(res, "%s%s", cur_str, append) < 0)
+		goto err;
+
+	free(cur_str);
+	return;
+err:
+	fprintf(stderr, "Allocation failed :(\n");
+	exit(1);
+}
+
+static int parse_array(FILE *f, struct data_node *node)
+{
+	char *token;
+	char *entry = NULL;
+	int parent_cnt = 0;
+
+	for (;;) {
+		if (!(token = next_token(f, NULL)))
+			return 1;
+
+		if (!strcmp(token, "{")) {
+			struct data_node *ret = data_node_array();
+			parse_array(f, ret);
+
+			if (data_node_array_len(ret))
+				data_node_array_add(node, ret);
+			else
+				data_node_free(ret);
+
+			continue;
+		}
+
+		if (!strcmp(token, "}")) {
+			struct data_node *arr_last;
+
+			finalize_array_entry(&entry, node);
+
+			/* Remove NULL terminating entry, if present. */
+			arr_last = data_node_array_last(node);
+			if (arr_last && arr_last->type == DATA_NULL)
+				data_node_array_last_rem(node);
+
+			return 0;
+		}
+
+		if (!strcmp(token, ",") && parent_cnt <= 0) {
+			finalize_array_entry(&entry, node);
+			continue;
+		}
+
+		if (!strcmp(token, "NULL")) {
+			data_node_array_add(node, data_node_null());
+			continue;
+		}
+
+		if (!strcmp(token, "("))
+			parent_cnt++;
+
+		if (!strcmp(token, ")"))
+			parent_cnt--;
+
+		try_apply_macro(&token);
+		str_append(&entry, token);
+	}
+
+	return 0;
 }
 
 static int parse_get_array_len(FILE *f)
@@ -638,11 +723,19 @@ static void parse_macro(FILE *f)
 	hsearch(e, ENTER);
 }
 
-static void parse_include_macros(FILE *f)
+static void parse_include_macros(FILE *f, int level)
 {
 	FILE *inc;
 	const char *token;
 	int hash = 0;
+
+	/**
+	 * Allow only three levels of include indirection.
+	 *
+	 * Should be more than enough (TM).
+	 */
+	if (level >= 3)
+		return;
 
 	inc = open_include(f);
 	if (!inc)
@@ -659,11 +752,58 @@ static void parse_include_macros(FILE *f)
 
 		if (!strcmp(token, "define"))
 			parse_macro(inc);
+		else if (!strcmp(token, "include"))
+			parse_include_macros(inc, level+1);
 
 		hash = 0;
 	}
 
 	close_include(inc);
+}
+
+/* pre-defined macros that makes the output cleaner. */
+static const struct macro {
+	char *from;
+	char *to;
+} internal_macros[] = {
+	{"TST_CG_V2", "2"},
+	{"TST_CG_V1", "1"},
+	{"TST_KB", "1024"},
+	{"TST_MB", "1048576"},
+	{"TST_GB", "1073741824"},
+	{"TST_SR_TBROK", "TBROK"},
+	{"TST_SR_TCONF", "TCONF"},
+	{"TST_SR_SKIP", "SKIP"},
+	{"TST_SR_TBROK_MISSING", "TBROK_MISSING"},
+	{"TST_SR_TCONF_MISSING", "TCONF_MISSING"},
+	{"TST_SR_SKIP_MISSING", "SKIP_MISSING"},
+	{"TST_SR_TBROK_RO", "TBROK_RO"},
+	{"TST_SR_TCONF_RO", "TCONF_RO"},
+	{"TST_SR_SKIP_RO", "SKIP_RO"},
+	{}
+};
+
+static void load_internal_macros(void)
+{
+	unsigned int i;
+
+	if (verbose)
+		fprintf(stderr, "PREDEFINED MACROS\n");
+
+	for (i = 0; internal_macros[i].from; i++) {
+		ENTRY e = {
+			.key = internal_macros[i].from,
+			.data = internal_macros[i].to,
+		};
+
+		if (verbose)
+			fprintf(stderr, " MACRO %s=%s\n", e.key, (char*)e.data);
+
+		hsearch(e, ENTER);
+	}
+
+	if (verbose)
+		fprintf(stderr, "END PREDEFINED MACROS\n");
 }
 
 static struct data_node *parse_file(const char *fname)
@@ -683,6 +823,8 @@ static struct data_node *parse_file(const char *fname)
 	struct data_node *res = data_node_hash();
 	struct data_node *doc = data_node_array();
 
+	load_internal_macros();
+
 	while ((token = next_token(f, doc))) {
 		if (state < 6 && !strcmp(tokens[state], token)) {
 			state++;
@@ -694,7 +836,7 @@ static struct data_node *parse_file(const char *fname)
 						parse_macro(f);
 
 					if (!strcmp(token, "include"))
-						parse_include_macros(f);
+						parse_include_macros(f, 0);
 				}
 			}
 

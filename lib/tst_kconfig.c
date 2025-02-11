@@ -14,6 +14,7 @@
 #include "tst_private.h"
 #include "tst_kconfig.h"
 #include "tst_bool_expr.h"
+#include "tst_safe_stdio.h"
 
 static int kconfig_skip_check(void)
 {
@@ -564,4 +565,122 @@ char tst_kconfig_get(const char *confname)
 		free(var.val);
 
 	return var.choice;
+}
+
+void tst_kcmdline_parse(struct tst_kcmdline_var params[], size_t params_len)
+{
+	char buf[256], line[1024];
+	size_t b_pos = 0,l_pos =0, i;
+	int var_id = -1;
+
+	FILE *f = SAFE_FOPEN("/proc/cmdline", "r");
+
+	if (fgets(line, sizeof(line), f) == NULL) {
+		SAFE_FCLOSE(f);
+		tst_brk(TBROK, "Failed to read /proc/cmdline");
+	}
+
+	for (l_pos = 0; line[l_pos] != '\0'; l_pos++) {
+		char c = line[l_pos];
+
+		switch (c) {
+		case '=':
+			buf[b_pos] = '\0';
+			for (i = 0; i < params_len; i++) {
+				if (strcmp(buf, params[i].key) == 0) {
+					var_id = (int)i;
+					params[i].found = true;
+				}
+			}
+
+			b_pos = 0;
+		break;
+		case ' ':
+		case '\n':
+			buf[b_pos] = '\0';
+			if (var_id >= 0 && var_id < (int)params_len)
+				strcpy(params[var_id].value, buf);
+
+			var_id = -1;
+			b_pos = 0;
+		break;
+		default:
+			if (b_pos + 1 >= sizeof(buf)) {
+				tst_res(TINFO, "WARNING: Buffer overflowed while parsing /proc/cmdline");
+				while (line[l_pos] != '\0' && line[l_pos] != ' ' && line[l_pos] != '\n')
+					l_pos++;
+
+				var_id = -1;
+				b_pos = 0;
+
+				if (line[l_pos] != '\0')
+					l_pos--;
+			} else {
+				buf[b_pos++] = c;
+			}
+		break;
+		}
+	}
+
+	for (i = 0; i < params_len; i++) {
+		if (params[i].found)
+			tst_res(TINFO, "%s is found in /proc/cmdline", params[i].key);
+		else
+			tst_res(TINFO, "%s is not found in /proc/cmdline", params[i].key);
+	}
+
+	SAFE_FCLOSE(f);
+}
+
+/*
+ * List of kernel config options that may degrade performance when enabled.
+ */
+static struct tst_kconfig_var slow_kconfigs[] = {
+	TST_KCONFIG_INIT("CONFIG_PROVE_LOCKING"),
+	TST_KCONFIG_INIT("CONFIG_LOCKDEP"),
+	TST_KCONFIG_INIT("CONFIG_DEBUG_SPINLOCK"),
+	TST_KCONFIG_INIT("CONFIG_DEBUG_RT_MUTEXES"),
+	TST_KCONFIG_INIT("CONFIG_DEBUG_MUTEXES"),
+	TST_KCONFIG_INIT("CONFIG_KASAN"),
+	TST_KCONFIG_INIT("CONFIG_SLUB_RCU_DEBUG"),
+	TST_KCONFIG_INIT("CONFIG_TRACE_IRQFLAGS"),
+	TST_KCONFIG_INIT("CONFIG_DEBUG_NET"),
+	TST_KCONFIG_INIT("CONFIG_EXT4_DEBUG"),
+	TST_KCONFIG_INIT("CONFIG_QUOTA_DEBUG"),
+	TST_KCONFIG_INIT("CONFIG_FAULT_INJECTION"),
+	TST_KCONFIG_INIT("CONFIG_DEBUG_OBJECTS")
+};
+
+static bool slow_kconfig_cached;
+static bool slow_kconfig_result;
+
+int tst_has_slow_kconfig(void)
+{
+	unsigned int i;
+	char path_buf[1024];
+
+	if (slow_kconfig_cached)
+		return slow_kconfig_result;
+
+	slow_kconfig_cached = 1;
+
+	if (!kconfig_path(path_buf, sizeof(path_buf))) {
+		slow_kconfig_result = 0;
+		return 0;
+	}
+
+	tst_kconfig_read(slow_kconfigs, ARRAY_SIZE(slow_kconfigs));
+
+	for (i = 0; i < ARRAY_SIZE(slow_kconfigs); i++) {
+		if (slow_kconfigs[i].choice == 'y') {
+			tst_res(TINFO,
+				"%s kernel option detected which might slow the execution",
+				slow_kconfigs[i].id);
+			slow_kconfig_result = 1;
+			return 1;
+		}
+	}
+
+	slow_kconfig_result = 0;
+	return 0;
 }

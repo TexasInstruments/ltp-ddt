@@ -44,7 +44,7 @@ struct cgroup_dir {
 	 */
 	int dir_fd;
 
-	int we_created_it:1;
+	unsigned int we_created_it:1;
 };
 
 /* The root of a CGroup hierarchy/tree */
@@ -71,9 +71,11 @@ struct cgroup_root {
 	/* CGroup for current test. Which may have children. */
 	struct cgroup_dir test_dir;
 
-	int we_mounted_it:1;
+	unsigned int nsdelegate:1;
+
+	unsigned int we_mounted_it:1;
 	/* cpuset is in compatability mode */
-	int no_cpuset_prefix:1;
+	unsigned int no_cpuset_prefix:1;
 };
 
 /* Controller sub-systems */
@@ -136,7 +138,7 @@ struct cgroup_ctrl {
 	/* Runtime; hierarchy the controller is attached to */
 	struct cgroup_root *ctrl_root;
 	/* Runtime; whether we required the controller */
-	int we_require_it:1;
+	unsigned int we_require_it:1;
 };
 
 struct tst_cg_group {
@@ -344,6 +346,11 @@ static int cgroup_v1_mounted(void)
 	return !!roots[1].ver;
 }
 
+static int cgroup_v2_nsdelegate(void)
+{
+	return !!roots[0].nsdelegate;
+}
+
 static int cgroup_mounted(void)
 {
 	return cgroup_v2_mounted() || cgroup_v1_mounted();
@@ -361,6 +368,7 @@ static void cgroup_dir_mk(const struct cgroup_dir *const parent,
 			  struct cgroup_dir *const new)
 {
 	const char *dpath;
+	mode_t old_umask = umask(0);
 
 	new->dir_root = parent->dir_root;
 	new->dir_name = dir_name;
@@ -394,6 +402,7 @@ static void cgroup_dir_mk(const struct cgroup_dir *const parent,
 opendir:
 	new->dir_fd = SAFE_OPENAT(parent->dir_fd, dir_name,
 				  O_PATH | O_DIRECTORY);
+	umask(old_umask);
 }
 
 #define PATH_MAX_STRLEN 4095
@@ -566,6 +575,7 @@ static void cgroup_root_scan(const char *const mnt_type,
 	struct cgroup_ctrl *ctrl;
 	uint32_t ctrl_field = 0;
 	int no_prefix = 0;
+	int nsdelegate = 0;
 	char buf[BUFSIZ];
 	char *tok;
 	const int mnt_dfd = SAFE_OPEN(mnt_dir, O_PATH | O_DIRECTORY);
@@ -579,6 +589,9 @@ static void cgroup_root_scan(const char *const mnt_type,
 		const_ctrl = cgroup_find_ctrl(tok, 1);
 		if (const_ctrl)
 			add_ctrl(&ctrl_field, const_ctrl);
+	}
+	for (tok = strtok(mnt_opts, ","); tok; tok = strtok(NULL, ",")) {
+		nsdelegate |= !strcmp("nsdelegate", tok);
 	}
 
 	if (root->ver && ctrl_field == root->ctrl_field)
@@ -630,6 +643,7 @@ backref:
 	root->mnt_dir.dir_fd = mnt_dfd;
 	root->ctrl_field = ctrl_field;
 	root->no_cpuset_prefix = no_prefix;
+	root->nsdelegate = nsdelegate;
 
 	for_each_ctrl(ctrl) {
 		if (has_ctrl(root->ctrl_field, ctrl))
@@ -867,6 +881,10 @@ void tst_cg_require(const char *const ctrl_name,
 
 mkdirs:
 	root = ctrl->ctrl_root;
+
+	if (options->needs_nsdelegate && cgroup_v2_mounted() && !cgroup_v2_nsdelegate())
+		tst_brk(TCONF, "Requires cgroup2 to be mounted with nsdelegate");
+
 	add_ctrl(&root->mnt_dir.ctrl_field, ctrl);
 
 	if (cgroup_ctrl_on_v2(ctrl) && options->needs_ver == TST_CG_V1) {

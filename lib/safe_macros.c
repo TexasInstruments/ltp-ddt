@@ -293,7 +293,7 @@ ssize_t safe_read(const char *file, const int lineno, void (*cleanup_fn) (void),
 
 	rval = read(fildes, buf, nbyte);
 
-	if (rval == -1 || (len_strict && (size_t)rval != nbyte)) {
+	if (rval == -1) {
 		tst_brkm_(file, lineno, TBROK | TERRNO, cleanup_fn,
 			"read(%d,%p,%zu) failed, returned %zd", fildes, buf,
 			nbyte, rval);
@@ -301,6 +301,10 @@ ssize_t safe_read(const char *file, const int lineno, void (*cleanup_fn) (void),
 		tst_brkm_(file, lineno, TBROK | TERRNO, cleanup_fn,
 			"Invalid read(%d,%p,%zu) return value %zd", fildes,
 			buf, nbyte, rval);
+	} else if (len_strict && (size_t)rval != nbyte) {
+		tst_brkm_(file, lineno, TBROK, cleanup_fn,
+			  "Short read(%d,%p,%zu) returned only %zd",
+			  fildes, buf, nbyte, rval);
 	}
 
 	return rval;
@@ -547,6 +551,14 @@ ssize_t safe_write(const char *file, const int lineno, void (cleanup_fn) (void),
 			tst_brkm_(file, lineno, TBROK | TERRNO,
 				cleanup_fn, "write(%d,%p,%zu) failed",
 				fildes, buf, nbyte);
+			return rval;
+		}
+
+		if (rval < 0) {
+			tst_brkm_(file, lineno, TBROK, cleanup_fn,
+			          "invalid write() return value %zi",
+				  rval);
+			return rval;
 		}
 
 		if (len_strict == SAFE_WRITE_ANY)
@@ -554,7 +566,7 @@ ssize_t safe_write(const char *file, const int lineno, void (cleanup_fn) (void),
 
 		if (len_strict == SAFE_WRITE_ALL) {
 			if ((size_t)rval != nbyte)
-				tst_brkm_(file, lineno, TBROK | TERRNO,
+				tst_brkm_(file, lineno, TBROK,
 					cleanup_fn, "short write(%d,%p,%zu) "
 					"return value %zd",
 					fildes, buf, nbyte, rval);
@@ -913,7 +925,10 @@ int safe_mount(const char *file, const int lineno, void (*cleanup_fn)(void),
 	 * the kernel's NTFS driver doesn't have proper write support.
 	 */
 	if (!filesystemtype || strcmp(filesystemtype, "ntfs")) {
+		mode_t old_umask = umask(0);
+
 		rval = mount(source, target, filesystemtype, mountflags, data);
+		umask(old_umask);
 		if (!rval)
 			return 0;
 	}
