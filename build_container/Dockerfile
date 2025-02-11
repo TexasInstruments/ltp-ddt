@@ -28,10 +28,10 @@ RUN export DEBIAN_FRONTEND=noninteractive; \
 # Install missing library
 WORKDIR /opt
 
-ENV SDK_PATH="/opt/arm-gnu-toolchain-13.2.rel1-x86_64-aarch64-none-linux-gnu"
+ENV SDK_PATH="/opt/arm-gnu-toolchain-13.3.rel1-x86_64-aarch64-none-linux-gnu"
 # Install ARM toolchain
 RUN mkdir ${SDK_PATH} \
-    && curl -k -L "https://developer.arm.com/-/media/Files/downloads/gnu/13.2.rel1/binrel/arm-gnu-toolchain-13.2.rel1-x86_64-aarch64-none-linux-gnu.tar.xz?rev=22c39fc25e5541818967b4ff5a09ef3e&" | tar xvJ --strip-components=1 -C ${SDK_PATH} 
+    && curl -k -L "https://developer.arm.com/-/media/Files/downloads/gnu/13.3.rel1/binrel/arm-gnu-toolchain-13.3.rel1-x86_64-aarch64-none-linux-gnu.tar.xz" | tar xvJ --strip-components=1 -C ${SDK_PATH} 
 
 ENV TARGET_SYS=aarch64-none-linux-gnu
 ENV CROSS_COMPILER=${TARGET_SYS}-
