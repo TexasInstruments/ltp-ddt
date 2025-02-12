@@ -130,11 +130,10 @@ int main(int argc, char *argv[])
 	int acpi_disabled;
 
 	tst_parse_opts(argc, argv, NULL, NULL);
-
 	tst_require_root();
-
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 
+	tst_requires_module_signature_disabled();
 	tst_module_load(NULL, module_name, NULL);
 	module_loaded = 1;
 

@@ -2,6 +2,10 @@
 /*
  * Copyright (c) 2020 FUJITSU LIMITED. All rights reserved.
  * Author: Yang Xu <xuyang2018.jy@cn.jujitsu.com>
+ */
+
+/*\
+ * [Description]
  *
  * Basic test for the BLKRRPART ioctl, it is the same as blockdev
  * --rereadpt command.
@@ -84,6 +88,7 @@ static void verify_ioctl(void)
 	check_partition(2, true);
 
 	tst_detach_device_by_fd(dev_path, dev_fd);
+	dev_fd = SAFE_OPEN(dev_path, O_RDWR);
 	attach_flag = 0;
 }
 
@@ -105,6 +110,7 @@ static void cleanup(void)
 }
 
 static struct tst_test test = {
+	.timeout = 1,
 	.setup = setup,
 	.cleanup = cleanup,
 	.test_all = verify_ioctl,

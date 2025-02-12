@@ -76,6 +76,14 @@ common_cleanup()
     [ -d "$start_path" ] && find "$start_path" -depth -type d -exec rmdir '{}' \;
 
     cgroup_cleanup
+
+    if [ "$cgroup_version" = "2" ]; then
+        case "$subsystem" in
+        cpu|io|memory|pids)
+            :;;
+        *) ROD echo "-$subsystem" \> "/sys/fs/cgroup/cgroup.subtree_control";;
+        esac
+    fi
 }
 
 . cgroup_lib.sh

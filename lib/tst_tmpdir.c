@@ -71,7 +71,9 @@
 #include <fcntl.h>
 
 #include "test.h"
+#include "tst_buffers.h"
 #include "safe_macros.h"
+#include "tst_tmpdir.h"
 #include "ltp_priv.h"
 #include "lapi/futex.h"
 
@@ -92,7 +94,7 @@
  * Define global variables.
  */
 extern char *TCID;		/* defined/initialized in main() */
-static char *TESTDIR = NULL;	/* the directory created */
+static char *TESTDIR;	/* the directory created */
 
 static char test_start_work_dir[PATH_MAX];
 
@@ -310,6 +312,9 @@ void tst_tmpdir(void)
 
 		tst_exit();
 	}
+
+	tst_resm(TINFO, "Using %s as tmpdir (%s filesystem)", TESTDIR,
+			 tst_fs_type_name(tst_fs_type(NULL, TESTDIR)));
 }
 
 void tst_rmdir(void)
@@ -350,4 +355,48 @@ void tst_purge_dir(const char *path)
 
 	if (purge_dir(path, &err))
 		tst_brkm(TBROK, NULL, "%s: %s", __func__, err);
+}
+
+char *tst_tmpdir_path(void)
+{
+	static char *tmpdir;
+
+	if (!TESTDIR)
+		tst_brkm(TBROK, NULL, ".needs_tmpdir must be set!");
+
+	if (tmpdir)
+		return tmpdir;
+
+	tmpdir = tst_strdup(TESTDIR);
+
+	return tmpdir;
+}
+
+char *tst_tmpdir_genpath(const char *fmt, ...)
+{
+	size_t testdir_len, path_len;
+	va_list va, vac;
+	char *ret;
+
+	if (!TESTDIR)
+		tst_brkm(TBROK, NULL, ".needs_tmpdir must be set!");
+
+	testdir_len = strlen(TESTDIR);
+	path_len = testdir_len;
+
+	va_start(va, fmt);
+	va_copy(vac, va);
+	path_len += vsnprintf(NULL, 0, fmt, va) + 2;
+	va_end(va);
+
+	ret = tst_alloc(path_len);
+
+	strcpy(ret, TESTDIR);
+
+	ret[testdir_len] = '/';
+
+	vsprintf(ret + testdir_len + 1, fmt, vac);
+	va_end(vac);
+
+	return ret;
 }

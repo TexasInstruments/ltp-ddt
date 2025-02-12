@@ -6,18 +6,15 @@
  */
 
 /*\
+ * [Description]
+ *
  * CVE-2023-1829
  *
  * Test for use-after-free after removing tcindex traffic filter with certain
  * parameters.
  *
- * Tcindex filter removed in:
- *
- *  commit 8c710f75256bb3cf05ac7b1672c82b92c43f3d28
- *  Author: Jamal Hadi Salim <jhs@mojatatu.com>
- *  Date:   Tue Feb 14 08:49:14 2023 -0500
- *
- *  net/sched: Retire tcindex classifier
+ * Tcindex filter was removed in kernel v6.3:
+ * 8c710f75256b ("net/sched: Retire tcindex classifier")
  */
 
 #include <linux/netlink.h>
@@ -106,12 +103,23 @@ static void run(void)
 	NETDEV_ADD_QDISC(DEVNAME, AF_UNSPEC, TC_H_ROOT, qd_handle, "htb",
 		qd_config);
 	NETDEV_ADD_TRAFFIC_CLASS(DEVNAME, qd_handle, clsid, "htb", cls_config);
-	NETDEV_ADD_TRAFFIC_FILTER(DEVNAME, qd_handle, 10, ETH_P_IP, 1,
-		"tcindex", f_config);
+	ret = NETDEV_ADD_TRAFFIC_FILTER_RET(DEVNAME, qd_handle, 10, ETH_P_IP,
+		1, "tcindex", f_config);
+	TST_ERR = tst_netlink_errno;
+
+	if (!ret && TST_ERR == ENOENT) {
+		tst_res(TPASS | TTERRNO,
+			"tcindex module is blacklisted or unavailable");
+		return;
+	}
+
+	if (!ret)
+		tst_brk(TBROK | TTERRNO, "Cannot add tcindex filter");
+
 	NETDEV_REMOVE_TRAFFIC_FILTER(DEVNAME, qd_handle, 10, ETH_P_IP,
 		1, "tcindex");
-	ret = tst_netdev_add_traffic_filter(__FILE__, __LINE__, 0, DEVNAME,
-		qd_handle, 10, ETH_P_IP, 1, "tcindex", f_config);
+	ret = NETDEV_ADD_TRAFFIC_FILTER_RET(DEVNAME, qd_handle, 10, ETH_P_IP,
+		1, "tcindex", f_config);
 	TST_ERR = tst_netlink_errno;
 	NETDEV_REMOVE_QDISC(DEVNAME, AF_UNSPEC, TC_H_ROOT, qd_handle, "htb");
 

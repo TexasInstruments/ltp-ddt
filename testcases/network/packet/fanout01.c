@@ -85,12 +85,11 @@ void run(void)
 }
 
 static struct tst_test test = {
-	.min_kver = "3.19",
 	.setup = setup,
 	.test_all = run,
 	.cleanup = cleanup,
 	.needs_root = 1,
-	.max_runtime = 180,
+	.runtime = 180,
 	.needs_kconfigs = (const char *[]) {
 		"CONFIG_USER_NS=y",
 		"CONFIG_NET_NS=y",

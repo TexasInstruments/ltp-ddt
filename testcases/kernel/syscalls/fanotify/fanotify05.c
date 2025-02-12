@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*
  * Copyright (c) 2014 SUSE Linux.  All Rights Reserved.
  *
@@ -208,6 +208,7 @@ static void cleanup(void)
 }
 
 static struct tst_test test = {
+	.timeout = 13,
 	.test = test_fanotify,
 	.tcnt = ARRAY_SIZE(tcases),
 	.setup = setup,

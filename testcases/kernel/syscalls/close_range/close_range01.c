@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0
+// SPDX-License-Identifier: GPL-2.0-only
 /*
  * Taken from the kernel self tests, which in turn were based on
  * a Syzkaller reproducer.
@@ -48,7 +48,7 @@ static inline void do_close_range(unsigned int fd, unsigned int max_fd,
 			tst_brk(TCONF | TERRNO, "No CLOSE_RANGE_CLOEXEC");
 	}
 
-	tst_brk(TBROK | TERRNO, "close_range(%d, %d, %d)", fd, max_fd, flags);
+	tst_brk(TBROK | TERRNO, "close_range(%u, %u, %u)", fd, max_fd, flags);
 }
 
 static void setup(void)
@@ -191,6 +191,7 @@ static void run(unsigned int n)
 }
 
 static struct tst_test test = {
+	.timeout = 9,
 	.tcnt = 4,
 	.forks_child = 1,
 	.mount_device = 1,

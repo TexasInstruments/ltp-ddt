@@ -8,12 +8,13 @@
 
 /*\
  * [Description]
+ *
  * Test opening files after receiving IN_DELETE.
  *
  * Kernel v5.13 has a regression allowing files to be open after IN_DELETE.
  *
  * The problem has been fixed by commit:
- *  a37d9a17f099 "fsnotify: invalidate dcache before IN_DELETE event".
+ * a37d9a17f099 ("fsnotify: invalidate dcache before IN_DELETE event").
  */
 
 #include "config.h"
@@ -48,7 +49,7 @@ static void churn(void)
 	char path[10];
 	int i;
 
-	for (i = 0; i <= CHURN_FILES; ++i) {
+	for (i = 0; i < CHURN_FILES; ++i) {
 		snprintf(path, sizeof(path), "%d", i);
 		SAFE_FILE_PRINTF(path, "1");
 		SAFE_UNLINK(path);
@@ -118,6 +119,7 @@ static void cleanup(void)
 }
 
 static struct tst_test test = {
+	.timeout = 12,
 	.needs_tmpdir = 1,
 	.forks_child = 1,
 	.cleanup = cleanup,

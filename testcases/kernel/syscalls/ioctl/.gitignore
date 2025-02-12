@@ -22,3 +22,9 @@
 /ioctl_ns06
 /ioctl_ns07
 /ioctl_sg01
+/ioctl_ficlone01
+/ioctl_ficlone02
+/ioctl_ficlone03
+/ioctl_ficlone04
+/ioctl_ficlonerange01
+/ioctl_ficlonerange02

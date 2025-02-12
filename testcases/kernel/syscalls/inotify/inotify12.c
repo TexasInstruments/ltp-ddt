@@ -7,10 +7,11 @@
 
 /*\
  * [Description]
+ *
  * Test special inotify mask flags.
  *
  * Regression test for kernel commit:
- * a32e697cda27 ("inotify: show inotify mask flags in proc fdinfo")
+ * a32e697cda27 ("inotify: show inotify mask flags in proc fdinfo").
  */
 
 #include "config.h"
@@ -152,7 +153,7 @@ static void cleanup(void)
 }
 
 static struct tst_test test = {
-	.max_runtime = 10,
+	.timeout = 10,
 	.needs_tmpdir = 1,
 	.cleanup = cleanup,
 	.test = verify_inotify,

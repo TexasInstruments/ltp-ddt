@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
-# Copyright (c) Linux Test Project, 2009-2022
+# Copyright (c) Linux Test Project, 2009-2024
 # Copyright (c) Cisco Systems Inc., 2009-2010
 # Copyright (c) Texas Instruments Inc., 2011-2023
 # Ngie Cooper, July 2009
@@ -20,7 +20,6 @@ top_srcdir		?= $(CURDIR)
 
 include $(top_srcdir)/include/mk/env_pre.mk
 include $(top_srcdir)/include/mk/automake.mk
-include $(top_srcdir)/include/mk/gitignore.mk
 
 .SUFFIXES:
 .SUFFIXES: .am .default .h .in .m4 .mk
@@ -32,10 +31,6 @@ vpath %.in		$(top_srcdir)/include
 vpath %.m4		$(top_srcdir)/m4
 vpath %.mk		$(top_srcdir)/mk:$(top_srcdir)/mk/include
 
-# User wants uclinux binaries?
-UCLINUX			?= 0
-export UCLINUX
-
 # CLEAN_TARGETS:	Targets which exist solely in clean.
 # COMMON_TARGETS:	Targets which exist in all, clean, and install.
 # INSTALL_TARGETS:	Targets which exist in clean and install (contains
@@ -43,11 +38,7 @@ export UCLINUX
 # BOOTSTRAP_TARGETS:	Directories required to bootstrap out-of-build-tree
 # 			support.
 
-# We're not using uclinux based targets (default).
-ifneq ($(UCLINUX),1)
 COMMON_TARGETS		:= pan utils
-INSTALL_TARGETS		:= doc
-endif
 
 define target_to_dir_dep_mapping
 ifeq ($$(filter %-clean,$(1)),) # not *-clean
@@ -185,6 +176,9 @@ INSTALL_TARGETS		+= $(addprefix $(DESTDIR)/$(bindir)/,$(BINDIR_INSTALL_SCRIPTS))
 
 $(INSTALL_TARGETS): $(INSTALL_DIR) $(DESTDIR)/$(bindir)
 
+.PHONY: doc
+doc: metadata-all
+
 .PHONY: check
 check: $(CHECK_TARGETS)
 
@@ -201,6 +195,7 @@ ifneq ($(build),$(host))
 	$(error running tests on cross-compile build not supported)
 endif
 	$(call _test)
+	$(MAKE) test-shell-loader
 	$(MAKE) test-metadata
 
 test-c: lib-all
@@ -215,8 +210,14 @@ ifneq ($(build),$(host))
 endif
 	$(call _test,-s)
 
+test-shell-loader: lib-all
+ifneq ($(build),$(host))
+	$(error running tests on cross-compile build not supported)
+endif
+	$(top_srcdir)/testcases/lib/run_tests.sh -b $(abs_builddir)
+
 test-metadata: metadata-all
-	$(MAKE) -C $(abs_srcdir)/metadata/ test
+	$(MAKE) -C $(abs_srcdir)/metadata test
 
 ## Help
 .PHONY: help

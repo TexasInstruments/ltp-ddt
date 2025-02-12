@@ -45,27 +45,18 @@ int main(int ac, char **av)
 
 	tst_parse_opts(ac, av, NULL, NULL);
 
-#ifdef UCLINUX
-	maybe_run_child(&do_child, "");
-#endif
-
 	setup();
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 		tst_count = 0;
 
-		cpid = FORK_OR_VFORK();
+		cpid = tst_fork();
 		switch (cpid) {
 		case -1:
 			tst_brkm(TBROK, cleanup, "fork() failed");
 		break;
 		case 0:
-#ifdef UCLINUX
-			if (self_exec(av[0], "") < 0)
-				tst_brkm(TBROK, cleanup, "self_exec failed");
-#else
 			do_child();
-#endif
 		break;
 		default:
 		break;

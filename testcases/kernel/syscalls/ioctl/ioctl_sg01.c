@@ -3,7 +3,9 @@
  * Copyright (c) 2019 SUSE LLC <mdoucha@suse.cz>
  */
 
-/*
+/*\
+ * [Description]
+ *
  * CVE-2018-1000204
  *
  * Test ioctl(SG_IO) and check that kernel doesn't leak data. Requires
@@ -126,7 +128,7 @@ static struct tst_test test = {
 	.test_all = run,
 	.setup = setup,
 	.cleanup = cleanup,
-	.max_runtime = 3600,
+	.timeout = 3600,
 	.tags = (const struct tst_tag[]) {
 		{"linux-git", "a45b599ad808"},
 		{"CVE", "2018-1000204"},

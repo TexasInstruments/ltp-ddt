@@ -144,7 +144,7 @@ static void verify_max_bytes(void)
 static void verify_max_keys(void)
 {
 	int i, used_key, max_key;
-	char desc[10];
+	char desc[15];
 
 	tst_res(TINFO, "test max keys under unprivileged user");
 	parse_proc_key_users(&used_key, &max_key, NULL, NULL);
@@ -203,8 +203,6 @@ static void do_test(unsigned int n)
 
 	tst_reap_children();
 	useri++;
-
-	return;
 }
 
 static void cleanup(void)
@@ -214,6 +212,7 @@ static void cleanup(void)
 }
 
 static struct tst_test test = {
+	.timeout = 2,
 	.test = do_test,
 	.tcnt = 2,
 	.needs_root = 1,

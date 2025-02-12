@@ -6,6 +6,9 @@
 #ifndef TST_KCONFIG_H__
 #define TST_KCONFIG_H__
 
+#include <stdbool.h>
+#include <stddef.h>
+
 /**
  * Initialization helper macro for struct tst_kconfig_var. Requires <string.h>
  */
@@ -27,7 +30,7 @@ struct tst_kconfig_var {
  * tst_kconfig_var structures.
  *
  * The path to the kernel config should be autodetected in most of the cases as
- * the code looks for know locations. It can be explicitely set/overrided with
+ * the code looks for know locations. It can be explicitly set/overridden with
  * the KCONFIG_PATH environment variable as well.
  *
  * The caller has to initialize the tst_kconfig_var structure. The id has to be
@@ -45,7 +48,7 @@ struct tst_kconfig_var {
  * In the case that match is set to 'v' the val pointer points to a newly
  * allocated string that holds the value.
  *
- * @param vars An array of caller initalized tst_kconfig_var structures.
+ * @param vars An array of caller initialized tst_kconfig_var structures.
  * @param vars_len Length of the vars array.
  */
 void tst_kconfig_read(struct tst_kconfig_var vars[], size_t vars_len);
@@ -63,5 +66,49 @@ void tst_kconfig_read(struct tst_kconfig_var vars[], size_t vars_len);
  * @param kconfigs NULL-terminated array of config strings needed for the testrun.
  */
 int tst_kconfig_check(const char *const kconfigs[]);
+
+/**
+ * Macro to prepare a tst_kcmdline_var structure with a given parameter name.
+ *
+ * It initializes the .key field with the provided name, sets the .value field
+ * to an empty string, and marks the parameter as not found (.found = false).
+ *
+ * This macro is typically used to prepopulate an array with configuration
+ * parameters before processing the actual command line arguments.
+ */
+#define TST_KCMDLINE_INIT(paraname) { \
+	.key = paraname, \
+	.value = "", \
+	.found = false \
+}
+
+/**
+ * Structure for storing command-line parameter key and its corresponding
+ * value, and a flag indicating whether the parameter was found.
+ */
+struct tst_kcmdline_var {
+	const char *key;
+	char value[256];
+	bool found;
+};
+
+/**
+ * Parses command-line parameters from /proc/cmdline and stores them in params array.
+ * params: The array of tst_kcmdline_var structures to be filled with parsed key-value pairs.
+ * params_len: The length of the params array, indicating how many parameters to parse.
+ */
+void tst_kcmdline_parse(struct tst_kcmdline_var params[], size_t params_len);
+
+/*
+ * tst_has_slow_kconfig() - Check if any performance-degrading kernel configs are enabled.
+ *
+ * This function iterates over the list of slow kernel configuration options
+ * (`tst_slow_kconfigs`) and checks if any of them are enabled in the running kernel.
+ *
+ * Return:
+ * - 1 if at least one slow kernel config is enabled.
+ * - 0 if none of the slow kernel configs are enabled.
+ */
+int tst_has_slow_kconfig(void);
 
 #endif	/* TST_KCONFIG_H__ */

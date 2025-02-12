@@ -884,9 +884,6 @@ static void setup(void)
 	if (!clients_num)
 		clients_num = sysconf(_SC_NPROCESSORS_ONLN);
 
-	if (busy_poll >= 0 && tst_kvercmp(3, 11, 0) < 0)
-		tst_brk(TCONF, "Test must be run with kernel 3.11 or newer");
-
 	set_protocol_type();
 
 	if (client_mode) {
@@ -1027,6 +1024,6 @@ static struct tst_test test = {
 		{"B:", &server_bg, "Run in background, arg is the process directory"},
 		{}
 	},
-	.max_runtime = 300,
+	.timeout = 300,
 	.needs_checkpoints = 1,
 };

@@ -50,8 +50,8 @@ static void cleanup(void)
 void setup(void)
 {
 	tst_require_root();
-
 	tst_sig(FORK, DEF_HANDLER, cleanup);
+	tst_requires_module_signature_disabled();
 }
 
 static void run_pci_testcases(int bus, int slot)

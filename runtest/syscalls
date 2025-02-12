@@ -31,6 +31,8 @@ alarm05 alarm05
 alarm06 alarm06
 alarm07 alarm07
 
+arch_prctl01 arch_prctl01
+
 bind01 bind01
 bind02 bind02
 bind03 bind03
@@ -60,6 +62,11 @@ capset04 capset04
 
 cacheflush01 cacheflush01
 
+cachestat01 cachestat01
+cachestat02 cachestat02
+cachestat03 cachestat03
+cachestat04 cachestat04
+
 chdir01 chdir01
 chdir01A symlink01 -T chdir01
 chdir04 chdir04
@@ -70,6 +77,8 @@ chmod03 chmod03
 chmod05 chmod05
 chmod06 chmod06
 chmod07 chmod07
+chmod08 chmod08
+chmod09 chmod09
 
 chown01 chown01
 chown01_16 chown01_16
@@ -262,6 +271,9 @@ fchmod06 fchmod06
 fchmodat01 fchmodat01
 fchmodat02 fchmodat02
 
+fchmodat2_01 fchmodat2_01
+fchmodat2_02 fchmodat2_02
+
 fchown01 fchown01
 fchown01_16 fchown01_16
 fchown02 fchown02
@@ -329,8 +341,6 @@ fcntl26 fcntl26
 fcntl26_64 fcntl26_64
 fcntl27 fcntl27
 fcntl27_64 fcntl27_64
-fcntl28 fcntl28
-fcntl28_64 fcntl28_64
 fcntl29 fcntl29
 fcntl29_64 fcntl29_64
 fcntl30 fcntl30
@@ -439,6 +449,7 @@ futimesat01 futimesat01
 getcontext01 getcontext01
 
 getcpu01 getcpu01
+getcpu02 getcpu02
 
 getcwd01 getcwd01
 getcwd02 getcwd02
@@ -475,6 +486,7 @@ gethostbyname_r01 gethostbyname_r01
 gethostid01 gethostid01
 
 gethostname01 gethostname01
+gethostname02 gethostname02
 
 getitimer01 getitimer01
 getitimer02 getitimer02
@@ -501,6 +513,7 @@ getrandom01 getrandom01
 getrandom02 getrandom02
 getrandom03 getrandom03
 getrandom04 getrandom04
+getrandom05 getrandom05
 
 getresgid01 getresgid01
 getresgid01_16 getresgid01_16
@@ -588,6 +601,12 @@ ioctl_ns06 ioctl_ns06
 ioctl_ns07 ioctl_ns07
 
 ioctl_sg01 ioctl_sg01
+
+ioctl_ficlone01 ioctl_ficlone01
+ioctl_ficlone02 ioctl_ficlone02
+ioctl_ficlone03 ioctl_ficlone03
+ioctl_ficlonerange01 ioctl_ficlonerange01
+ioctl_ficlonerange02 ioctl_ficlonerange02
 
 inotify_init1_01 inotify_init1_01
 inotify_init1_02 inotify_init1_02
@@ -682,6 +701,15 @@ kill11 kill11
 kill12 kill12
 kill13 kill13
 
+landlock01 landlock01
+landlock02 landlock02
+landlock03 landlock03
+landlock04 landlock04
+landlock05 landlock05
+landlock06 landlock06
+landlock07 landlock07
+landlock08 landlock08
+
 lchown01 lchown01
 lchown01_16 lchown01_16
 lchown02  lchown02
@@ -704,6 +732,11 @@ linkat02 linkat02
 
 listen01 listen01
 
+listmount01 listmount01
+listmount02 listmount02
+listmount03 listmount03
+listmount04 listmount04
+
 listxattr01 listxattr01
 listxattr02 listxattr02
 listxattr03 listxattr03
@@ -723,12 +756,12 @@ lseek02 lseek02
 lseek07 lseek07
 lseek11 lseek11
 
-lstat01A symlink01 -T lstat01
-lstat01A_64 symlink01 -T lstat01_64
 lstat01 lstat01
 lstat01_64 lstat01_64
 lstat02 lstat02
 lstat02_64 lstat02_64
+lstat03 lstat03
+lstat03_64 lstat03_64
 
 mallinfo02 mallinfo02
 
@@ -757,7 +790,6 @@ mkdir02 mkdir02
 mkdir03 mkdir03
 mkdir04 mkdir04
 mkdir05 mkdir05
-mkdir05A symlink01 -T mkdir05
 mkdir09 mkdir09
 
 #mkdirat test cases
@@ -782,6 +814,7 @@ mlock01 mlock01
 mlock02 mlock02
 mlock03 mlock03 -i 20
 mlock04 mlock04
+mlock05 mlock05
 
 mlock201 mlock201
 mlock202 mlock202
@@ -860,17 +893,18 @@ mremap04 mremap04
 mremap05 mremap05
 mremap06 mremap06
 
+mseal01 mseal01
+mseal02 mseal02
+
 msgctl01 msgctl01
 msgctl02 msgctl02
 msgctl03 msgctl03
 msgctl04 msgctl04
 msgctl05 msgctl05
 msgctl06 msgctl06
-msgstress01 msgstress01
-msgstress02 msgstress02
-msgstress03 msgstress03
-msgstress04 msgstress04
 msgctl12 msgctl12
+
+msgstress01 msgstress01
 
 msgget01 msgget01
 msgget02 msgget02
@@ -922,7 +956,6 @@ nice04 nice04
 nice05 nice05
 
 open01 open01
-open01A symlink01 -T open01
 open02 open02
 open03 open03
 open04 open04
@@ -935,6 +968,7 @@ open11 open11
 open12 open12
 open13 open13
 open14 open14
+open15 open15
 
 openat01 openat01
 openat02 openat02
@@ -966,6 +1000,7 @@ madvise08 madvise08
 madvise09 madvise09
 madvise10 madvise10
 madvise11 madvise11
+madvise12 madvise12
 
 newuname01 newuname01
 
@@ -1021,7 +1056,6 @@ ppoll01 ppoll01
 prctl01 prctl01
 prctl02 prctl02
 prctl03 prctl03
-prctl04 prctl04
 prctl05 prctl05
 prctl06 prctl06
 prctl07 prctl07
@@ -1171,6 +1205,7 @@ rename11 rename11
 rename12 rename12
 rename13 rename13
 rename14 rename14
+rename15 rename15
 
 #renameat test cases
 renameat01 renameat01
@@ -1183,6 +1218,7 @@ request_key02 request_key02
 request_key03 request_key03
 request_key04 request_key04
 request_key05 request_key05
+request_key06 request_key06
 
 rmdir01 rmdir01
 rmdir02 rmdir02
@@ -1195,6 +1231,7 @@ rt_sigaction03 rt_sigaction03
 rt_sigprocmask01 rt_sigprocmask01
 rt_sigprocmask02 rt_sigprocmask02
 rt_sigqueueinfo01 rt_sigqueueinfo01
+rt_sigqueueinfo02 rt_sigqueueinfo02
 rt_sigsuspend01 rt_sigsuspend01
 rt_sigtimedwait01 rt_sigtimedwait01
 rt_tgsigqueueinfo01 rt_tgsigqueueinfo01
@@ -1238,6 +1275,8 @@ sched_getaffinity01 sched_getaffinity01
 sched_setattr01 sched_setattr01
 sched_getattr01 sched_getattr01
 sched_getattr02 sched_getattr02
+
+seccomp01 seccomp01
 
 select01 select01
 select02 select02
@@ -1445,6 +1484,7 @@ setxattr03 setxattr03
 shmat01 shmat01
 shmat02 shmat02
 shmat03 shmat03
+shmat04 shmat04
 
 shmctl01 shmctl01
 shmctl02 shmctl02
@@ -1464,6 +1504,9 @@ shmget04 shmget04
 shmget05 shmget05
 shmget06 shmget06
 
+shutdown01 shutdown01
+shutdown02 shutdown02
+
 sigaction01 sigaction01
 sigaction02 sigaction02
 
@@ -1481,6 +1524,7 @@ signal05 signal05
 signal06 signal06
 
 signalfd01 signalfd01
+signalfd02 signalfd02
 
 signalfd4_01 signalfd4_01
 signalfd4_02 signalfd4_02
@@ -1492,6 +1536,7 @@ sigprocmask01 sigprocmask01
 sigrelse01 sigrelse01
 
 sigsuspend01 sigsuspend01
+sigsuspend02 sigsuspend02
 
 sigtimedwait01 sigtimedwait01
 
@@ -1517,6 +1562,8 @@ splice04 splice04
 splice05 splice05
 splice06 splice06
 splice07 splice07
+splice08 splice08
+splice09 splice09
 
 tee01 tee01
 tee02 tee02
@@ -1529,8 +1576,17 @@ stat02 stat02
 stat02_64 stat02_64
 stat03 stat03
 stat03_64 stat03_64
-stat04 symlink01 -T stat04
-stat04_64 symlink01 -T stat04_64
+stat04 stat04
+stat04_64 stat04_64
+
+statmount01 statmount01
+statmount02 statmount02
+statmount03 statmount03
+statmount04 statmount04
+statmount05 statmount05
+statmount06 statmount06
+statmount07 statmount07
+statmount08 statmount08
 
 statfs01 statfs01
 statfs01_64 statfs01_64
@@ -1651,6 +1707,8 @@ unlink01 symlink01 -T unlink01
 unlink05 unlink05
 unlink07 unlink07
 unlink08 unlink08
+unlink09 unlink09
+unlink10 unlink10
 
 #unlinkat test cases
 unlinkat01 unlinkat01
@@ -1676,12 +1734,12 @@ ustat01 ustat01
 ustat02 ustat02
 
 utime01 utime01
-utime01A symlink01 -T utime01
 utime02 utime02
 utime03 utime03
 utime04 utime04
 utime05 utime05
 utime06 utime06
+utime07 utime07
 
 utimes01 utimes01
 
@@ -1708,10 +1766,8 @@ wait402 wait402
 wait403 wait403
 
 waitpid01 waitpid01
-waitpid02 waitpid02
 waitpid03 waitpid03
 waitpid04 waitpid04
-waitpid05 waitpid05
 waitpid06 waitpid06
 waitpid07 waitpid07
 waitpid08 waitpid08

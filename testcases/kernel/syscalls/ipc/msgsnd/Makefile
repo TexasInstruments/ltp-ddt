@@ -3,11 +3,7 @@
 
 top_srcdir              ?= ../../../../..
 
-LTPLIBS = ltpnewipc
-
-ifeq ($(UCLINUX),1)
-FILTER_OUT_MAKE_TARGETS += msgsnd05 msgsnd06
-endif
+LTPLIBS = newipc
 
 include $(top_srcdir)/include/mk/testcases.mk
 

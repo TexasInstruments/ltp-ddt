@@ -13,6 +13,8 @@
  * ("xfs: Sanity check flags of Q_XQUOTARM call").
  */
 
+#define _GNU_SOURCE
+#include <fcntl.h>
 #include <errno.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -83,7 +85,10 @@ static struct tst_test test = {
 	},
 	.test_all = verify_quota,
 	.format_device = 1,
-	.dev_fs_type = "xfs",
+	.filesystems = (struct tst_fs []) {
+		{.type = "xfs"},
+		{}
+	},
 	.mntpoint = MNTPOINT,
 	.test_variants = QUOTACTL_SYSCALL_VARIANTS,
 	.tags = (const struct tst_tag[]) {

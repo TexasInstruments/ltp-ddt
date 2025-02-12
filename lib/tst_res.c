@@ -141,11 +141,14 @@ struct pair {
 #define PAIR(def) [def] = {.name = #def, .val = def},
 #define STRPAIR(key, value) [key] = {.name = value, .val = key},
 
-#define PAIR_LOOKUP(pair_arr, idx) do {                       \
-	if (idx < 0 || (size_t)idx >= ARRAY_SIZE(pair_arr) || \
-	    pair_arr[idx].name == NULL)                       \
-		return "???";                                 \
-	return pair_arr[idx].name;                            \
+#define PAIR_LOOKUP(pair_arr, idx) do {                                      \
+	static char pair_str_buf__[16];                                      \
+	if (idx < 0 || (size_t)idx >= ARRAY_SIZE(pair_arr) ||                \
+	    pair_arr[idx].name == NULL) {                                    \
+		snprintf(pair_str_buf__, sizeof(pair_str_buf__), "%i", idx); \
+		return pair_str_buf__;                                       \
+	}                                                                    \
+	return pair_arr[idx].name;                                           \
 } while (0)
 
 const char *strttype(int ttype)
@@ -469,14 +472,6 @@ void tst_record_childstatus(void (*cleanup)(void), pid_t child)
 			 "unexpected signal %s(%d)", child,
 			 tst_strsig(WTERMSIG(status)), WTERMSIG(status));
 	}
-}
-
-pid_t tst_vfork(void)
-{
-	NO_NEWLIB_ASSERT("Unknown", 0);
-
-	tst_old_flush();
-	return vfork();
 }
 
 /*

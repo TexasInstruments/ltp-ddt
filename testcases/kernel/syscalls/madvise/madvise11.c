@@ -128,6 +128,8 @@ static int allocate_offline(int tnum)
 				return -1;
 
 			if (madvise(ptrs[num_alloc], pagesize, MADV_SOFT_OFFLINE) == -1) {
+				if (errno == EBUSY)
+					continue;
 				if (errno != EINVAL)
 					tst_res(TFAIL | TERRNO, "madvise failed");
 				if (errno == EINVAL)
@@ -430,7 +432,7 @@ static struct tst_test test = {
 		"CONFIG_MEMORY_FAILURE=y",
 		NULL
 	},
-	.max_runtime = 30,
+	.runtime = 30,
 	.needs_checkpoints = 1,
 	.setup = setup,
 	.cleanup = cleanup,

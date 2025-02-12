@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0
+// SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright (c) Red Hat, Inc., 2012.
  * Copyright (c) Linux Test Project, 2019
@@ -196,6 +196,7 @@ static void cleanup(void)
 }
 
 static struct tst_test test = {
+	.timeout = 40,
 	.test_all = run_leapsec,
 	.setup = setup,
 	.cleanup = cleanup,

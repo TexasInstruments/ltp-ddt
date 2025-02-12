@@ -17,25 +17,27 @@
 #include "tst_test.h"
 
 #define BASENAME	"lkfile"
+#define NLINKS	1000
 
 static char fname[255];
 
-static int nlinks = 1000;
-
 static void verify_link(void)
 {
-	int cnt;
+	int cnt = 0, created;
 	char lname[1024];
 	struct stat fbuf, lbuf;
 
-	for (cnt = 1; cnt < nlinks; cnt++) {
-		sprintf(lname, "%s_%d", fname, cnt);
-		TST_EXP_PASS_SILENT(link(fname, lname), "link(%s, %s)", fname, lname);
+	for (created = 1; created < NLINKS; created++) {
+		sprintf(lname, "%s_%d", fname, created);
+		TST_EXP_PASS_SILENT(link(fname, lname), "%d: link(%s, %s)", created,
+							fname, lname);
+		if (!TST_PASS)
+			goto cleanup;
 	}
 
 	SAFE_STAT(fname, &fbuf);
 
-	for (cnt = 1; cnt < nlinks; cnt++) {
+	for (cnt = 1; cnt < NLINKS; cnt++) {
 		sprintf(lname, "%s_%d", fname, cnt);
 
 		SAFE_STAT(lname, &lbuf);
@@ -44,19 +46,20 @@ static void verify_link(void)
 
 			tst_res(TFAIL,
 				 "link(%s, %s[1-%d]) ret %ld for %d files, stat values do not match %d %d",
-				 fname, fname, nlinks, TST_RET, nlinks,
+				 fname, fname, NLINKS, TST_RET, NLINKS,
 				 (int)fbuf.st_nlink, (int)lbuf.st_nlink);
 			break;
 		}
 	}
 
-	if (cnt >= nlinks) {
+	if (cnt == NLINKS) {
 		tst_res(TPASS,
 			 "link(%s, %s[1-%d]) ret %ld for %d files, stat linkcounts match %d",
-			 fname, fname, nlinks, TST_RET, nlinks, (int)fbuf.st_nlink);
+			 fname, fname, NLINKS, TST_RET, NLINKS, (int)fbuf.st_nlink);
 	}
 
-	for (cnt = 1; cnt < nlinks; cnt++) {
+cleanup:
+	for (cnt = 1; cnt < created; cnt++) {
 		sprintf(lname, "%s_%d", fname, cnt);
 		SAFE_UNLINK(lname);
 	}

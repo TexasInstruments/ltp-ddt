@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*
  * Copyright (c) 2013 SUSE.  All Rights Reserved.
  *
@@ -343,6 +343,7 @@ static const char *const resource_files[] = {
 };
 
 static struct tst_test test = {
+	.timeout = 1,
 	.test = test_fanotify,
 	.tcnt = ARRAY_SIZE(tcases),
 	.setup = setup,

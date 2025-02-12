@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /*
  * Copyright (c) 2016-2019 Cyril Hrubis <chrubis@suse.cz>
+ * Copyright (c) Linux Test Project, 2019-2024
  */
 
 #ifndef TST_DEVICE_H__
@@ -66,7 +67,9 @@ int tst_attach_device(const char *dev_path, const char *file_path);
 uint64_t tst_get_device_size(const char *dev_path);
 
 /*
- * Detaches a file from a loop device fd.
+ * Detaches a file from a loop device fd. @dev_fd needs to be the
+ * last descriptor opened. Call to this function will close it,
+ * it is up to caller to open it again for further usage.
  *
  * @dev_path Path to the loop device e.g. /dev/loop0
  * @dev_fd a open fd for the loop device
@@ -100,11 +103,6 @@ int tst_dev_sync(int fd);
  * @dev: test block device
  */
 unsigned long tst_dev_bytes_written(const char *dev);
-
-/*
- * Wipe the contents of given directory but keep the directory itself
- */
-void tst_purge_dir(const char *path);
 
 /*
  * Find the file or path belongs to which block dev

@@ -26,7 +26,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <termios.h>
+#include <asm/termbits.h>
 
 #include "lapi/ioctl.h"
 #include "tst_test.h"
@@ -242,6 +242,7 @@ static void cleanup(void)
 }
 
 static struct tst_test test = {
+	.timeout = 9,
 	.needs_root = 1,
 	.needs_checkpoints = 1,
 	.forks_child = 1,

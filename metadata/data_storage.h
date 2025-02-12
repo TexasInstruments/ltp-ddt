@@ -16,6 +16,7 @@ enum data_type {
 	DATA_HASH,
 	DATA_STRING,
 	DATA_INT,
+	DATA_NULL,
 };
 
 struct data_node_array {
@@ -68,6 +69,8 @@ static inline const char* data_type_name(enum data_type type)
 		return "string";
 	case DATA_INT:
 		return "int";
+	case DATA_NULL:
+		return "null";
 	default:
 		return "???";
 	}
@@ -96,6 +99,18 @@ static inline struct data_node *data_node_int(long i)
 
 	node->type = DATA_INT;
 	node->i.val = i;
+
+	return node;
+}
+
+static inline struct data_node *data_node_null(void)
+{
+	struct data_node *node = malloc(sizeof(struct data_node));
+
+	if (!node)
+		return NULL;
+
+	node->type = DATA_NULL;
 
 	return node;
 }
@@ -159,6 +174,7 @@ static inline void data_node_free(struct data_node *self)
 	switch (self->type) {
 	case DATA_STRING:
 	case DATA_INT:
+	case DATA_NULL:
 	break;
 	case DATA_HASH:
 		for (i = 0; i < self->hash.elems_used; i++) {
@@ -235,6 +251,34 @@ static inline unsigned int data_node_array_len(struct data_node *self)
 	return self->array.array_used;
 }
 
+
+static inline struct data_node *data_node_array_last(struct data_node *self)
+{
+	if (self->type != DATA_ARRAY)
+		return NULL;
+
+	unsigned int array_used = self->array.array_used;
+	if (!array_used)
+		return NULL;
+
+	return self->array.array[array_used-1];
+}
+
+static inline void data_node_array_last_rem(struct data_node *self)
+{
+	if (self->type != DATA_ARRAY)
+		return;
+
+	unsigned int array_used = self->array.array_used;
+	if (!array_used)
+		return;
+
+	data_node_free(self->array.array[array_used-1]);
+
+	self->array.array[array_used-1] = NULL;
+	self->array.array_used--;
+}
+
 static inline void data_print_padd(unsigned int i)
 {
 	while (i-- > 0)
@@ -253,6 +297,10 @@ static inline void data_node_print_(struct data_node *self, unsigned int padd)
 	case DATA_STRING:
 		data_print_padd(padd);
 		printf("'%s'\n", self->string.val);
+	break;
+	case DATA_NULL:
+		data_print_padd(padd);
+		printf("null\n");
 	break;
 	case DATA_HASH:
 		for (i = 0; i < self->hash.elems_used; i++) {
@@ -296,7 +344,6 @@ static inline void data_fprintf(FILE *f, unsigned int padd, const char *fmt, ...
 	vfprintf(f, fmt, va);
 	va_end(va);
 }
-
 
 static inline void data_fprintf_esc(FILE *f, unsigned int padd, const char *str)
 {
@@ -343,6 +390,10 @@ static inline void data_to_json_(struct data_node *self, FILE *f, unsigned int p
 	case DATA_STRING:
 		padd = do_padd ? padd : 0;
 		data_fprintf_esc(f, padd, self->string.val);
+	break;
+	case DATA_NULL:
+		padd = do_padd ? padd : 0;
+		data_fprintf(f, padd, "null");
 	break;
 	case DATA_HASH:
 		for (i = 0; i < self->hash.elems_used; i++) {
