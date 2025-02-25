@@ -1,0 +1,9 @@
+# @name Basic Qt6 Tests
+# @desc Run qt6 tests
+# @requires graphics
+
+QT6_TUTORIAL1 ${LTPROOT}/testcases/ddt/scripts/qt6/qt6_execution.sh tutorial1
+QT6_TUTORIAL2 ${LTPROOT}/testcases/ddt/scripts/qt6/qt6_execution.sh tutorial2
+QT6_TUTORIAL3 ${LTPROOT}/testcases/ddt/scripts/qt6/qt6_execution.sh tutorial3
+QT6_TUTORIAL4 ${LTPROOT}/testcases/ddt/scripts/qt6/qt6_execution.sh tutorial4
+QT6_TUTORIAL5 ${LTPROOT}/testcases/ddt/scripts/qt6/qt6_execution.sh tutorial5
