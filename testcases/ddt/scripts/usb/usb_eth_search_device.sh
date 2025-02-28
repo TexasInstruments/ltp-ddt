@@ -24,7 +24,7 @@ usb_interface=$1
 usb_cnt_interface=`get_usb_controller_name.sh "$usb_interface"` 
 ethdev=none
 
-devices=`ls /sys/class/net|grep eth`
+devices=`ls /sys/class/net`
 for device in $devices
   do
     usb_interface=`udevadm info --attribute-walk --path=/sys/class/net/$device|grep -m 1 -i "$usb_cnt_interface"`
