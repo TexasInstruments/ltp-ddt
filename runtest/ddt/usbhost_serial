@@ -4,4 +4,4 @@
 # @setup_requires usbhostserial
 
 
-USBHOST_S_FUNC_SERIAL_0001 source 'common.sh' ; do_cmd install_modules.sh 'usb' ; serial_enum=`ls /sys/bus/usb/devices/serial|grep ttyUSB`; if [[ -z "$serial_enum" ]] ;then die "Failed enumeration of usb-serial device"; fi
+USBHOST_S_FUNC_SERIAL_0001 source 'common.sh' ; do_cmd install_modules.sh 'usb' ; serial_enum=`ls /sys/class/tty/ | grep ttyUSB`; if [[ -z "$serial_enum" ]] ;then die "Failed enumeration of usb-serial device"; fi
