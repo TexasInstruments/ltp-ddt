@@ -26,6 +26,21 @@ while getopts ${OPTSTRING} opt; do
   esac
 done
 
+echo "Kmsprint output:"
+kmsprint
+
+if systemctl is-active -q weston; then
+	echo "Weston service is running"
+else
+	sleep 5
+	if systemctl is-failed weston.service -q; then
+		echo "Failure with weston service"
+		journalctl -b | grep weston
+		die "Weston not running"
+	else 
+		echo "Weston service is running"
+	fi
+fi
 
 if [ -z "${TEXTURE}" ]; then
     TESTFILEPATH=/opt/ltp/testcases/ddt/scripts/piglit/${ARCHITECTURE}/extensions/${API}/${TESTFILE}
