@@ -30,6 +30,15 @@ find_part_type() {
     TYPE=`cat /sys/class/mtd/mtd$PART/type`
     if [[ $TYPE == 'nand' ]]; then
       PART_TYPE='nand'
+      if [[ `ls /sys/class/mtd/mtd$PART/device/driver/ | grep 'spi'` ]];then
+        if [[ `cat /proc/mtd |grep -E "mtd$PART |mtd${PART}: "|grep -i qspi ` ]];then
+          PART_TYPE="qspi"
+        elif [[ `cat /proc/mtd |grep -E "mtd$PART |mtd${PART}: "|grep -i ospi ` ]];then
+          PART_TYPE="ospi"
+        else
+          PART_TYPE="spi"
+        fi
+      fi
     else
       if [[ `ls /sys/class/mtd/mtd$PART/device/driver/ | grep 'flash'` ]]; then
         PART_TYPE="nor"
