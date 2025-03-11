@@ -1,0 +1,1 @@
+CHROMIUM source 'common.sh'; cd /opt/ltp/testcases/bin/ddt/chromium; do_cmd "python3 chromium_test.py "$PLATFORM""
