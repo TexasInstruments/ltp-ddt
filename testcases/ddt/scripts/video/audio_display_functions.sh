@@ -155,7 +155,7 @@ disp_audio_test()
   local __min_diff_fr_idx=0
 
   assert [ ${#__modes[@]} -gt 0 ]
-  stop_daemon weston && sleep 3
+  stop_daemon emptty && sleep 3
   if [ ${#} -gt 3 ]; then
     __alsa_test_cmd="alsa_tests.sh -s mmc -d $3 -t playback -r $4"
   fi

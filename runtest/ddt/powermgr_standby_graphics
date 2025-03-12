@@ -3,6 +3,6 @@
 # @requires graphics && power_mgr
 # @setup_requires 
 
-POWERMGR_S_FUNC_GRAPHICS_STANDBY source "common.sh"; stop_daemon weston; run_processes.sh -c " (which runOGLES2ChameleonMan.sh && runOGLES2ChameleonMan.sh -qaf=3000) || die 'runOGLES2ChameleonMan is not available' # /opt/ltp/runltp -P $PLATFORM -f ddt/powermgr_suspend -s 'POWERMGR_S_FUNC_SIMPLE_STANDBY ' "
+POWERMGR_S_FUNC_GRAPHICS_STANDBY source "common.sh"; stop_daemon emptty; run_processes.sh -c " (which runOGLES2ChameleonMan.sh && runOGLES2ChameleonMan.sh -qaf=3000) || die 'runOGLES2ChameleonMan is not available' # /opt/ltp/runltp -P $PLATFORM -f ddt/powermgr_suspend -s 'POWERMGR_S_FUNC_SIMPLE_STANDBY ' "
 
-POWERMGR_M_FUNC_GRAPHICS_STANDBY source "common.sh"; stop_daemon weston; run_processes.sh -c " (which runOGLES2ChameleonMan.sh && runOGLES2ChameleonMan.sh -qaf=30000) || die 'runOGLES2ChameleonMan is not available' # /opt/ltp/runltp -P $PLATFORM -f ddt/powermgr_suspend -s 'POWERMGR_L_STRESS_SIMPLE_STANDBY ' "
+POWERMGR_M_FUNC_GRAPHICS_STANDBY source "common.sh"; stop_daemon emptty; run_processes.sh -c " (which runOGLES2ChameleonMan.sh && runOGLES2ChameleonMan.sh -qaf=30000) || die 'runOGLES2ChameleonMan is not available' # /opt/ltp/runltp -P $PLATFORM -f ddt/powermgr_suspend -s 'POWERMGR_L_STRESS_SIMPLE_STANDBY ' "

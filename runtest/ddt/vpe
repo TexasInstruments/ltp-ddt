@@ -1,7 +1,7 @@
 # @name TI VPE Tests
 # @desc Test functionality of Texas Instruments' VPE
 
-VPE_S_FUNC_SCALE_YUV		source 'vpe.sh'; stop_daemon weston ; vpe_yuv_to_yuv || die "Test failed"
-VPE_S_FUNC_CROP_YUV		source 'vpe.sh'; stop_daemon weston ; vpe_yuv_to_yuv_crop || die "Test failed"
-VPE_S_FUNC_SCALE_YUV_2_RGB	source 'vpe.sh'; stop_daemon weston ; vpe_yuv_to_rgb565 || die "Test failed"
-VPE_S_FUNC_CROP_YUV_2_RGB	source 'vpe.sh'; stop_daemon weston ; vpe_yuv_to_rgb565_crop || die "Test failed"
+VPE_S_FUNC_SCALE_YUV		source 'vpe.sh'; stop_daemon emptty ; vpe_yuv_to_yuv || die "Test failed"
+VPE_S_FUNC_CROP_YUV		source 'vpe.sh'; stop_daemon emptty ; vpe_yuv_to_yuv_crop || die "Test failed"
+VPE_S_FUNC_SCALE_YUV_2_RGB	source 'vpe.sh'; stop_daemon emptty ; vpe_yuv_to_rgb565 || die "Test failed"
+VPE_S_FUNC_CROP_YUV_2_RGB	source 'vpe.sh'; stop_daemon emptty ; vpe_yuv_to_rgb565_crop || die "Test failed"

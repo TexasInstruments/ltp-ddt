@@ -2,4 +2,4 @@
 # @desc Run kmscube with different parameters
 # @requires graphics
 
-KMSCUBE_XS_OFFSCREEN source 'common.sh'; stop_daemon weston; do_cmd 'kmscube -x -c 1000'
+KMSCUBE_XS_OFFSCREEN source 'common.sh'; stop_daemon emptty; do_cmd 'kmscube -x -c 1000'
