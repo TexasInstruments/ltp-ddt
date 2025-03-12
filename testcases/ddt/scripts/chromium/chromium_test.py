@@ -87,19 +87,12 @@ def process_images(png_files,desired_fps):
     get_test_result(desired_fps, average_fps,fps_not_found)
     return average_fps
 
-def clean_up(png_files):
-    """Delete the .png screenshots"""
-    print("Cleaning up: ")
-    for file in png_files:
-        full_path = os.path.join(os.getcwd(), file)
-        if os.path.exists(full_path):
-            subprocess.run(["rm", full_path], check = True)
-            print(f"Deleted: {full_path}")
-        else:
-            print(f"{file} not found.")
-
 def get_test_result(desired_fps, average_fps,fps_not_found):
-    """See if the test results are reliable or not"""
+    """See if the test results are reliable or not and clean up"""
+    
+    png_files = pathlib.Path(".").glob("*.png")
+    clean_up(png_files)
+    
     if fps_not_found >= 2:  #Test result to unreliable,
                             #fail in order notify team team something needs to be checked manually
         print("Test Failure")
@@ -110,6 +103,12 @@ def get_test_result(desired_fps, average_fps,fps_not_found):
     else:
         print("Test Failure")
         sys.exit(0)
+
+def clean_up(png_files):
+    """Delete the .png screenshots"""
+    print("Cleaning up: ")
+    for file in png_files:
+        file.unlink()
 
 def main():
     """Main function"""
@@ -130,7 +129,6 @@ def main():
 
     process_images(png_files,desired_fps)
 
-    clean_up(png_files)
 
 if __name__ == '__main__':
     main()
