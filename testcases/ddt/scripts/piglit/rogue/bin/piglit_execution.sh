@@ -29,16 +29,16 @@ done
 echo "Kmsprint output:"
 kmsprint
 
-if systemctl is-active -q weston; then
-	echo "Weston service is running"
+if status_daemon emptty; then
+	echo "Emptty service is running"
 else
 	sleep 5
-	if systemctl is-failed weston.service -q; then
-		echo "Failure with weston service"
-		journalctl -b | grep weston
-		die "Weston not running"
+	if status_daemon emptty; then
+		echo "Failure with emptty service"
+		cat /var/log/emptty/7.log /var/log/emptty/session-errors.7.log
+		die "Emptty not running"
 	else 
-		echo "Weston service is running"
+		echo "Emptty service is running"
 	fi
 fi
 
