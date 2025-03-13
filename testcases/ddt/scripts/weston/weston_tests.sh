@@ -34,7 +34,7 @@ simple_egl_test()
 
 weston_ivi_test()
 {
-	stop_daemon weston
+	stop_daemon emptty
 	ini_files=$(find /etc -type f -name 'weston.ini')
 
 	# tweak ini files for test

@@ -23,11 +23,9 @@ def get_platform_data(platform):
 
 def test_setup():
     """Restart weston in debug mode and set up enviroment variables"""    
-    subprocess.run("systemctl stop weston", shell=True, check = True)
-    cmd = "sed -i 's|ExecStart=.*|& --debug|' /lib/systemd/system/weston.service"
+    cmd = "sed -i 's|Exec=.*|& --debug|' /usr/share/wayland-sessions/weston.desktop"
     subprocess.run(cmd, shell=True, check = True)
-    subprocess.run("systemctl daemon-reload", shell=True, check = True)
-    subprocess.run("systemctl start weston", shell=True, check = True)
+    subprocess.run("systemctl restart emptty", shell=True, check = True)
 
     subprocess.run("opkg update", shell=True)
     subprocess.run("opkg install chromium-ozone-wayland", shell=True, check = True)

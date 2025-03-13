@@ -6,13 +6,13 @@ errorMessage="Demo reports failed. Re-run manually to find rootcause."
 
 RGX_S_FUNC_8K_TEXTURE source 'common.sh'; output=`srender_to_tex_test -w 8192 -h 8192 -f 1`;if [[ $output != *"Color match at (10,20)"* ]]; then die "$errorMessage";fi;
 
-RGX_S_FUNC_BLIT source 'common.sh'; stop_daemon weston; output=`rgx_blit_test`;if [[ $output != *"Output matches input file"* ]]; then die "Output and Input do not match";fi; if [[ $output != *"Test PASS"* ]]; then die "$errorMessage";fi;
+RGX_S_FUNC_BLIT source 'common.sh'; stop_daemon emptty; output=`rgx_blit_test`;if [[ $output != *"Output matches input file"* ]]; then die "Output and Input do not match";fi; if [[ $output != *"Test PASS"* ]]; then die "$errorMessage";fi;
 
-RGX_S_FUNC_BLIT_BTYPEBLIT source 'common.sh'; stop_daemon weston; output=`rgx_blit_test -btype BLIT`;if [[ $output != *"Output matches input file"* ]]; then die "Output and Input do not match";fi; if [[ $output != *"Test PASS"* ]]; then die "$errorMessage";fi;
+RGX_S_FUNC_BLIT_BTYPEBLIT source 'common.sh'; stop_daemon emptty; output=`rgx_blit_test -btype BLIT`;if [[ $output != *"Output matches input file"* ]]; then die "Output and Input do not match";fi; if [[ $output != *"Test PASS"* ]]; then die "$errorMessage";fi;
 
-RGX_S_FUNC_BLIT_BTYPEFILL source 'common.sh'; stop_daemon weston; output=`rgx_blit_test -btype FILL`;if [[ $output != *"Output matches input file"* ]]; then die "Output and Input do not match";fi; if [[ $output != *"Test PASS"* ]]; then die "$errorMessage";fi;
+RGX_S_FUNC_BLIT_BTYPEFILL source 'common.sh'; stop_daemon emptty; output=`rgx_blit_test -btype FILL`;if [[ $output != *"Output matches input file"* ]]; then die "Output and Input do not match";fi; if [[ $output != *"Test PASS"* ]]; then die "$errorMessage";fi;
 
-RGX_S_FUNC_BLIT_BTYPECLIP source 'common.sh'; stop_daemon weston; output=`rgx_blit_test -btype CLIP`;if [[ $output != *"Output matches input file"* ]]; then die "Output and Input do not match";fi; if [[ $output != *"Test PASS"* ]]; then die "$errorMessage";fi;
+RGX_S_FUNC_BLIT_BTYPECLIP source 'common.sh'; stop_daemon emptty; output=`rgx_blit_test -btype CLIP`;if [[ $output != *"Output matches input file"* ]]; then die "Output and Input do not match";fi; if [[ $output != *"Test PASS"* ]]; then die "$errorMessage";fi;
 
 RGX_S_FUNC_KICKSYNC_1 source 'common.sh'; output=`rgx_kicksync_test -n 1`;if [[ $output != *"Test successful"* ]]; then die "$errorMessage";fi
 
@@ -60,4 +60,4 @@ RGX_XS_FUNC_MODULE_LOAD source 'common.sh'; lsmod | grep pvrsrvkm || die "Graphi
 
 RGX_S_FUNC_COMPUTE source 'common.sh'; output=`rgx_compute_test`;if [[ $output != *"--- End ---"* ]]; then die "$errorMessage";fi
 
-RGX_S_FUNC_APM source 'common.sh'; stop_daemon weston && sleep 1; pre=$(k3conf dump device | grep -i 'gpu'); rgx_compute_test -f 10000 > /dev/null & sleep 1 && post=$(k3conf dump device | grep -i 'gpu'); if wait "$!" && [ "$pre" != "$post" ] ; then printf '%s\n\n' "$pre" "$post" 'Power domain states changed as expected'; else die 'Power domain states did not change when expected!'; fi
+RGX_S_FUNC_APM source 'common.sh'; stop_daemon emptty && sleep 1; pre=$(k3conf dump device | grep -i 'gpu'); rgx_compute_test -f 10000 > /dev/null & sleep 1 && post=$(k3conf dump device | grep -i 'gpu'); if wait "$!" && [ "$pre" != "$post" ] ; then printf '%s\n\n' "$pre" "$post" 'Power domain states changed as expected'; else die 'Power domain states did not change when expected!'; fi

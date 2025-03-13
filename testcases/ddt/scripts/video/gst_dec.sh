@@ -98,12 +98,12 @@ esac
 
 if [ "$VSINK" == "waylandsink" ]
 then
-    start_daemon weston
+    start_daemon emptty
     stop_daemon matrix-gui-2.0
     V_CONN=""
     SCALING=""
 else
-    stop_daemon weston
+    stop_daemon emptty
 fi
 sleep 3
 
