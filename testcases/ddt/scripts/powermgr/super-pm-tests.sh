@@ -30,11 +30,11 @@ test_idle()
 	idle_random
 	cpu_load_random
 	idle_random
-	remove_cpuloadgen
+	stop_cpu_load
 	resume_memtest $USE_MEMORY_PERCENTAGE
 	cpu_load_random
 	idlebig_random
-	remove_cpuloadgen
+	stop_cpu_load
 	pause_memtest
 	idlebig_random
 	report_stats "AFTER IDLE TEST"
@@ -54,11 +54,11 @@ test_suspend()
 	idle_random
 	suspend
 	idle_random
-	remove_cpuloadgen
+	stop_cpu_load
 	resume_memtest $USE_MEMORY_PERCENTAGE
 	cpu_load_random
 	suspend
-	remove_cpuloadgen
+	stop_cpu_load
 	pause_memtest
 	idlebig_random
 	suspend
@@ -104,7 +104,7 @@ super_pm_test()
 		report "+++++++++++++++++++++++++++++++++++++++++++++"
 		# cleanup junk
 		pause_memtest
-		remove_cpuloadgen
+		stop_cpu_load
 		no_suspend
 
 		# setup for the test iteration
