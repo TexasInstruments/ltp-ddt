@@ -4,6 +4,7 @@ import pykms
 import time
 import sys
 import re
+import dmaheap
 
 def usage():
   print("Failed: {} <platform i.e dra7xx>".format(sys.argv[0]))
@@ -18,12 +19,16 @@ conn = res.reserve_connector()
 crtc = res.reserve_crtc(conn)
 mode = conn.get_default_mode()
 
-origfb = pykms.DmabufFramebuffer(card, mode.hdisplay, mode.vdisplay, "XR24")
+#Allocate dma-heap
+heap_handler = dmaheap.DMAHeap("linux,cma")
+width = mode.hdisplay
+height = mode.vdisplay
+buffer = heap_handler.alloc(width * height * 4)
 
-fb = pykms.ExtFramebuffer(card, origfb.width, origfb.height, origfb.format,
-		[origfb.fd(0)], [origfb.stride(0)], [origfb.offset(0)])
+#Allocate DmabuffFramebuffer
+fb = pykms.DmabufFramebuffer(card,width,height,"XR24",[buffer.fd],[width*4],[0])
 
-pykms.draw_test_pattern(fb);
+pykms.draw_test_pattern(fb)
 
 crtc.set_mode(conn, fb, mode)
 
