@@ -203,10 +203,21 @@ get_drv_ptp () {
 
 ### Get pps source from ptp device
 get_ptp_pps () {
-	ptp_dev=$1
-	pps_src=$(dmesg | grep $ptp_dev | grep pps | awk '{print $4}' | cut -d ':' -f1)
-	echo "${FUNCNAME[0]}: For PTP Dev: $ptp_dev, PPS source is: $pps_src" >&2;
-	echo $pps_src;
+	# Find pps sources. No pps sources => Fail.
+	pps_sources=$(ls /dev/ | grep pps)
+
+	for pps_src in $pps_sources
+	do
+		ptp_dev=$(cat /sys/class/pps/$pps_src/name);
+		if [[ "$1" == "$ptp_dev" ]]
+		then
+			echo "${FUNCNAME[0]}: For PTP Dev: $ptp_dev, PPS source is: $pps_src" >&2;
+			echo $pps_src;
+			return;
+		fi
+	done
+
+	echo 0;
 }
 
 ### Run PPS for a given driver
