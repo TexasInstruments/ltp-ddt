@@ -67,9 +67,10 @@ if [ "$expected_mode" = "" ]; then
 				expected_mode="DDR52";;
 			dra7xx-evm | dra72x-evm )
 				expected_mode="HS200";;
-			am654x-evm | am654x-idk | j721e* | am62lxx* | am62xxsip* | am62xx* | am62axx* | am64xx-evm | am64xx-hsevm)
+			 # Set expected eMMC bus mode to HS200 for am62px/j722s due to silicon errata i2458
+			am654x-evm | am654x-idk | j721e* | am62lxx* | am62xxsip* | am62xx* | am62axx* | am64xx-evm | am64xx-hsevm | am62pxx* | j722s*)
 				expected_mode="HS200";;
-			j7200* | j721s* | j722s* | j784* | j742* | am69*| am62pxx*)
+			j7200* | j721s* | j784* | j742* | am69*)
 				expected_mode="HS400";;
 			*)
 				die "No expected eMMC mode is specified for this platform in ltp-ddt/testcases/ddt/scripts/blk/check_mmc_speed.sh";;
