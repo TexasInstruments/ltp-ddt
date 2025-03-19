@@ -459,7 +459,7 @@ swapfile_create() {
   else
     printf '%s\n' "Creating swapfile ${DDT_SWAPFILE}"
     trap "swapfile_destroy" 0 1 2 3 6
-    dd if=/dev/zero of="$DDT_SWAPFILE" bs=4k count=250000 conv=fsync status=progress
+    dd if=/dev/zero of="$DDT_SWAPFILE" bs=4k count=1000000 conv=fsync status=progress
     chmod 0600 "$DDT_SWAPFILE"
     mkswap "$DDT_SWAPFILE"
     if ! swapon "$DDT_SWAPFILE"; then
