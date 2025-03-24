@@ -2,9 +2,11 @@
 # @desc Run OpenGLES, Vulkan, and OpenCL conformance tests
 # @requires graphics
 
-
-PIGLIT_L_LINEAR_ALL source 'common.sh'; swapfile_create; piglit run deqp_egl deqp_gles31 deqp_vk results -t ".*linear.*"; piglit_exit=$?; output=$(piglit summary console results -p); if [ $piglit_exit != 0 ] || echo "${output}" | grep -q 'failed$'; then die "${output}"; fi
 # ---- Rogue Architecture Testing ----
+
+# Linear , BiLinear and TriLinear Tests
+PIGLIT_L_LINEAR_VK_ALL_TESTS source 'common.sh'; swapfile_create; piglit run deqp_vk results -t ".*linear.*"; piglit_exit=$?; output=$(piglit summary console results -p); if [ $piglit_exit != 0 ] || echo "${output}" | grep -q 'failed$'; then die "${output}"; fi
+PIGLIT_L_LINEAR_GLES_ALL_TESTS piglit_execution.sh -x all_gles_TESTS.txt -y deqp_gles31 -i linear -z gles -a rogue
 
 # SRGB VK Testlists
 PIGLIT_L_SRGB_VK_CPY_CMDS piglit_execution.sh -x copy_cmds_blit_TESTS.txt -y deqp_vk -i SRGB -z vk -a rogue
