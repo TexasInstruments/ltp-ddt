@@ -33,9 +33,11 @@ def test_setup():
 
 def take_screenshots():
     """Take screenshots utilizing weston-screenshoter"""
-    os.environ['https_proxy'] = 'http://webproxy.ext.ti.com:80'
-    cmd = "su weston -c 'chromium \"https://webglsamples.org/aquarium/aquarium.html\" \
-        --start-fullscreen --no-first-run'"
+    os.environ['WAYLAND_DISPLAY'] = '/run/user/1000/wayland-1'
+    cmd = "su -l weston -c 'export https_proxy=http://webproxy.ext.ti.com:80; \
+            export XDG_RUNTIME_DIR=/run/user/1000;\
+            export WAYLAND_DISPLAY=wayland-1; chromium \"https://webglsamples.org/aquarium/aquarium.html\" --start-fullscreen --no-first-run' "
+    time.sleep(15)
     with subprocess.Popen(cmd, shell=True) as chrome:
         try:
             chrome.wait(timeout=1)
@@ -118,7 +120,6 @@ def main():
     test_setup()
 
     print("Start waiting for Chromium and the benchmark itself to stabolize")
-    time.sleep(15)
 
     take_screenshots()
 
