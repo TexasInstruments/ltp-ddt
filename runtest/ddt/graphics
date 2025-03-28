@@ -12,6 +12,8 @@ GFX_XS_FUNC_NV12_TEXTURE source 'common.sh'; start_daemon emptty; gst-launch-1.0
 
 GFX_XS_FUNC_BGRA8888_TEXTURE source 'common.sh'; start_daemon emptty; gst-launch-1.0 videotestsrc num-buffers=600 ! video/x-raw,format=BGRA ! glimagesink || die "Unable to display BGRA8888 buffers"
 
+GFX_XS_FUNC_BGR_TEXTURE source 'common.sh'; start_daemon emptty; gst-launch-1.0 videotestsrc num-buffers=600 ! video/x-raw,format=BGR ! glimagesink || die "Unable to display BGR buffers"
+
 GFX_XS_FUNC_PVRDBG source 'common.sh'; dmesg -c; pvrdebug -dd; dmesg | grep -i 'Connections.*pvrdebug' || die "pvrdebug -dd failed"
 
 GFX_XS_FUNC_APM source 'common.sh'; stop_daemon emptty; modprobe -r pvrsrvkm ; modprobe pvrsrvkm; echo 1 > /sys/kernel/debug/pvr/apphint/0/EnableAPM; unset WAYLAND_DISPLAY; weston --debug --backend=drm-backend.so --idle-time=0 & dmesg -c ; pvrdebug -dd ; dmesg | grep 'Power State:.*APM enabled' || die "Could not enable APM"
