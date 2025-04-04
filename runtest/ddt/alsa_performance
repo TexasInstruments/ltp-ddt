@@ -1,8 +1,5 @@
 # @name ALSA Performance test
 # @desc Do capture,playback operations by measuring cpu performance 
 # @requires sound
-ALSA_M_PERF_CAPTURE_0001 source 'common.sh' ; do_cmd install_modules.sh 'sound' ; [[ $MACHINE != j721* ]] && do_cmd 'run_alsa_perf.sh -record 0 -rate 8000 -performance'; do_cmd 'run_alsa_perf.sh -record 0 -rate 11025 -performance' ;do_cmd 'run_alsa_perf.sh -record 0 -rate 16000 -performance';do_cmd 'run_alsa_perf.sh -record 0 -rate 22050 -performance'; do_cmd 'run_alsa_perf.sh -record 0 -rate 24000 -performance'; do_cmd 'run_alsa_perf.sh -record 0 -rate 32000 -performance' ; do_cmd 'run_alsa_perf.sh -record 0 -rate 44100 -performance'; do_cmd 'run_alsa_perf.sh -record 0 -rate 48000 -performance' ; do_cmd 'run_alsa_perf.sh -record 0 -rate 88200 -performance'; do_cmd 'run_alsa_perf.sh -record 0 -rate 96000 -performance';
-ALSA_M_PERF_PLAYBACK_0001 source 'common.sh' ; do_cmd install_modules.sh 'sound' ; [[ $MACHINE != j721* ]] && do_cmd 'run_alsa_perf.sh -playback 0 -rate 8000 -performance'; do_cmd 'run_alsa_perf.sh -playback 0 -rate 11025 -performance'; do_cmd 'run_alsa_perf.sh -playback 0 -rate 16000 -performance'; do_cmd 'run_alsa_perf.sh -playback 0 -rate 22050 -performance'; do_cmd 'run_alsa_perf.sh -playback 0 -rate 24000 -performance'; do_cmd 'run_alsa_perf.sh -playback 0 -rate 32000 -performance'; do_cmd 'run_alsa_perf.sh -playback 0 -rate 44100 -performance'; do_cmd 'run_alsa_perf.sh -playback 0 -rate 48000 -performance'; do_cmd 'run_alsa_perf.sh -playback 0 -rate 88200 -performance'; do_cmd 'run_alsa_perf.sh -playback 0 -rate 96000 -performance';
-
-
-
+ALSA_M_PERF_CAPTURE_0001 source 'common.sh' ; do_cmd install_modules.sh 'sound'; do_cmd 'run_alsa_perf_test.sh record';
+ALSA_M_PERF_PLAYBACK_0001 source 'common.sh' ; do_cmd install_modules.sh 'sound'; do_cmd 'run_alsa_perf_test.sh playback';
