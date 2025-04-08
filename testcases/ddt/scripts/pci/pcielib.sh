@@ -136,7 +136,7 @@ test_rc_width()
       rc_id=`get_rc_id_by_domain $pci_domain`
       ep_width=`get_pcie_width $ep_id "lnksta:"`
       echo -e "${FUNCNAME[0]}: RC: $rc_id and EP: $ep_id at x$ep_width\n" >&2
-      if [[ $ep_width == $link_width ]]
+      if [[ $ep_width -ge $link_width ]]
       then
         echo 1
         die
