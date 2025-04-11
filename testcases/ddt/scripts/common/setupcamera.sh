@@ -440,13 +440,13 @@ setup_imx219(){
 
 
             CAM_DEV=`media-ctl -d /dev/media$media_id -p -e "$CSI2RX_CONTEXT_NAME" | grep video | awk '{print $4}'`
-            CAM_DEV_NAME=/dev/video-rpi-cam$count
+            CAM_DEV_NAME=/dev/video-imx219-cam$count
 
-            CAM_SUBDEV_NAME=/dev/v4l-rpi-subdev$count
+            CAM_SUBDEV_NAME=/dev/v4l-imx219-subdev$count
 
             ln -snf $CAM_DEV $CAM_DEV_NAME
             ln -snf $CAM_SUBDEV $CAM_SUBDEV_NAME
-            v4l2-ctl -d/dev/video-rpi-cam$count -v width=640,height=480,pixelformat=RG10
+            v4l2-ctl -d/dev/video-imx219-cam$count -v width=640,height=480,pixelformat=RG10
 
             #echo -e "${GREEN}CSI Camera $media_id detected${NOCOLOR}"
             #echo "    device = $CAM_DEV_NAME"
