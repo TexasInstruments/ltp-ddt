@@ -1,5 +1,5 @@
-V4L2CAP_CID_TESTPATTERN_OV5640 source "common.sh"; IFS=','; read -ra cam_info <<< `setupcamera.sh` ; csi_capture_test -d ${cam_info[0]} -s ${cam_info[2]} -t 1 -n OV5640
-V4L2CAP_CID_TESTPATTERN_IMX219 source "common.sh"; IFS=','; read -ra cam_info <<< `setupcamera.sh` ; csi_capture_test -d ${cam_info[0]} -s ${cam_info[2]} -t 1 -n IMX219
-V4L2CAP_CID_TESTPATTERN_IMX390 source "common.sh"; IFS=','; read -ra cam_info <<< `setupcamera.sh` ; csi_capture_test -d ${cam_info[0]} -s ${cam_info[2]} -t 1 -n IMX390
+V4L2CAP_CID_TESTPATTERN_OV5640 source "common.sh"; multicamera_testpattern.sh
+V4L2CAP_CID_TESTPATTERN_IMX219 source "common.sh"; multicamera_testpattern.sh
+V4L2CAP_CID_TESTPATTERN_IMX390 source "common.sh"; multicamera_testpattern.sh
 V4L2CAP_CID_CAPTURE_MULTI_GSTREAMER source "common.sh"; multicamera_gstreamer.sh
 V4L2CAP_CAM_COMPLIANCE source "common.sh"; IFS=','; read -ra cam_info <<< `setupcamera.sh` ; v4l2-compliance -d ${cam_info[0]}

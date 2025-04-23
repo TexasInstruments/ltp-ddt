@@ -378,7 +378,7 @@ static void init_device(char *camera_name,int test_pattern_val)
                 dev_name);
         exit(EXIT_FAILURE);
     }
-    if(strcmp(camera_name,"OV5640")==0)
+    if(strcmp(camera_name,"ov5640")==0)
     {
         get_tp_ref_file(ref_file, test_pattern_val, "ov5640");
         OV5640_info.tp[test_pattern_val].simple_check=1;
@@ -391,7 +391,7 @@ static void init_device(char *camera_name,int test_pattern_val)
                     ref_file, errno, strerror(errno));
             exit(EXIT_FAILURE);
         }
-    } else if(strcmp(camera_name,"IMX219")==0) {
+    } else if(strcmp(camera_name,"imx219")==0) {
         get_tp_ref_file(ref_file, test_pattern_val, "imx219");
         IMX219_info.tp[test_pattern_val].simple_check=1;
         IMX219_info.tp[test_pattern_val].direct_compare=1;
@@ -403,7 +403,7 @@ static void init_device(char *camera_name,int test_pattern_val)
                     ref_file, errno, strerror(errno));
             exit(EXIT_FAILURE);
         }
-    } else if(strcmp(camera_name,"IMX390")==0) {
+    } else if(strcmp(camera_name,"imx390")==0) {
         get_tp_ref_file(ref_file, test_pattern_val, "imx390");
         IMX390_info.tp[test_pattern_val].simple_check=1;
         IMX390_info.tp[test_pattern_val].direct_compare=1;
@@ -532,15 +532,15 @@ int main(int argc, char **argv)
     open_device();
     init_device(camera_name,test_pattern_val);
     start_capturing();
-    if(strcmp(camera_name,"OV5640")==0)
+    if(strcmp(camera_name,"ov5640")==0)
     {
         mainloop(test_pattern_val,OV5640_info);
     }
-    else if(strcmp(camera_name,"IMX390")==0)
+    else if(strcmp(camera_name,"imx390")==0)
     {
         mainloop(test_pattern_val,IMX390_info);
     }
-    else if(strcmp(camera_name,"IMX219")==0)
+    else if(strcmp(camera_name,"imx219")==0)
     {
         mainloop(test_pattern_val,IMX219_info);
     }
