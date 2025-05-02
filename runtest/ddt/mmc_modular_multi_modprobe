@@ -1,0 +1,7 @@
+# @name SDHC card: MMC modular multiple insmod rmmod test
+# @desc modprobe mmc module multiple times
+# @requires mmc_host/sdhc
+# @setup_requires sdhc
+
+#MMC_L_MODULAR_SDHC_STRESS_0001 source "common.sh"; install_modules.sh "mmc"; do_cmd blk_device_modular_dd_rw.sh -l "10" -d "mmc" -s
+MMC_M_MODULAR_MULTI_MODPROBE source "common.sh"; install_modules.sh "mmc"; do_cmd "zcat /proc/config.gz |grep -i mmc"; do_cmd do_modular_common.sh -l "20" -d "mmc";
