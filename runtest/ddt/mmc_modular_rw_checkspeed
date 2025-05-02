@@ -1,0 +1,6 @@
+# @name MMC modular checkspeed test
+# @desc modprobe mmc module, R/W test, check speed, and rmmod
+# @requires mmc_host/sdhc
+# @setup_requires sdhc
+
+MMC_S_MODULAR_RW_CHECKSPEED source "common.sh"; mod_name=`get_modular_name.sh "mmc"` || die "Error getting modular name: $mod_name"; do_cmd insmod.sh "$mod_name"; DEV_NODE=`get_blk_device_node.sh "mmc"` || die "error getting sd devnode: $DEV_NODE"; do_cmd blk_device_dd_readwrite_test.sh -b "1M" -c "10" -d "mmc"; do_cmd check_mmc_speed.sh 'sd'; umount /dev/mmcblk*; rmmod.sh "$mod_name";
