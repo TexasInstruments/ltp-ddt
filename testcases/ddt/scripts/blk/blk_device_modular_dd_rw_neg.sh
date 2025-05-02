@@ -61,7 +61,14 @@ do case $arg in
 esac
 done
 
-############################ DEFAULT Params #######################
+############# Do the work ###########################################
+
+if [ -n "$DEVICE_TYPE" ]; then
+	MOD_NAME=`get_modular_name.sh "$DEVICE_TYPE"` || die "error getting modular name"
+fi
+
+do_cmd insmod.sh $MOD_NAME
+
 if [ -z $DEV_NODE ]; then
 	DEV_NODE=`get_blk_device_node.sh "$DEVICE_TYPE"` || die "error getting device node for $DEVICE_TYPE"
 fi
@@ -72,13 +79,10 @@ test_print_trc "DEV_NODE: $DEV_NODE"
 test_print_trc "MNT_POINT: $MNT_POINT"
 test_print_trc "FS_TYPE: $FS_TYPE"
 
-############# Do the work ###########################################
-MOD_NAME=`get_modular_name.sh "$DEVICE_TYPE"` || die "error getting modular name"
-do_cmd insmod.sh $MOD_NAME
 do_cmd blk_device_erase_format_part.sh -d "$DEVICE_TYPE" -n "$DEV_NODE" -f "$FS_TYPE" -m "$MNT_POINT"
 do_cmd blk_device_do_mount.sh -n "$DEV_NODE" -f "$FS_TYPE" -d "$DEVICE_TYPE" -m "$MNT_POINT"
 
-test_print_trc "Doing read/write test in the same time, remove module"
+test_print_trc "Doing read/write and simultaneously remove module"
 case $IO_OPERATION in
 	write_in_bg)
 		do_cmd dd if=/dev/zero of=$MNT_POINT/test.file bs=$DD_BUFSIZE count=$DD_CNT &
