@@ -1,20 +1,20 @@
 #! /bin/sh
-# 
+#
 # Copyright (C) 2011 Texas Instruments Incorporated - http://www.ti.com/
-#  
+#
 # This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License as 
+# modify it under the terms of the GNU General Public License as
 # published by the Free Software Foundation version 2.
-# 
+#
 # This program is distributed "as is" WITHOUT ANY WARRANTY of any
 # kind, whether express or implied; without even the implied warranty
 # of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # @desc remove modules.
-# @params 
+# @params
 #       Input: modular name like "davinci_spi"
-# @returns 
+# @returns
 #	none
 # @history 2011-03-22: First version
 
@@ -23,11 +23,13 @@ source "common.sh"  # Import do_cmd(), die() and other functions
 
 ################################ CLI Params ####################################
 if [ $# -ne 1 ]; then
-        echo "Error: Invalid Argument Count"
-        echo "Syntax: $0 <modular_name>"
-        exit 1
+	echo "Error: Invalid Argument Count"
+	echo "Syntax: $0 <modular_name>"
+	exit 1
 fi
+
 MOD_NAME=$1
+
 ############################ USER-DEFINED Params ###############################
 # Try to avoid defining values here, instead see if possible
 # to determine the value dynamically. ARCH, DRIVER, SOC and MACHINE are 
