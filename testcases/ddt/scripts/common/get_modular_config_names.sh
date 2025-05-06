@@ -12,8 +12,8 @@
 # GNU General Public License for more details.
 #
 # @desc Get module config option and module name for a driver.
-# @params 
-#        Input: device type like "nand", "mmc", "spi", "sound", "graphics" 
+# @params
+#        Input: device type like "nand", "mmc", "emmc", "spi", "sound", "graphics"
 # @returns Config Option and Top-level .ko file (Module) name to modprobe for
 #          this driver separated by colon ':'. If one device requires multiple
 #          top-level .ko files then separate the CONFIG_OPTION:KO_FILE_NAME pairs
@@ -28,9 +28,9 @@ source "common.sh" # Import do_cmd(), die() and other functions
 
 ################################ CLI Params ####################################
 if [ $# -ne 1 ]; then
-  echo "Error: Invalid Argument Count"
-  echo "Syntax: $0 <device_type like 'nand', 'mmc', 'spi', 'rtc', 'graphics'>"
-  exit 1
+	echo "Error: Invalid Argument Count"
+	echo "Syntax: $0 <device_type like 'nand', 'mmc', 'emmc', 'spi', 'rtc', 'graphics'>"
+	exit 1
 fi
 
 DEVICE_TYPE=$1
@@ -124,8 +124,9 @@ IFS=$IFS_ORIG
 case $SOC in
 esac
 case $MACHINE in
-	j721e-*|j7200-*|j721s2-*|j722s-*|j784s4-*|j742s2-*)
-		mmc="CONFIG_MMC_SDHCI_AM654:sdhci_am654";;
+	j721e-*|j7200-*|j721s2-*|j722s-*|j784s4-*|j742s2-*|am62*|am64*|am65*)
+		mmc="CONFIG_MMC_SDHCI_AM654:sdhci_am654"
+		emmc="CONFIG_MMC_SDHCI_AM654:sdhci_am654";;
 	am387x-evm|am389x-evm|dm385-evm)
 		sound='CONFIG_SND_SOC_TLV320AIC3X:snd_soc_tlv320aic3x CONFIG_SND_TI81XX_SOC:snd_soc_davinci CONFIG_SND_DAVINCI_SOC_MCASP:snd_soc_davinci_mcasp CONFIG_SND_SOC:snd_soc_evm';;
 	omap3evm|am37x-evm)
