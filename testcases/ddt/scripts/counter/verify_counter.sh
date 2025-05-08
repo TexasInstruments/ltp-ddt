@@ -132,6 +132,9 @@ case $MACHINE in
 	am62axx*)
 		eqep_inst=1
 		;;
+	am62dxx*)
+		eqep_inst=1
+		;;
 	am62lxx*)
 		eqep_inst=1
 		;;
