@@ -11,11 +11,11 @@
 # of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
-# @desc Install modules. If driver is built as module, do modprobe; 
+# @desc Install modules. If driver is built as module, do modprobe;
 #       otherwise, do nothing
 # @params
 #        Input: device type like "nand", "mmc", "spi", "sound", "graphics"
-# @returns 
+# @returns
 # @history 2011-07-27: First version
 
 source "common.sh"  # Import do_cmd(), die() and other functions
@@ -27,10 +27,11 @@ udevadm --help > /dev/null && exit 0
 
 ################################ CLI Params ####################################
 if [ $# -lt 1 ]; then
-        echo "Error: Invalid Argument Count"
-        echo "Syntax: $0 <device_type like 'nand', 'mmc', 'spi', 'rtc', 'graphics'> <optional_params>"
-        exit 1
+	echo "Error: Invalid Argument Count"
+	echo "Syntax: $0 <device_type like 'nand', 'mmc', 'spi', 'rtc', 'graphics'> <optional_params>"
+	exit 1
 fi
+
 DEVICE_TYPE=$1
 shift
 OPTIONS="$*"
@@ -50,7 +51,7 @@ for pair in $MODULE_CONFIG_NAMES; do
 	CONFIG_ENTRY=`echo $pair | cut -d':' -f1`
 	MODULE_NAME=`echo $pair | cut -d':' -f2`
 	if [ -f /proc/config.gz ]; then
- 		ym=`zcat /proc/config.gz | grep $CONFIG_ENTRY'=' | cut -d'=' -f2`
+		ym=`zcat /proc/config.gz | grep $CONFIG_ENTRY'=' | cut -d'=' -f2`
 		case $ym in
 			m)
 				IS_BUILT_IN='false'
@@ -60,18 +61,15 @@ for pair in $MODULE_CONFIG_NAMES; do
 				IS_BUILT_IN='true'
 				test_print_trc "$MODULE_NAME is statically built in"
 				;;
-			*)	
+			*)
 				IS_BUILT_IN='false'
 				die "Could not find $CONFIG_ENTRY in config or the option was not set to m or y"
 				;;
-    esac
-  fi
-	
-  # if don't know is_built_in, do insmod anyway.
-  if [ $IS_BUILT_IN != 'true' ]; then
+		esac
+	fi
+
+	# if don't know is_built_in, do insmod anyway.
+	if [ $IS_BUILT_IN != 'true' ]; then
 		do_cmd insmod.sh $MODULE_NAME $OPTIONS
-  fi	
+	fi
 done
-
-
-
