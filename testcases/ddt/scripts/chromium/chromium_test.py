@@ -37,7 +37,7 @@ def take_screenshots():
     cmd = "su -l weston -c 'export https_proxy=http://webproxy.ext.ti.com:80; \
             export XDG_RUNTIME_DIR=/run/user/1000;\
             export WAYLAND_DISPLAY=wayland-1; chromium \"https://webglsamples.org/aquarium/aquarium.html\" --start-fullscreen --no-first-run' "
-    time.sleep(15)
+
     with subprocess.Popen(cmd, shell=True) as chrome:
         try:
             chrome.wait(timeout=1)
@@ -46,6 +46,7 @@ def take_screenshots():
         if chrome.returncode is not None:
             sys.exit(1)
 
+        time.sleep(15)
         print("Taking screenshots")
         for _ in range(0,10):
             subprocess.run("weston-screenshooter", shell=True, check = True)
