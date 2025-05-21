@@ -4,9 +4,23 @@
 
 # ---- Rogue Architecture Testing ----
 
-# Linear , BiLinear and TriLinear Tests
-PIGLIT_L_LINEAR_VK_ALL_TESTS source 'common.sh'; swapfile_create; piglit run deqp_vk results -t ".*linear.*"; piglit_exit=$?; output=$(piglit summary console results -p); if [ $piglit_exit != 0 ] || echo "${output}" | grep -q 'failed$'; then die "${output}"; fi
+# Linear , Bilinear and Trilinear Testlists GLES
 PIGLIT_L_LINEAR_GLES_ALL_TESTS piglit_execution.sh -x all_gles_TESTS.txt -y deqp_gles31 -i linear -z gles -a rogue
+
+# Linear , Bilinear and Trilinear Testlists VK
+PIGLIT_L_LINEAR_VK_2D_ARRAY piglit_execution.sh -x 2d_array_TESTS.txt -y deqp_vk -i linear -z vk -a rogue
+PIGLIT_L_LINEAR_VK_BLIT piglit_execution.sh -x blit_image_TESTS.txt -y deqp_vk -i linear -z vk -a rogue
+PIGLIT_L_LINEAR_VK_CLR_CLR piglit_execution.sh -x clear_color_image_TESTS.txt -y deqp_vk -i linear -z vk -a rogue
+PIGLIT_L_LINEAR_VK_CONVERSATION piglit_execution.sh -x conversation_TESTS.txt -y deqp_vk -i linear -z vk -a rogue
+PIGLIT_L_LINEAR_VK_CUBE_ARRAY piglit_execution.sh -x cube_array_TESTS.txt -y deqp_vk -i linear -z vk -a rogue
+PIGLIT_L_LINEAR_VK_DEDICATED_ALLOCATION piglit_execution.sh -x dedicated_allocation_TESTS.txt -y deqp_vk -i linear -z vk -a rogue
+PIGLIT_L_LINEAR_VK_FILTERING piglit_execution.sh -x filtering_TESTS.txt -y deqp_vk -i linear -z vk -a rogue
+PIGLIT_L_LINEAR_VK_IMG_TO_IMG_MEMCPY piglit_execution.sh -x img_to_img_memcpy_TESTS.txt -y deqp_vk -i linear -z vk -a rogue
+PIGLIT_L_LINEAR_VK_LOAD_STORE piglit_execution.sh -x load_store_TESTS.txt -y deqp_vk -i linear -z vk -a rogue
+PIGLIT_L_LINEAR_VK_MONOLITHIC piglit_execution.sh -x monolithic_TESTS.txt -y deqp_vk -i linear -z vk -a rogue
+PIGLIT_L_LINEAR_VK_PREINIT piglit_execution.sh -x preinitialized_TESTS.txt -y deqp_vk -i linear -z vk -a rogue
+PIGLIT_L_LINEAR_VK_PROPERTIES piglit_execution.sh -x properties_TESTS.txt -y deqp_vk -i linear -z vk -a rogue
+PIGLIT_L_LINEAR_VK_TEXTURE piglit_execution.sh -x texture_TESTS.txt -y deqp_vk -i linear -z vk -a rogue
 
 # SRGB VK Testlists
 PIGLIT_L_SRGB_VK_CPY_CMDS piglit_execution.sh -x copy_cmds_blit_TESTS.txt -y deqp_vk -i SRGB -z vk -a rogue
