@@ -38,13 +38,24 @@ usage()
 	exit 1
 }
 
+# $ppath should include a path like: /sys/firmware/devicetree/base/__symbols__/epwm0
+# Function loops through paths in $ppath, if path is a file, parse clean PWM name from file
+# Example output: pwm@23000000
 get_pwm_name()
 {
 	ppath=$1
-	cpwm=$(tr -d '\0' < "$ppath" | sed 's/^.*pwm/pwm/')
+
+	for line in ${ppath}; do
+		if [ -f "$line" ]; then
+			cpwm=$(tr -d '\0' < "$line" | sed 's/^.*pwm/pwm/')
+		fi
+	done
+
+	if [ -z "$cpwm" ] || [ "$cpwm" == " "  ]; then die "Did not find clean PWM name"; fi;
 	echo "$cpwm"
 }
 
+# get paths from sysfs with PWM name
 get_pwm_sysfs()
 {
 	pwm=$1
