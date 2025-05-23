@@ -36,7 +36,8 @@ check_silicon_rev () {
     output=$(k3conf --version)
     while IFS= read -r line
     do
-    if [[ $line == *SoC* ]]
+    pattern="\|\s*SoC\s*\|"
+    if [[ "$line" =~ $pattern ]]
     then
             IFS='| '
             read -a strarr <<< "$line"
