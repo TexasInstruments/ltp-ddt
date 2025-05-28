@@ -11,3 +11,6 @@ PCI_XS_FUNC_CDNS_GEN3 pcie_tester.sh "test_rc_gen" "104c" "8"
 PCI_XS_FUNC_CDNS_LINK1 pcie_tester.sh "test_rc_width" "104c" "1"
 PCI_XS_FUNC_CDNS_LINK2 pcie_tester.sh "test_rc_width" "104c" "2"
 PCI_XS_FUNC_CDNS_LINK4 pcie_tester.sh "test_rc_width" "104c" "4"
+
+# Check RC 64-Bit Address Space
+PCI_S_FUNC_CDNS_RC_64_BIT pcie_tester.sh "test_rc_64_bit" "104c"
