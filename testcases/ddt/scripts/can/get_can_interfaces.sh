@@ -15,6 +15,9 @@ case $platform in
     j784s4*)
         candata="mcu_mcan0 mcu_mcan1 main_mcan4 main_mcan16"
         ;;
+    tda54*)
+        candata="mcu_mcan0 mcu_mcan1 main_mcan0 main_mcan1"
+        ;;
     j742s2*)
         candata="mcu_mcan0 mcu_mcan1 main_mcan4 main_mcan16"
         ;;

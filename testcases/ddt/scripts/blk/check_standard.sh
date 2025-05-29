@@ -87,7 +87,7 @@ if [[ "$DEVICE_TYPE" = "mmc" ]]; then
 
   # Get address of MMCSD1_HOST_CONTROLLER_VER
   case $MACHINE in
-    j721* | j7200* | j784s4* | am69* | am68* | j742s2* )
+    j721* | j7200* | j784s4* | am69* | am68* | j742s2* | tda54*)
       regaddr="0x04FB00FE";;
     am62* | beagleplay* | am64xx* | j722* )
       regaddr="0x0FA000FE";;

@@ -128,7 +128,7 @@ IFS=$IFS_ORIG
 case $SOC in
 esac
 case $MACHINE in
-	j721e-*|j7200-*|j721s2-*|j722s-*|j784s4-*|j742s2-*|am62*|am64*|am65*|beagleplay*)
+	j721e-*|j7200-*|j721s2-*|j722s-*|j784s4-*|j742s2-*|am62*|am64*|am65*|beagleplay*|tda54*)
 		mmc="CONFIG_MMC_SDHCI_AM654:sdhci_am654"
 		emmc="CONFIG_MMC_SDHCI_AM654:sdhci_am654";;
 	am387x-evm|am389x-evm|dm385-evm)
