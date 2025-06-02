@@ -104,6 +104,9 @@ PIGLIT_L_RGB565_GLES_ALL_TESTS piglit_execution.sh -x all_gles_TESTS.txt -y deqp
 # YUV EGL Testlists
 PIGLIT_S_YUV_EGL_ALL_TESTS piglit_execution.sh -x all_egl_TESTS.txt -y deqp_egl -i YUV -z egl -a rogue
 
+# Tessellation GLES Testlists
+
+PIGLIT_S_TESSELLATION_GLES_ALL_TESTS piglit_execution.sh -x all_tessellation_TESTS.txt -y deqp_gles31 -i tessellation -z gles -a rogue
 
 # ---- SGX Architecture Testing ----
 
