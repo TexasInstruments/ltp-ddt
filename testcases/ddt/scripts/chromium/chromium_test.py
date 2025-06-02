@@ -10,17 +10,6 @@ from PIL import Image
 import pytesseract
 
 
-def get_platform_data(platform):
-    """Get info about the platform being tested and min fps value for a test pass"""
-    platform_data_path = pathlib.Path("platforms.json")
-    data = json.loads(platform_data_path.read_text())
-    desired_fps = int(data.get(platform))
-
-    if desired_fps is None:
-        print(f"The platform {platform} is missing from the platform file")
-        sys.exit(1)
-    return desired_fps
-
 def test_setup():
     """Restart weston in debug mode and set up enviroment variables"""    
     cmd = "sed -i 's|Exec=.*|& --debug|' /usr/share/wayland-sessions/weston.desktop"
@@ -55,7 +44,7 @@ def take_screenshots():
 
         chrome.terminate()
 
-def process_images(png_files,desired_fps):
+def process_images(png_files):
     """Use pytesseract wrapper to find fps values from the screenshots"""
     total_fps = 0 #Total seen fps
     fps_not_found = 0 #Number of times fps was not found
@@ -71,8 +60,6 @@ def process_images(png_files,desired_fps):
                 print("No FPS value found")
                 fps_not_found += 1
             else:
-                if fps_value < desired_fps:
-                    print(f"FPS value is bellow threshold: {fps_value}")
                 print("fps seen: " + str(fps_value))
                 total_fps += fps_value
                 fps_found += 1
@@ -82,13 +69,13 @@ def process_images(png_files,desired_fps):
     else:
         average_fps = total_fps / fps_found
 
-    print(f"The average fps is: {average_fps}, with {fps_found} succesful fps detections")
+    print(f"FPS_AVERAGE: {average_fps} FPS_AVERAGE")
+    print(f"The number of succesful fps detections: {fps_found}")
     print(f"The number of unsuccesful fps detections: {fps_not_found}")
 
-    get_test_result(desired_fps, average_fps,fps_not_found)
-    return average_fps
+    get_test_execution_result(fps_not_found)
 
-def get_test_result(desired_fps, average_fps,fps_not_found):
+def get_test_execution_result(fps_not_found):
     """See if the test results are reliable or not and clean up"""
     
     png_files = pathlib.Path(".").glob("*.png")
@@ -96,14 +83,8 @@ def get_test_result(desired_fps, average_fps,fps_not_found):
     
     if fps_not_found >= 2:  #Test result to unreliable,
                             #fail in order notify team team something needs to be checked manually
-        print("Test Failure")
+        print("Test execution failure, unreliable results. Too many fps values not found")
         sys.exit(1)
-    elif average_fps >= desired_fps:
-        print("Successful Test !")
-        sys.exit(0)
-    else:
-        print("Test Failure")
-        sys.exit(0)
 
 def clean_up(png_files):
     """Delete the .png screenshots"""
@@ -114,10 +95,6 @@ def clean_up(png_files):
 def main():
     """Main function"""
 
-    platform = sys.argv[1] #Get platform name
-
-    desired_fps = get_platform_data(platform)
-
     test_setup()
 
     print("Start waiting for Chromium and the benchmark itself to stabolize")
@@ -127,7 +104,7 @@ def main():
     # Get list of .png pictures
     png_files = pathlib.Path(".").glob("*.png")
 
-    process_images(png_files,desired_fps)
+    process_images(png_files)
 
 
 if __name__ == '__main__':
