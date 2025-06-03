@@ -24,6 +24,14 @@ get_ep_id_by_domain()
   echo "$ep_id"
 }
 
+get_rc_node_base()
+{
+  rc_domain_bus=$1
+  rc_base=$(basename `readlink -f /sys/class/pci_bus/$rc_domain_bus/of_node` | cut -d '@' -f2)
+  echo -e "${FUNCNAME[0]}: $rc_domain_bus at Base Address: $rc_base\n" >&2
+  echo "$rc_base"
+}
+
 get_pcie_speed()
 {
   pci_id=$1
@@ -91,6 +99,35 @@ is_ep_present()
   fi
 }
 
+get_range_start()
+{
+  reg_name=$1
+  start_addr=$(cat /proc/iomem | grep "${reg_name}" | cut -d "-" -f1)
+  start_addr=$(echo "$start_addr" | tr '[a-f]' '[A-F]')
+  echo -e "${FUNCNAME[0]}: Start address of $reg_name is $start_addr\n" >&2
+  echo "$start_addr"
+}
+
+get_range_end()
+{
+  reg_name=$1
+  end_addr=$(cat /proc/iomem | grep "${reg_name}" | cut -d ":" -f1 | sed 's/ *$//' | cut -d "-" -f2)
+  end_addr=$(echo "$end_addr" | tr '[a-f]' '[A-F]')
+  echo -e "${FUNCNAME[0]}: End address of $reg_name is $end_addr\n" >&2
+  echo "$end_addr"
+}
+
+get_num_bits_from_hex()
+{
+  addr_hex=$1
+  addr_hex=$(echo "$addr_hex" | tr '[a-f]' '[A-F]')
+  addr_bin=$(echo "ibase=16 ; obase=2 ; $addr_hex" | bc)
+  echo -e "${FUNCNAME[0]}: Hex: $addr_hex is Bin: $addr_bin\n" >&2
+  num_bits=$(($(echo $addr_bin | wc -m) - 1))
+  echo -e "${FUNCNAME[0]}: Hex: $addr_hex has $num_bits bits\n" >&2
+  echo "$num_bits"
+}
+
 ### Test Cases ###
 test_rc_gen()
 {
@@ -145,4 +182,71 @@ test_rc_width()
   done
   echo -e "${FUNCNAME[0]}: Failed to find RC and EP at x$link_width\n" >&2
   echo 0
+}
+
+test_rc_64_bit()
+{
+  vendor_id=$1
+  # Get all devices matching the vendor-id
+  pci_list=`get_pcie_vendor_devices $vendor_id`
+  echo -e "$(cat /proc/iomem)" >&2
+  found_ep=0
+  for pci_dev in $pci_list
+  do
+    pci_domain=`get_pcie_device_domain $pci_dev`
+    ep_exists=`is_ep_present $pci_domain`
+    if [[ "$ep_exists" == "1" ]]
+    then
+      found_ep=1
+      rc_id=`get_rc_id_by_domain $pci_domain`
+      rc_domain=`get_pcie_device_domain $rc_id`
+      rc_bus=`get_pcie_device_bus $rc_id`
+      rc_domain_bus=$(echo "$rc_domain:$rc_bus")
+      rc_base=`get_rc_node_base $rc_domain_bus`
+      cfg_reg_name="$(echo "${rc_base}.pcie cfg")"
+      echo -e "${FUNCNAME[0]}: Config Space Reg: $cfg_reg_name\n" >&2
+      cfg_low=`get_range_start "$cfg_reg_name"`
+      cfg_high=`get_range_end "$cfg_reg_name"`
+      echo -e "${FUNCNAME[0]}: Config Space from: $cfg_low to $cfg_high\n" >&2
+      cfg_low_bits=`get_num_bits_from_hex "$cfg_low"`
+      cfg_high_bits=`get_num_bits_from_hex "$cfg_high"`
+      if [[ $cfg_low_bits -le "32" ]]
+      then
+        echo -e "${FUNCNAME[0]}: Config Space starts in 32-bit Address Space\n" >&2
+        echo 0;
+	return;
+      fi
+      if [[ $cfg_high_bits -le "32" ]]
+      then
+        echo -e "${FUNCNAME[0]}: Config Space ends in 32-bit Address Space\n" >&2
+        echo 0;
+	return;
+      fi
+      mem_reg_name=$(echo "nvme")
+      echo -e "${FUNCNAME[0]}: Memory Space Reg: $mem_reg_name\n" >&2
+      mem_low=`get_range_start "$mem_reg_name"`
+      mem_high=`get_range_end "$mem_reg_name"`
+      echo -e "${FUNCNAME[0]}: Memory Space from: $mem_low to $mem_high\n" >&2
+      mem_low_bits=`get_num_bits_from_hex "$mem_low"`
+      mem_high_bits=`get_num_bits_from_hex "$mem_high"`
+      if [[ $mem_low_bits -le "32" ]]
+      then
+        echo -e "${FUNCNAME[0]}: Memory Space starts in 32-bit Address Space\n" >&2
+        echo 0;
+	return;
+      fi
+      if [[ $mem_high_bits -le "32" ]]
+      then
+        echo -e "${FUNCNAME[0]}: Memory Space ends in 32-bit Address Space\n" >&2
+        echo 0;
+	return;
+      fi
+    fi
+  done
+  if [[ $found_ep == 0 ]]
+  then
+	  echo 0;
+	  return;
+  fi
+  echo 1;
 }
