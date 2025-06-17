@@ -53,7 +53,7 @@ def process_images(png_files):
     for image in png_files:
         with Image.open(image) as image:
             image = image.crop((20, 20, 100, 100))
-            text = pytesseract.image_to_string(image, config='--psm 12')
+            text = pytesseract.image_to_string(image, config='--psm 1')
             try:
                 fps_value = int(re.search(r'fps:\s(\d+)', text).group(1))
             except (AttributeError, TypeError):
@@ -81,7 +81,7 @@ def get_test_execution_result(fps_not_found):
     png_files = pathlib.Path(".").glob("*.png")
     clean_up(png_files)
     
-    if fps_not_found >= 2:  #Test result to unreliable,
+    if fps_not_found > 2:   #Test result to unreliable,
                             #fail in order notify team team something needs to be checked manually
         print("Test execution failure, unreliable results. Too many fps values not found")
         sys.exit(1)
@@ -98,8 +98,8 @@ def main():
     try:
         backend = sys.argv[1] # Specify the backend as an argument : vulkan or gles-egl (default)
     except IndexError:
-         sys.stderr.write("Error: Backend argument is missing\n")
-         sys.exit(1)
+        sys.stderr.write("Error: Backend argument is missing\n")
+        sys.exit(1)
 
     test_setup()
 
