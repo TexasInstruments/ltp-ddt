@@ -433,13 +433,20 @@ setup_imx219(){
 
             CSI_BRIDGE_NAME=`media-ctl -d /dev/media$media_id -p -e "imx219 $name" | grep csi-bridge | cut -d "\"" -f 2`
             CSI2RX_NAME=`media-ctl -d /dev/media$media_id -p -e "$CSI_BRIDGE_NAME" | grep "ticsi2rx\"" | cut -d "\"" -f 2`
-            CSI2RX_CONTEXT_NAME="$CSI2RX_NAME context 0"
+            if [ -z "$CSI2RX_NAME" ]; then
+                CSI2RX_NAME=`media-ctl -d /dev/media$media_id -p -e "$CSI_BRIDGE_NAME" | grep "j721e-csi2rx\"" | cut -d "\"" -f 2`
+            else
+                CSI2RX_CONTEXT_NAME="$CSI2RX_NAME context 0"
+            fi
 
             media-ctl -d /dev/media$media_id --set-v4l2 ''"\"$CSI_BRIDGE_NAME\""':0 '$IMX219_CAM_FMT''
-            media-ctl -d /dev/media$media_id --set-v4l2 ''"\"$CSI2RX_NAME\""':0 '$IMX219_CAM_FMT''
+            if [ -n "$CSI2RX_CONTEXT_NAME" ]; then
+                media-ctl -d /dev/media$media_id --set-v4l2 ''"\"$CSI2RX_NAME\""':0 '$IMX219_CAM_FMT''
+                CAM_DEV=`media-ctl -d /dev/media$media_id -p -e "$CSI2RX_CONTEXT_NAME" | grep video | awk '{print $4}'`
+            else
+                CAM_DEV=`media-ctl -d /dev/media$media_id -p -e "$CSI2RX_NAME" | grep video | awk '{print $4}'`
+            fi
 
-
-            CAM_DEV=`media-ctl -d /dev/media$media_id -p -e "$CSI2RX_CONTEXT_NAME" | grep video | awk '{print $4}'`
             CAM_DEV_NAME=/dev/video-imx219-cam$count
 
             CAM_SUBDEV_NAME=/dev/v4l-imx219-subdev$count
@@ -546,12 +553,20 @@ setup_ov5640(){
 
             CSI_BRIDGE_NAME=`media-ctl -d /dev/media$media_id -p -e "ov5640 $name" | grep csi-bridge | cut -d "\"" -f 2`
             CSI2RX_NAME=`media-ctl -d /dev/media$media_id -p -e "$CSI_BRIDGE_NAME" | grep "ticsi2rx\"" | cut -d "\"" -f 2`
-            CSI2RX_CONTEXT_NAME="$CSI2RX_NAME context 0"
+            if [ -z "$CSI2RX_NAME" ]; then
+                CSI2RX_NAME=`media-ctl -d /dev/media$media_id -p -e "$CSI_BRIDGE_NAME" | grep "j721e-csi2rx\"" | cut -d "\"" -f 2`
+            else
+                CSI2RX_CONTEXT_NAME="$CSI2RX_NAME context 0"
+            fi
 
             media-ctl -d /dev/media$media_id --set-v4l2 ''"\"$CSI_BRIDGE_NAME\""':0 '$OV5640_CAM_FMT''
-            media-ctl -d /dev/media$media_id --set-v4l2 ''"\"$CSI2RX_NAME\""':0 '$OV5640_CAM_FMT''
+            if [ -n "$CSI2RX_CONTEXT_NAME" ]; then
+                media-ctl -d /dev/media$media_id --set-v4l2 ''"\"$CSI2RX_NAME\""':0 '$OV5640_CAM_FMT''
+                CAM_DEV=`media-ctl -d /dev/media$media_id -p -e "$CSI2RX_CONTEXT_NAME" | grep video | awk '{print $4}'`
+            else
+                CAM_DEV=`media-ctl -d /dev/media$media_id -p -e "$CSI2RX_NAME" | grep video | awk '{print $4}'`
+            fi
 
-            CAM_DEV=`media-ctl -d /dev/media$media_id -p -e "$CSI2RX_CONTEXT_NAME" | grep video | awk '{print $4}'`
             CAM_DEV_NAME=/dev/video-ov5640-cam$count
 
             CAM_SUBDEV_NAME=/dev/v4l-ov5640-subdev$count
