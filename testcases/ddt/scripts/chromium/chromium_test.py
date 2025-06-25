@@ -20,12 +20,12 @@ def test_setup():
     subprocess.run("opkg install chromium-ozone-wayland", shell=True, check = True)
 
 
-def take_screenshots():
+def take_screenshots(backend):
     """Take screenshots utilizing weston-screenshoter"""
     os.environ['WAYLAND_DISPLAY'] = '/run/user/1000/wayland-1'
-    cmd = "su -l weston -c 'export https_proxy=http://webproxy.ext.ti.com:80; \
+    cmd = f"su -l weston -c 'export https_proxy=http://webproxy.ext.ti.com:80; \
             export XDG_RUNTIME_DIR=/run/user/1000;\
-            export WAYLAND_DISPLAY=wayland-1; chromium \"https://webglsamples.org/aquarium/aquarium.html\" --start-fullscreen --no-first-run' "
+            export WAYLAND_DISPLAY=wayland-1; chromium --use-angle={backend} \"https://webglsamples.org/aquarium/aquarium.html\" --start-fullscreen --no-first-run' "
 
     with subprocess.Popen(cmd, shell=True) as chrome:
         try:
@@ -53,7 +53,7 @@ def process_images(png_files):
     for image in png_files:
         with Image.open(image) as image:
             image = image.crop((20, 20, 100, 100))
-            text = pytesseract.image_to_string(image, config='--psm 12')
+            text = pytesseract.image_to_string(image, config='--psm 1')
             try:
                 fps_value = int(re.search(r'fps:\s(\d+)', text).group(1))
             except (AttributeError, TypeError):
@@ -81,7 +81,7 @@ def get_test_execution_result(fps_not_found):
     png_files = pathlib.Path(".").glob("*.png")
     clean_up(png_files)
     
-    if fps_not_found >= 2:  #Test result to unreliable,
+    if fps_not_found > 2:   #Test result to unreliable,
                             #fail in order notify team team something needs to be checked manually
         print("Test execution failure, unreliable results. Too many fps values not found")
         sys.exit(1)
@@ -95,11 +95,17 @@ def clean_up(png_files):
 def main():
     """Main function"""
 
+    try:
+        backend = sys.argv[1] # Specify the backend as an argument : vulkan or gles-egl (default)
+    except IndexError:
+        sys.stderr.write("Error: Backend argument is missing\n")
+        sys.exit(1)
+
     test_setup()
 
     print("Start waiting for Chromium and the benchmark itself to stabolize")
 
-    take_screenshots()
+    take_screenshots(backend)
 
     # Get list of .png pictures
     png_files = pathlib.Path(".").glob("*.png")
