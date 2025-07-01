@@ -100,7 +100,7 @@ for gpio_bank_reg_pair in $gpio_banks; do
 	check_clkctrl_reg "$clkctrl_reg" false
 
 	test_print_trc "Checking clkctrl register for gpio chip |$gpio_chip| when bank is NOT free"
-	gpioset -s 10 --mode=time "$gpio_chip" 0=0&
+	gpioset -s -p 10 -c "$gpio_chip" 0=0&
 	sleep 1
 	check_clkctrl_reg "$clkctrl_reg" true
 	killall gpioset
