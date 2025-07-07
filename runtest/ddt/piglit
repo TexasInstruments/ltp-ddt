@@ -108,6 +108,9 @@ PIGLIT_S_YUV_EGL_ALL_TESTS piglit_execution.sh -x all_egl_TESTS.txt -y deqp_egl 
 
 PIGLIT_S_TESSELLATION_GLES_ALL_TESTS piglit_execution.sh -x all_tessellation_TESTS.txt -y deqp_gles31 -i tessellation -z gles -a rogue
 
+# Compute Shaders GLES Testlists
+PIGLIT_M_COMPUTE_SHADERS_GLES piglit_execution.sh -x compute_shaders_TESTS.txt -y deqp_gles31 -i compute -z gles -a rogue
+
 # ---- SGX Architecture Testing ----
 
 # BGRA GLES Testlists
