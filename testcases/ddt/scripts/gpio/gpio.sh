@@ -33,7 +33,7 @@ gpio_set_item() {
   GPIO_CHIP=$1
   OFFSET=$2
   VALUE=$3
-  `gpioset --mode=time -s 15 --background ${GPIO_CHIP} ${OFFSET}=${VALUE}`
+  `gpioset -s -p 15 -c ${GPIO_CHIP} ${OFFSET}=${VALUE}`
 }
 
 set_gpio_pinmux() {
