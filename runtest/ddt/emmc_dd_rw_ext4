@@ -6,9 +6,11 @@
 
 EMMC_S_FUNC_EXT4_DD_RW_1B source "common.sh"; install_modules.sh "emmc"; do_cmd blk_device_dd_readwrite_test.sh -f "ext4" -b "1" -c "1" -d "emmc"
 EMMC_S_FUNC_EXT4_DD_RW_512B source "common.sh"; install_modules.sh "emmc"; do_cmd blk_device_dd_readwrite_test.sh -f "ext4" -b "512" -c "1" -d "emmc"
+EMMC_S_FUNC_EXT4_DD_RW_PATTERN1_512B source "common.sh"; install_modules.sh "emmc"; do_cmd blk_device_dd_readwrite_test.sh -f "ext4" -b "512" -c "1" -d "emmc" -p "1"
 EMMC_S_FUNC_EXT4_DD_RW_64K source "common.sh"; install_modules.sh "emmc"; do_cmd blk_device_dd_readwrite_test.sh -f "ext4" -b "64K" -c "1" -d "emmc"
 EMMC_S_FUNC_EXT4_DD_RW_512K source "common.sh"; install_modules.sh "emmc"; do_cmd blk_device_dd_readwrite_test.sh -f "ext4" -b "512K" -c "1" -d "emmc"
 EMMC_S_FUNC_EXT4_DD_RW_640K source "common.sh"; install_modules.sh "emmc"; do_cmd blk_device_dd_readwrite_test.sh -f "ext4" -b "64K" -c "10" -d "emmc"
+EMMC_S_FUNC_EXT4_DD_RW_PATTERN1_640K source "common.sh"; install_modules.sh "emmc"; do_cmd blk_device_dd_readwrite_test.sh -f "ext4" -b "64K" -c "10" -d "emmc" -p "1"
 EMMC_S_FUNC_EXT4_DD_RW_5M source "common.sh"; install_modules.sh "emmc"; do_cmd blk_device_dd_readwrite_test.sh -f "ext4" -b "5M" -c "1" -d "emmc"
 EMMC_S_FUNC_EXT4_DD_RW_10M source "common.sh"; install_modules.sh "emmc"; do_cmd blk_device_dd_readwrite_test.sh -f "ext4" -b "1M" -c "10" -d "emmc"
 EMMC_S_FUNC_EXT4_DD_RW_50M source "common.sh"; install_modules.sh "emmc"; do_cmd blk_device_dd_readwrite_test.sh -f "ext4" -b "5M" -c "10" -d "emmc"
