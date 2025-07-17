@@ -20,8 +20,7 @@ source "mtd_common.sh"
 
 SKIP_FORMAT=0
 WRITE_TO_FILL=0
-STRESS_PATTERN="0"
-PATTERN1="\x00\xff\x00\xff\x00\xff\x00\xff"
+PATTERN=""
 ############################# Functions #######################################
 usage()
 {
@@ -32,7 +31,7 @@ cat <<-EOF >&2
   -m MNT_POINT    mount point
   -b DD_BUFSIZE   dd buffer size for 'bs'
   -c DD_CNT       dd count for 'count'
-  -p STRESS_PATTERN      Use specific stress pattern instead of random data
+  -p PATTERN      Use specific 8 byte pattern instead of random data
   -i IO_OPERATION IO operation like 'wr', 'cp', default is 'wr'
                   'oversize_write' is to test if driver throw error when the size > partition size
   -d DEVICE_TYPE  device type like 'nand', 'mmc', 'usb' etc
@@ -66,7 +65,7 @@ do case $arg in
         m)      MNT_POINT="$OPTARG"; MNT_POINT="${MNT_POINT}_$$";;
         b)      DD_BUFSIZE="$OPTARG";;
         c)      DD_CNT="$OPTARG";;
-        p)      STRESS_PATTERN="$OPTARG";;
+        p)      PATTERN="$OPTARG";;
         i)      IO_OPERATION="$OPTARG";;
         l)      TEST_LOOP="$OPTARG";;
         s)      SKIP_FORMAT=1;;
@@ -161,9 +160,9 @@ test_print_trc "Doing read/write test for $TEST_LOOP times"
 #SRC_FILE='/dev/shm/srctest_file'
 SRC_FILE="$HOME/srctest_file_${DEVICE_TYPE}_$$"
 
-if [ "$STRESS_PATTERN" != "0" ]; then
+if [ "$PATTERN" != "" ]; then
   BSIZE="0"
-  echo "Debug: Using stress pattern=$STRESS_PATTERN"
+  echo "Debug: Using pattern=$PATTERN"
   case "$DD_BUFSIZE" in
     "1" | "512")
       BSIZE="$DD_BUFSIZE";;
@@ -177,16 +176,12 @@ if [ "$STRESS_PATTERN" != "0" ]; then
       BSIZE="10000000";;
   esac
 
-  if [ "$STRESS_PATTERN" != "1" ] || [ $BSIZE == "0" ]; then
+  if [ $BSIZE == "0" ]; then
     echo "Not a supported blocksize for stress pattern testing, revert to random data"
     do_cmd "time dd if=/dev/urandom of=$SRC_FILE bs=$DD_BUFSIZE count=$DD_CNT"
   else
-    case "$STRESS_PATTERN" in
-      "1")
-        size=$((BSIZE * DD_CNT / 8))
-        for ((i=0; i<$size; i++)); do printf $PATTERN1 >> $SRC_FILE; done
-      ;;
-    esac
+    size=$((BSIZE * DD_CNT / 8))
+    for ((i=0; i<$size; i++)); do printf "$PATTERN" >> $SRC_FILE; done
   fi
 else
   do_cmd "time dd if=/dev/urandom of=$SRC_FILE bs=$DD_BUFSIZE count=$DD_CNT"
