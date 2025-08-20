@@ -43,10 +43,10 @@ get_counter_name()
 	echo "$ccounter"
 }
 
-get_counter_sysfs()
+get_counter_sym_sysfs()
 {
 	counter=$1
-	cpath=$(find /sys/ -iname "$counter")
+	cpath=$(find /sys/ -iname "$counter" | grep "symbols")
 	ccounter=$(get_counter_name "$cpath")
 	echo "$ccounter"
 }
@@ -136,7 +136,7 @@ case $MACHINE in
 		eqep_inst=1
 		;;
 	am62lxx*)
-		eqep_inst=1
+		eqep_inst=2
 		;;
 	am62pxx*)
 		eqep_inst=1
@@ -158,7 +158,7 @@ get_enumerated_counters_sysfs
 case $acounters in
 	F)
 		echo "Running verify_counter test for: $type, test counter=|$tcounter|..."
-		counter=$(get_counter_sysfs $tcounter)
+		counter=$(get_counter_sym_sysfs $tcounter)
 		cresult=$(echo "$SYSFS_COUNTERS" | grep -o "$counter")
 		if [ -n "$cresult" ] && [ "$cresult" != " " ]; then echo "Found counter: |$cresult|"; else die "Did not find counter: |$tcounter|"; fi
 		;;
