@@ -29,8 +29,11 @@ load_test_module()
 {
   modprobe -r omap_hwspinlock_test
   dmesg -c
+  dmesg -n 4
   modprobe omap_hwspinlock_test
   log=$(dmesg -c)
+  lsmod | grep "omap_hwspinlock_test"
+  if [ $? -ne 0 ]; then die "Missing omap_hwspinlock_test out of tree module"; fi;
   lock_tests=$(echo "$log" | grep -i -o 'Testing [0-9]\+ locks' | grep -o '[0-9]\+')
   if [[ $? -ne 0 ]]
   then
