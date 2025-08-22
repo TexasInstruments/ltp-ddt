@@ -29,6 +29,7 @@ load_test_module()
 {
   modprobe -r omap_hwspinlock_test
   dmesg -c
+  dmesg -n 4
   modprobe omap_hwspinlock_test
   log=$(dmesg -c)
   lsmod | grep "omap_hwspinlock_test"
