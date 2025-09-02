@@ -56,4 +56,5 @@ video/capture/*/v4l2
 hwspinlock
 mailbox
 watchdog
+wlan
 vtm
