@@ -20,6 +20,13 @@ source "blk_device_common.sh"
 
 ############################# Functions #######################################
 
+get_revision(){
+	if [ -f /sys/devices/soc0/revision ]; then
+			revision=$(cat /sys/devices/soc0/revision)
+	fi
+	echo "$revision"
+}
+
 mmc_get_id(){
 	mode=$1
 	case $mode in
@@ -68,10 +75,13 @@ if [ "$expected_mode" = "" ]; then
 			dra7xx-evm | dra72x-evm )
 				expected_mode="HS200";;
 			 # Set expected eMMC bus mode to HS200 for am62px/j722s due to silicon errata i2458
-			am654x-evm | am654x-idk | j721e* | am62lxx* | am62xxsip* | am62xx* | am62axx* | am62dxx* | am64xx-evm | am64xx-hsevm | am62pxx* | j722s*)
+			am654x-evm | am654x-idk | j721e* | am62lxx* | am62xxsip* | am62xx* | am62axx* | am62dxx* | am64xx-evm | am64xx-hsevm | j722s*)
 				expected_mode="HS200";;
 			j7200* | j721s* | j784* | j742* | am69*)
 				expected_mode="HS400";;
+			am62pxx*)
+				rev=$(get_revision)
+				if [ "$rev" = "SR1.0" ] || [ "$rev" = "SR1.1" ]; then expected_mode="HS200"; elif [ "$rev" = "SR1.2" ]; then expected_mode="HS400"; else die "Unknown silicon revision=$rev for $MACHINE"; fi;;
 			*)
 				die "No expected eMMC mode is specified for this platform in ltp-ddt/testcases/ddt/scripts/blk/check_mmc_speed.sh";;
 		esac
