@@ -4,7 +4,6 @@ import time
 import subprocess
 import os
 import sys
-import json
 import pathlib
 from PIL import Image
 import pytesseract
