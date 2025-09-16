@@ -333,14 +333,16 @@ setup_ov2312(){
         v4l2-ctl -d$IR_CAM_DEV -v width=1600,height=1300,pixelformat=BGI0
         v4l2-ctl -d$RGB_CAM_DEV -v width=1600,height=1300,pixelformat=BGI0
 
-        echo -e "${GREEN}OV2312 Camera $i detected${NOCOLOR}"
-        echo "    device IR = $IR_CAM_DEV_NAME"
-        echo "    device RGB = $RGB_CAM_DEV_NAME"
-        echo "    name = ov2312"
-        echo "    format = $OV2312_CAM_FMT"
-        echo "    subdev_id = $CAM_SUBDEV_NAME"
-        echo "    isp_required = yes"
-        echo "    ldc_required = no"
+        # echo -e "${GREEN}OV2312 Camera $i detected${NOCOLOR}"
+        # echo "    device IR = $IR_CAM_DEV_NAME"
+        # echo "    device RGB = $RGB_CAM_DEV_NAME"
+        # echo "    name = ov2312"
+        # echo "    format = $OV2312_CAM_FMT"
+        # echo "    subdev_id = $CAM_SUBDEV_NAME"
+        # echo "    isp_required = yes"
+        # echo "    ldc_required = no"
+        echo $IR_CAM_DEV_NAME,$OV2312_CAM_FMT,$CAM_SUBDEV_NAME,no
+        echo $RGB_CAM_DEV_NAME,$OV2312_CAM_FMT,$CAM_SUBDEV_NAME,no
 
         ((i++))
     done
@@ -609,6 +611,6 @@ setup_USB_camera(){
 #setup_USB_camera
 setup_imx219
 setup_ov5640
-#setup_ov2312
+setup_ov2312
 setup_imx390
 setup_routes

@@ -17,6 +17,10 @@ case "$CAM_INFO" in
 		echo "OV5640 camera found"
 		FORMAT="video/x-raw, framerate=30/1, width=640, height=480, format=UYVY"
 		;;
+	*"ov2312"*)
+		echo "OV2312 camera found"
+		FORMAT="video/x-bayer, framerate=30/1, width=1600, height=1300, format=bggi10"
+		;;
 	*)
 		echo "Unknown camera"
 		exit -1
