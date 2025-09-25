@@ -36,6 +36,10 @@ create_three_partitions() {
     basenode=$1
     partsize_1st=$2
     partsize_2nd=$3
+    check_basenode_regex="\/dev\/([a-z])+([0-9]?)+"
+    if [[ ! "$basenode" =~ $check_basenode_regex ]]; then
+      die "$0: $basenode is not valid basenode!"
+    fi
 
     have_partition=$(have_partition "$basenode")
     if [ "$have_partition" = 'no' ]; then
