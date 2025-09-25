@@ -139,7 +139,7 @@ case $MACHINE in
 		sound='CONFIG_SND_OMAP_SOC_AM3517EVM:snd-soc-am3517evm';;
 	omap5-evm)
 		sound='CONFIG_SND_OMAP_SOC:snd-soc-omap CONFIG_SND_OMAP_SOC_MCPDM:snd-soc-omap-mcpdm CONFIG_SND_SOC_TWL6040:snd-soc-twl6040 CONFIG_SND_OMAP_SOC_OMAP_ABE_TWL6040:snd-soc-omap-abe-twl6040';;
-	am335x-evm|am335x-sk|beaglebone)
+	am335x-evm|am335x-sk|beaglebone|beaglebone_green_eco-gp)
 		sound='CONFIG_SND_DAVINCI_SOC:snd-soc-davinci CONFIG_SND_DAVINCI_SOC_MCASP:snd-soc-davinci-mcasp CONFIG_SND_SOC_TLV320AIC3X:snd-soc-tlv320aic3x CONFIG_SND_AM335X_SOC_EVM:snd-soc-evm';;
 	beaglebone-black)
 		sound='CONFIG_SND_DAVINCI_SOC:snd-soc-davinci CONFIG_SND_DAVINCI_SOC_MCASP:snd-soc-davinci-mcasp CONFIG_SND_AM335X_SOC_EVM:snd-soc-evm';;

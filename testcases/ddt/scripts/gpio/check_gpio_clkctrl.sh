@@ -59,7 +59,7 @@ do_cmd "cat /proc/interrupts | grep -i gpio"
 # gpio bank 0 counts from gpio 0 for am33* and am437*
 # table for gpio bank/module : gpio_bank_clkctrl register address
 case $MACHINE in
-	am335x-evm)
+	am335x-evm|beaglebone_green_eco-gp)
 		#gpio_banks="2:0x44E000B0 3:0x44E000B8"
 		gpio_banks="481ac000:0x44E000B0" # gpio 2
 	;;

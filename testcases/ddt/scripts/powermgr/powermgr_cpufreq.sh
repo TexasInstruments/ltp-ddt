@@ -63,6 +63,7 @@ REGULATOR_VOLT_PATH="/sys/class/regulator/regulator.0/microvolts"
 case $MACHINE in
   am335x-evm) REGULATOR="vdd_mpu";;
   beaglebone) REGULATOR="vdd_mpu";;
+  beaglebone_green_eco-gp) REGULATOR="vdd_mpu";;
   am180x-evm) REGULATOR="VDCDC3";;
   omap5-evm)  REGULATOR="smps123";;
   am43xx-epos) REGULATOR="vdd_mpu";;
