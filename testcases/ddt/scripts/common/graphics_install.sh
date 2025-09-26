@@ -31,7 +31,7 @@ esac
 case $SOC in
 esac
 case $MACHINE in
-        am335x-evm|am335x-sk)
+        am335x-evm|am335x-sk|beaglebone_green_eco-gp)
                 SCRIPT="335x-demo";;
         am37x-evm)
                 SCRIPT="omap-demo";;

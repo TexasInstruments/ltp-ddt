@@ -53,6 +53,7 @@ get_acceptable_memory_size()
     beaglebone-black)
       expected_memory=495788  ;;
     am335x-evm)
+      #TODO: AM335x EVM seems to have 256MB of mem in DT
       expected_memory=1015116 ;;
     k2hk-evm|k2l-evm)
       expected_memory=1415144 ;;
@@ -62,6 +63,9 @@ get_acceptable_memory_size()
       expected_memory=3494192 ;;
     am65*|dra7xx*|dra76x*)
       expected_memory=4123488 ;;
+    beaglebone_green_eco-gp)
+      # BeagleBone Green Eco has 512MB RAM but DT only shows 256MB
+      expected_memory=256000 ;;
   esac
 
   if [ -z "$expected_memory" ]; then

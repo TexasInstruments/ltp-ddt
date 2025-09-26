@@ -39,7 +39,7 @@ case $SOC in
                   dma_channels=(dma0chan0 dma0chan4 dma0chan7 dma0chan8 dma0chan9 dma0chan10 dma0chan11 dma0chan12 dma0chan13 dma0chan16 dma0chan17 dma0chan18 dma0chan19 dma0chan20 dma0chan21 dma0chan30 dma0chan31 dma0chan32 dma0chan33 dma0chan58 dma0chan59);;
 esac
 case $MACHINE in
-        am335x-evm|am335x-sk|beaglebone|beaglebone-black)
+        am335x-evm|am335x-sk|beaglebone|beaglebone-black|beaglebone_green_eco-gp)
                   dma_channels=(dma0chan12 dma0chan13 dma0chan20 dma0chan21 dma0chan32 dma0chan33 dma0chan34 dma0chan35 dma0chan37 dma0chan54 dma0chan55);;
         am43xx-gpevm|am43xx-epos)
                   dma_channels=(dma0chan4 dma0chan7 dma0chan32 dma0chan35);;

@@ -36,7 +36,7 @@ esac
 case $SOC in
 esac
 case $MACHINE in
-        dra7xx-evm|am43xx-gpevm|am43xx-epos|am57xx-evm|am335x-evm|am335x-sk|beaglebone|beaglebone-black)
+        dra7xx-evm|am43xx-gpevm|am43xx-epos|am57xx-evm|am335x-evm|am335x-sk|beaglebone|beaglebone-black|beaglebone_green_eco-gp)
                   dmtimer_num=(1);;
 esac 
 echo "${dmtimer_num[@]}"

@@ -33,7 +33,7 @@ esac
 case $SOC in
 esac
 case $MACHINE in
-  am335x-evm) i2c_invalid_addr=0x2a ;;  
+  am335x-evm|beaglebone_green_eco-gp) i2c_invalid_addr=0x2a ;;
   omap5-evm)  i2c_invalid_addr=0x2d ;;
 esac
 
