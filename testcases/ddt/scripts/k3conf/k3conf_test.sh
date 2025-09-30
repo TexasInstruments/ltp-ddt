@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 #
 # Copyright (C) 2023 Texas Instruments Incorporated - http://www.ti.com/
 #
@@ -19,7 +19,7 @@
 source "common.sh"
 
 check_exec_status_cmds () {
-    cmd_arr=("k3conf --version" "k3conf show hosts" "k3conf show device" "k3conf show clock" "k3conf show processor")
+    local cmd_arr=("$@")
     for cmd in "${cmd_arr[@]}"
     do
         output=$($cmd > /dev/null 2>&1)
@@ -70,5 +70,6 @@ check_silicon_rev () {
     fi
 }
 
-check_exec_status_cmds
+cmd_arr=("$@")
+check_exec_status_cmds "${cmd_arr[@]}" 
 check_silicon_rev
