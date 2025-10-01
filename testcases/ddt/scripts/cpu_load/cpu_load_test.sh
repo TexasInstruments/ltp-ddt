@@ -11,9 +11,9 @@
 # of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-# cpuloadgen_test.sh
-# Verifies whether cpuloadgen runs without errors on nproc number of cores
-# usage:  cpuloadgen_test.sh
+# cpu_load_test.sh
+# Verifies whether our CPU loader runs without errors on nproc number of cores
+# usage:  cpu_load_test.sh
 
 
 source "functions.sh"
