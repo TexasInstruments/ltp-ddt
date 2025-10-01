@@ -3,6 +3,7 @@ am62lxx
 am62lxx_evm-fs
 adc/tscadc
 can
+counter/ecap
 counter/eqep
 gpio
 hwrng
