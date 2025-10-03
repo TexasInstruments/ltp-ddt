@@ -1,0 +1,6 @@
+# @name counter verify test
+# @desc Check for module and verify counter clock frequency simple test
+# @requires counter/ecap
+
+COUNTER_S_MODULAR_ECAP_CAPTURE source 'common.sh' ; lsmod | grep "ecap_capture" || die "ti_ecap_capture module is not detected";
+COUNTER_S_ECAP_GET_COUNTER0_FREQ source 'common.sh' ; export FREQ=$(cat /sys/bus/counter/devices/counter0/signal0/frequency); if [[ -z $FREQ || $FREQ -eq "0" ]]; then die "Did not find counter0 frequency"; fi;

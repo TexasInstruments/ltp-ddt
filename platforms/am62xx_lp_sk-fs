@@ -3,6 +3,7 @@ am62xx
 am62xx_lp_sk-fs
 adc/tscadc
 can
+counter/ecap
 counter/eqep
 crypto/sa2ul
 crypto/sa2ul/3des
