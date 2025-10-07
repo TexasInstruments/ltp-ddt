@@ -46,10 +46,10 @@ esac
 done
 
 ############################ DEFAULT Params #######################
-: ${max_buswidth:="4"}
+: "${max_buswidth:="4"}"
 
 ############# Do the work ###########################################
-debugfs_mnt=`mount |grep 'type debugfs' |cut -d' ' -f3`
+debugfs_mnt=$(mount |grep 'type debugfs' |cut -d' ' -f3)
 if [ -z "$debugfs_mnt" ]; then
   debugfs_mnt='/debugfs'
   mount -t debugfs debugfs $debugfs_mnt 
@@ -57,18 +57,18 @@ fi
  
 # get mmc instance for sdio
 #    1.616760] mmc0: new SDIO card at address 0001
-sdio_instance=`dmesg |grep SDIO |cut -d':' -f1 |awk '{print $NF}'`
+sdio_instance=$(dmesg |grep 'SDIO card' |cut -d':' -f1 |awk '{print $NF}')
 
-if [ -z $sdio_instance ]; then
+if [ -z "$sdio_instance" ]; then
   die "Could not find mmc instance for sdio"
 fi
 
-buswidth_str=`cat ${debugfs_mnt}/${sdio_instance}/ios |grep -i 'bus width'`
-buswidth=`echo $buswidth_str |awk '{print $2}' |awk -F':' '{print $2}' |sed 's/^.*(//' |sed 's/)$//' |cut -d' ' -f1`
+buswidth_str=$(cat ${debugfs_mnt}/"${sdio_instance}"/ios |grep -i 'bus width')
+buswidth=$(echo "$buswidth_str" |grep -o '[1-9] bits' | grep -o '[1-9]')
 
-if [ $buswidth -ge  $max_buswidth]; then
-  echo "This test pass and mmc is operating at maximum bus width"
+if [ "$buswidth" -ge  "$max_buswidth" ]; then
+  echo "This test pass and mmc is operating at maximum bus width = |$max_buswidth|"
 else
-  die "SDIO is not operating at maximum bus width: $max_buswidth "
+  die "SDIO is not operating at maximum bus width: |$max_buswidth|"
 fi
 

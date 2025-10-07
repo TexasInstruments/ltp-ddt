@@ -3,13 +3,4 @@
 # @requires mmc_host 
 # @setup_requires sdiocard 
 
-
-MMC_S_FUNC_SDIO_4BIT_BUSWIDTH source "common.sh"; sdio_buswidth.sh -m '4'  
-
-
-
-
-
-
-
-
+MMC_S_FUNC_SDIO_4BIT_BUSWIDTH source "common.sh"; sdio_buswidth.sh -m '4'
