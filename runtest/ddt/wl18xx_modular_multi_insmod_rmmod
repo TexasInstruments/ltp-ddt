@@ -1,16 +1,15 @@
-# @name 
-#	WL18XX modular multiple insmod rmmod test 
-# @desc 
-#       modprobe different wlan modules multiple times 
-# @requires  wlan
+# @name WL18XX modular multiple insmod rmmod test
+# @desc modprobe different wlan modules multiple times
+# @requires wlan
 # @setup_requires wlan
 
-# The test step pass if the commands return zero, it fails otherwise.
-# For more information please refer to <root>/README-DDT file.
+# The test step pass if the commands return zero, it fails otherwise
+
 WLAN_S_FUNC_MODULAR-WLCORE-SDIO-MULTI-10-LOOPS source 'common.sh' ; mod_name=`get_device_modular_names.sh wlcore_sdio`; do_cmd do_modular_common.sh -l "10" -m $mod_name -a 'ifconfig\ wlan0'; do_cmd "modprobe $mod_name"
-
-WLAN_S_FUNC_MODULAR-WL18XX-MULTI-10-LOOPS source 'common.sh' ; mod_name=`get_device_modular_names.sh wl18xx`; do_cmd do_modular_common.sh -l "10" -m $mod_name -a 'ifconfig\ wlan0'; do_cmd "modprobe $mod_name"
-
 WLAN_M_STRESS_MODULAR-WLCORE-SDIO-MULTI-100-LOOPS source 'common.sh' ; mod_name=`get_device_modular_names.sh wlcore_sdio`; do_cmd do_modular_common.sh -l "100" -m $mod_name -a 'ifconfig\ wlan0'; do_cmd "modprobe $mod_name"
 
+WLAN_S_FUNC_MODULAR-CC33XX-SDIO-MULTI-10-LOOPS source 'common.sh' ; mod_name=`get_device_modular_names.sh cc33xx_sdio`; do_cmd do_modular_common.sh -l "10" -m $mod_name -a 'ifconfig\ wlan0'; do_cmd "modprobe $mod_name"
+WLAN_M_STRESS_MODULAR-CC33XX-SDIO-MULTI-100-LOOPS source 'common.sh' ; mod_name=`get_device_modular_names.sh cc33xx_sdio`; do_cmd do_modular_common.sh -l "100" -m $mod_name -a 'ifconfig\ wlan0'; do_cmd "modprobe $mod_name"
+
+WLAN_S_FUNC_MODULAR-WL18XX-MULTI-10-LOOPS source 'common.sh' ; mod_name=`get_device_modular_names.sh wl18xx`; do_cmd do_modular_common.sh -l "10" -m $mod_name -a 'ifconfig\ wlan0'; do_cmd "modprobe $mod_name"
 WLAN_M_STRESS_MODULAR-WL18XX-MULTI-100-LOOPS source 'common.sh' ; mod_name=`get_device_modular_names.sh wl18xx`; do_cmd do_modular_common.sh -l "100" -m $mod_name -a 'ifconfig\ wlan0'; do_cmd "modprobe $mod_name"

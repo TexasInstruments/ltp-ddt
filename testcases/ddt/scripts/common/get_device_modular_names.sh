@@ -21,40 +21,42 @@ source "common.sh"  # Import do_cmd(), die() and other functions
 ############################# Functions #######################################
 
 ################################ CLI Params ####################################
-if [ $# -ne 1 ]; then                                                           
-  echo "Error: Invalid Argument Count"                                          
+if [ $# -ne 1 ]; then
+  echo "Error: Invalid Argument Count"
   echo "Syntax: $0 <device_type like 'nand', 'mmc', 'spi', 'rtc', 'graphics'>"
-  exit 1                                                         
-fi                                                                   
-DEVICE_TYPE=$1                                                                 
-IFS_ORIG=$IFS                                                                   
-IFS=","                                                                         
-for DRIVER in $DRIVERS                                        
-do                                                                              
-  case $DRIVER in                                                               
-    *wlcore_sdio)                                                               
-        wlcore_sdio="wlcore_sdio";;                                             
-    *wl18xx)                                                    
-        wl18xx="wl18xx";;                                                      
-    *usbslave_ether)                                                           
-        usbslave_ether="g_ether";;                                              
-    *usbslave_zero)                                                             
-        usbslave_zero="g_zero";;                                                
-    *usbslave_ncm)                   
-        usbslave_ncm="g_ncm";;                                                
-    *usbslave_mass_storage)                                      
-        usbslave_mass_storage="g_mass_storage";;                     
-    *usbslave_multi)                                                           
-        usbslave_multi="g_multi";;                                             
-    *usbslave_cdc)                                           
-        usbslave_cdc="g_cdc";;                                                  
-  esac                                                                          
-done                                                                            
-IFS=$IFS_ORIG 
-# Use do_cmd() (imported from common.sh) to execute your test steps.            
-# do_cmd() will check return code and fail the test is return code is non-zero. 
-eval MOD_NAME=\$$DEVICE_TYPE                                                   
-if [ -z "$MOD_NAME" ]; then                                                  
-        die 'Module name not found'                                             
-fi                                                                              
-echo "$MOD_NAME"  
+  exit 1
+fi
+DEVICE_TYPE=$1
+IFS_ORIG=$IFS
+IFS=","
+for DRIVER in $DRIVERS
+do
+  case $DRIVER in
+    *wlcore_sdio)
+        wlcore_sdio="wlcore_sdio";;
+    *wl18xx)
+        wl18xx="wl18xx";;
+    *cc33xx_sdio)
+        cc33xx_sdio="cc33xx_sdio";;
+    *usbslave_ether)
+        usbslave_ether="g_ether";;
+    *usbslave_zero)
+        usbslave_zero="g_zero";;
+    *usbslave_ncm)
+        usbslave_ncm="g_ncm";;
+    *usbslave_mass_storage)
+        usbslave_mass_storage="g_mass_storage";;
+    *usbslave_multi)
+        usbslave_multi="g_multi";;
+    *usbslave_cdc)
+        usbslave_cdc="g_cdc";;
+  esac
+done
+IFS=$IFS_ORIG
+# Use do_cmd() (imported from common.sh) to execute your test steps.
+# do_cmd() will check return code and fail the test is return code is non-zero.
+eval MOD_NAME=\$$DEVICE_TYPE
+if [ -z "$MOD_NAME" ]; then
+        die 'Module name not found'
+fi
+echo "$MOD_NAME"
