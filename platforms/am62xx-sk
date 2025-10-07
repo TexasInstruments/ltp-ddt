@@ -70,4 +70,5 @@ mailbox
 displayport
 cpsw9g
 watchdog
+wlan/cc33xx_sdio
 vtm

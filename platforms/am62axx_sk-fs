@@ -62,4 +62,5 @@ hwspinlock
 mailbox
 displayport
 watchdog
+wlan/cc33xx_sdio
 vtm
