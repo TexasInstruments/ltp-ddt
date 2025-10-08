@@ -40,7 +40,8 @@ get_acceptable_latency()
   echo "$max_latency"
 }
 
-# Return expected memory size (in kB) for running platform
+# Return expected memory size (in kibibytes) for running platform
+# Used with free command in memtest
 get_acceptable_memory_size()
 {
   expected_memory=''
@@ -48,24 +49,32 @@ get_acceptable_memory_size()
   case $MACHINE in
     omapl138-lcdk)
       expected_memory=123100  ;;
-    k2g-ice)
-      expected_memory=383992  ;;
-    beaglebone-black)
-      expected_memory=495788  ;;
     am335x-evm)
-      #TODO: AM335x EVM seems to have 256MB of mem in DT
-      expected_memory=1015116 ;;
-    k2hk-evm|k2l-evm)
-      expected_memory=1415144 ;;
-    am43xx-gpevm|am57*|dra71x*|dra72x*|k2g-evm)
+      # AM335x EVM has 1GB
+      expected_memory=976562 ;;
+    am43xx-gpevm)
+      # AM437 EVM has 2GB */
+      expected_memory=1953125 ;;
+    am57*|dra71x*|dra72x*)
       expected_memory=2065756 ;;
-    k2e-evm)
-      expected_memory=3494192 ;;
     am65*|dra7xx*|dra76x*)
       expected_memory=4123488 ;;
-    beaglebone_green_eco-gp)
-      # BeagleBone Green Eco has 512MB RAM but DT only shows 256MB
-      expected_memory=256000 ;;
+    beaglebone-black|beaglebone_green_eco-gp)
+      # BBB/BBG ECO have 512MB
+      expected_memory=500000  ;;
+    am62xxsip*)
+      # AM62 SK has 512MB */
+      expected_memory=500000 ;;
+    am62xx*|am64xx*)
+      # AM62 SK & AM62 LP SK have 2GB */
+      # AM64 SK/EVM have 2GB */
+      expected_memory=1953125 ;;
+    am62axx*)
+      # AM62 SK has 4GB */
+      expected_memory=3906250 ;;
+    am62pxx*)
+      # AM62P SK has 8GB */
+      expected_memory=7812500 ;;
   esac
 
   if [ -z "$expected_memory" ]; then
