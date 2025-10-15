@@ -70,6 +70,7 @@ hwspinlock
 mailbox
 displayport
 cpsw9g
+rtc/rtc_ti_k3
 watchdog
 wlan/cc33xx_sdio
 vtm

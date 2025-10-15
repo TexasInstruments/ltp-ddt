@@ -27,18 +27,18 @@ DEVICE_TYPE=$1
 
 ############################ Default Params ##############################
 case $DEVICE_TYPE in
-        rtc)
+	rtc)
 		DEV_NODE="/dev/rtc0"
-        ;;
+	;;
 	i2c)
 		DEV_NODE="/dev/i2c-1"
 	;;
 	wdt)
 		DEV_NODE="/dev/watchdog"
 	;;
-        *)
+	*)
 		DEV_NODE=`get_blk_device_node.sh "$DEVICE_TYPE"` || die "error getting $DEV_TYPE devnode"
-        ;;
+	;;
 esac
 
 # double check device node

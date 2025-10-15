@@ -1,9 +1,7 @@
 # @name RTC thread safety
 # @desc Operations on RTC device simultaneously and ensure thread safety
 # @requires rtc
-# @setup_requires 
 
 RTC_S_FUNC_MULTI_THREAD_READTIME source 'common.sh'; multi_run_processes.sh -s "/opt/ltp/runltp -f ddt/rtc_readonly -P $MACHINE -s "RTC_S_FUNC_READONLY" " -l " -n 3 -a 0xFFFFFFFF -d 0 "
 RTC_M_FUNC_MULTI_THREAD_READTIME source 'common.sh'; multi_run_processes.sh -s "/opt/ltp/runltp -f ddt/rtc_readonly -P $MACHINE -s "RTC_M_FUNC_READONLY" " -l " -n 10 -a 0xFFFFFFFF -d 0 "
 RTC_S_FUNC_MULTI_THREAD_SETGETTIME source 'common.sh'; multi_run_processes.sh -s "/opt/ltp/runltp -f ddt/rtc_setgettime -P $MACHINE -s "RTC_S_FUNC_SETGETTIME_0001" " -l " -n 3 -a 0xFFFFFFFF -d 0 "; retvalue=$?;if [[ $retvalue != 0 ]] ; then exit 0; fi
-

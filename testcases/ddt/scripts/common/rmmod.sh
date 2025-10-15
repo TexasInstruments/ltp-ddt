@@ -29,6 +29,7 @@ if [ $# -ne 1 ]; then
 fi
 
 MOD_NAME=$1
+PROHIBIT_RMMOD_LIST=("rtc_ti_k3")
 
 ############################ USER-DEFINED Params ###############################
 # Try to avoid defining values here, instead see if possible
@@ -47,6 +48,14 @@ MOD_NAME=$1
 
 # Use do_cmd() (imported from common.sh) to execute your test steps.
 # do_cmd() will check return code and fail the test is return code is non-zero.
+
+for module in "${PROHIBIT_RMMOD_LIST[@]}"; do
+	if [ $MOD_NAME == "$module" ]; then
+		test_print_trc "$MOD_NAME may be used by the kernel, cannot be removed"
+		exit 0
+	fi
+done
+
 do_cmd modprobe -r $MOD_NAME
 do_cmd "lsmod | grep "\'$MOD_NAME \'" && die "$MOD_NAME should not be seen in lsmod" || exit 0"
 sleep 2

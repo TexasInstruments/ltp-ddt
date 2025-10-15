@@ -66,7 +66,7 @@ do
 	if [ -n "$ACTION" ]; then do_cmd "$ACTION"; fi
 
 	# before doing modprobe remove, need make sure device is not mounted
-	if [ ! -z "$DEVICE_TYPE" ] && [ "$DEVICE_TYPE" != "net" ]; then
+	if [ ! -z "$DEVICE_TYPE" ] && [ "$DEVICE_TYPE" != "net" ] && [ "$DEVICE_TYPE" != "rtc" ]; then
 		DEV_NODE=`get_blk_device_node.sh "$DEVICE_TYPE"` || die "error getting device node for $DEVICE_TYPE: $DEV_NODE"
 		echo "dev_node: $DEV_NODE"
 

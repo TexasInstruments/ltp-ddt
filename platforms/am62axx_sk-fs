@@ -61,6 +61,7 @@ video/capture/*/v4l2
 hwspinlock
 mailbox
 displayport
+rtc/rtc_ti_k3
 watchdog
 wlan/cc33xx_sdio
 vtm

@@ -75,6 +75,8 @@ for DRIVER in $DRIVERS
 			rtc="CONFIG_RTC_DRV_TWL4030:rtc_twl";;
 		*rtc-palmas)
 			rtc="CONFIG_RTC_DRV_PALMAS:rtc-palmas";;
+		*rtc_ti_k3)
+			rtc="RTC_DRV_TI_K3:rtc_ti_k3";;
 		*spi_davinci)
 			spi="CONFIG_SPI_DAVINCI:spi_davinci";;
 		*omap2_mcspi)
