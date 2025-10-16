@@ -20,7 +20,10 @@ crtc = res.reserve_crtc(conn)
 mode = conn.get_default_mode()
 
 #Allocate dma-heap
-heap_handler = dmaheap.DMAHeap("linux,cma")
+if re.search("am62l", sys.argv[1], flags=0) != None :
+	heap_handler = dmaheap.DMAHeap("reserved")
+else :
+	heap_handler = dmaheap.DMAHeap("linux,cma")
 width = mode.hdisplay
 height = mode.vdisplay
 buffer = heap_handler.alloc(width * height * 4)
