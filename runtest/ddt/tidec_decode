@@ -138,6 +138,21 @@ TIDEC_S_FUNC_GST_MULTI_DECODE_FPS_BBB_1080p30_30s.265 source 'ti_codecs.sh'; get
 
 TIDEC_S_FUNC_GST_DECODE_FPS_BBB_4kp30_30s.265 source 'ti_codecs.sh'; get_media decoder SDK_Release_Streams/bbb_4kp30_30s.h265; INPUT=$(mktemp); cp /usr/share/ti/tidec-decode/bbb_4kp30_30s.h265 $INPUT; F=$(mktemp); gst-launch-1.0 filesrc location=$INPUT ! h265parse ! v4l2h265dec capture-io-mode=dmabuf ! fpsdisplaysink text-overlay=false video-sink=fakevideosink sync=true -v > $F || die "Decode operation did not complete successfully"; FPS=`cat $F | grep average | tail -1  | awk -F"average: " '{print $2}' | awk -F"," '{print $1}'`; echo $FPS | grep 30 || die "fps mismatch w.r.t input file"; remove_media decoder
 
+# Memory Consumption Cases
+
+TIDEC_S_FUNC_GST_DECODE_MEMORY_BBB_1080p30_30s.264 source 'ti_codecs.sh'; get_media decoder SDK_Release_Streams/bbb_1080p30_30s.h264; INPUT=$(mktemp); cp /usr/share/ti/tidec-decode/bbb_1080p30_30s.h264 $INPUT;  F=$(mktemp); get_pipe_mem_consumption "filesrc location=/usr/share/ti/tidec-decode/bbb_1080p30_30s.h264 ! h264parse ! tee name=t ! queue ! v4l2h264dec capture-io-mode=dmabuf ! fpsdisplaysink text-overlay=false video-sink=fakevideosink name=fpssink1 sync=true" "$F" || die "Decode operation failed"; Mem=`(cat $F | grep -E '^[0-9]+$') && Mem=$((Mem)) && [ $Mem -lt 100000 ]` || die "Mem consumption is too high"; echo "Mem consumption is $Mem"; remove_media decoder
+
+TIDEC_S_FUNC_GST_DECODE_MEMORY_BBB_1080p30_30s.265 source 'ti_codecs.sh'; get_media decoder SDK_Release_Streams/bbb_1080p30_30s.h265; INPUT=$(mktemp); cp /usr/share/ti/tidec-decode/bbb_1080p30_30s.h265 $INPUT;  F=$(mktemp); get_pipe_mem_consumption "filesrc location=/usr/share/ti/tidec-decode/bbb_1080p30_30s.h265 ! h265parse ! tee name=t ! queue ! v4l2h265dec capture-io-mode=dmabuf ! fpsdisplaysink text-overlay=false video-sink=fakevideosink name=fpssink1 sync=true" "$F" || die "Decode operation failed"; Mem=`(cat $F | grep -E '^[0-9]+$') && Mem=$((Mem)) && [ $Mem -lt 100000 ]` || die "Mem consumption is too high"; echo "Mem consumption is $Mem"; remove_media decoder
+
+# CPU Utilization Cases
+
+TIDEC_S_FUNC_CPU_UTILIZATION_DECODE source 'ti_codecs.sh'; F=$(mktemp); get_media decoder SDK_Release_Streams/bbb_1080p30_30s.h264; INPUT=$(mktemp); cp /usr/share/ti/tidec-decode/bbb_1080p30_30s.h264 $INPUT; get_pipe_cpu_utilization "filesrc location=$INPUT ! h264parse ! v4l2h264dec ! fakevideosink" "$F"|| die "Decoder operation not working correctly"; CPU=`(cat $F | grep -E '^[0-9]+(\.[0-9]+)?$') && CPU=$((CPU)) && [ $CPU -lt 4 ]` || die "CPU utilization is too high"; echo "CPU utilization is $CPU END";  remove_media decoder
+
+# DevFreq Cases
+
+TIDEC_S_FUNC_LOWER_FREQ_DECODE_H264 source 'ti_codecs.sh'; get_media decoder SDK_Release_Streams/bbb_1080p30_30s.h264; F=$(mktemp); INPUT=$(mktemp); cp /usr/share/ti/tidec-decode/bbb_1080p30_30s.h264 $INPUT; echo 400000000 > /sys/class/devfreq/30210000.video-codec/userspace/set_freq; k3conf dump clock 204 | grep 400000000 || die "Devfreq not set properly"; gst-launch-1.0 filesrc location=$INPUT ! h264parse ! v4l2h264dec capture-io-mode=4 ! fpsdisplaysink text-overlay=false video-sink=fakevideosink sync=true -v > $F || die "Decode operation did not complete successfully"; FPS=`cat $F | grep average | tail -1  | awk -F"average: " '{print $2}' | awk -F"," '{print $1}'`; echo $FPS | grep 30 || die "fps mismatch w.r.t input file"; remove_media decoder
+
+
 ## New cases that are being used as trial run for new verification
 
 TIDEC_GST_multi_fakesink_AUD_MW_E.264 source 'ti_codecs.sh'; get_media decoder ITU-T_conformance/AUD_MW_E.264; insert_video_modules; F=$(mktemp); gst-launch-1.0 filesrc location=/usr/share/ti/tidec-decode/AUD_MW_E.264 ! h264parse ! tee name=t t. ! queue ! v4l2h264dec ! video/x-raw,format='(string)'NV12 ! fakesink t. ! queue ! v4l2h264dec ! video/x-raw,format='(string)'NV12 ! fakesink t. ! queue ! v4l2h264dec ! video/x-raw,format='(string)'NV12 ! fakesink t. ! queue ! v4l2h264dec ! video/x-raw,format='(string)'NV12 ! fakesink || die "GStreamer operation did not complete successfully"; remove_media decoder
@@ -217,3 +232,12 @@ TIDEC_S_FUNC_GST_DECODE_KMSSINK_CRASH.265 source 'ti_codecs.sh'; stop_daemon emp
 TIDEC_S_FUNC_GST_DECODE_KMSSINK_CH3.264 source 'ti_codecs.sh'; stop_daemon emptty; get_media decoder CustomerErrorStreams/ch3.264; insert_video_modules; gst-launch-1.0 filesrc location=/usr/share/ti/tidec-decode/ch3.264 ! h264parse ! v4l2h264dec capture-io-mode=4 ! kmssink driver-name=tidss || die "GStreamer operation did not complete successfully"; remove_media decoder
 
 TIDEC_S_FUNC_GST_DECODE_KMSSINK_DYN_RES_SWITCH.264 source 'ti_codecs.sh'; stop_daemon emptty; get_media decoder CustomerErrorStreams/switch_1080p_720p_240frames.h264; insert_video_modules; gst-launch-1.0 filesrc location=/usr/share/ti/tidec-decode/switch_1080p_720p_240frames.h264 ! h264parse ! v4l2h264dec capture-io-mode=4 ! kmssink driver-name=tidss || die "GStreamer operation did not complete successfully"; remove_media decoder
+
+
+## FFmpeg Cases
+
+TIDEC_S_FUNC_FFMPEG_DECODE_AUD_MW_E.264 source 'ti_codecs.sh'; get_media decoder ITU-T_conformance/AUD_MW_E.264; insert_video_modules; F=$(mktemp); ffmpeg -re -codec:v h264_v4l2m2m -nostdin -y -i /usr/share/ti/tidec-decode/AUD_MW_E.264 -fps_mode:v passthrough -f rawvideo $F || die "FFmpeg operation did not complete successfully"; MD5=$(md5sum ${F}) ; echo $MD5 | grep e96fe5054de0329a8868d06003375cdb || die "decoded file does not match expected md5sum"; remove_media decoder
+
+TIDEC_S_FUNC_FFMPEG_DECODE_bbb_1080p30_30s.h264 source 'ti_codecs.sh'; get_media decoder SDK_Release_Streams/bbb_1080p30_30s.h264; insert_video_modules; F=$(mktemp); ffmpeg -re -codec:v h264_v4l2m2m -nostdin -y -i /usr/share/ti/tidec-decode/bbb_1080p30_30s.h264 -fps_mode:v passthrough -f rawvideo $F || die "FFmpeg operation did not complete successfully"; MD5=$(md5sum ${F}) ; echo $MD5 | grep 0dea2cf660e5000ac7d59c0983a47113 || die "decoded file does not match expected md5sum"; remove_media decoder
+
+TIDEC_S_FUNC_FFMPEG_DECODE_bbb_1080p30_30s.h265 source 'ti_codecs.sh'; get_media decoder SDK_Release_Streams/bbb_1080p30_30s.h265; insert_video_modules; F=$(mktemp); ffmpeg -re -codec:v hevc_v4l2m2m -nostdin -y -i /usr/share/ti/tidec-decode/bbb_1080p30_30s.h265 -fps_mode:v passthrough -f rawvideo $F || die "FFmpeg operation did not complete successfully"; MD5=$(md5sum ${F}) ; echo $MD5 | grep 605a2e592fdf7b2cde8b2a29c22279bb || die "decoded file does not match expected md5sum"; remove_media decoder

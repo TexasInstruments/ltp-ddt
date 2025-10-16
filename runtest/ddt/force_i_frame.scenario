@@ -1,0 +1,1 @@
+set-property, playback-time=1.0, target-element-name=v4l2h264enc0, property-name=extra-controls, property-value="controls,force_key_frame=1"

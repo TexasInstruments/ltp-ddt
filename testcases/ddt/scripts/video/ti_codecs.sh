@@ -69,6 +69,37 @@ get_media()
 	done
 }
 
+# Get the memory consumption of specifc pipepline
+get_pipe_mem_consumption()
+{
+    # Get memory consumption
+    local _mem_consumption_before=$(cat /proc/meminfo | grep MemFree | awk '{print $2}')
+    gst-launch-1.0 $1 &
+    sleep 5
+    local _mem_consumption_during=$(cat /proc/meminfo | grep MemFree | awk '{print $2}')
+    echo $((_mem_consumption_before - _mem_consumption_during)) > $2
+}
+
+
+# Get the CPU Utilization of specific pipeline
+# @param1: the pipeline to execute
+# @param2: the output file that holds data
+get_pipe_cpu_utilization()
+{
+    local _data_file=$(mktemp)
+    gst-launch-1.0 $1 &
+    pid=$(pgrep -f "gst-launch-1.0 $1")
+    if [ -z "$pid" ]; then
+        echo "Unable to find PID"
+        return 1
+    fi
+    pid_int=$pid
+    # Get CPU Utilization
+    top -p $pid_int -H -d 1 -b -n 10 | grep v4l2 > $_data_file
+    local _cpu_utilization=$( awk '{sum+=$9} END {print sum/NR}' $_data_file )
+    echo $_cpu_utilization > $2
+}
+
 remove_media()
 {
 	
