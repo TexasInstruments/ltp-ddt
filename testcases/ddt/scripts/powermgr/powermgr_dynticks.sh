@@ -1,6 +1,7 @@
 #!/bin/sh
 
 VAR=`cat /proc/interrupts | grep 'timer' | awk -F '[:I]' '{print $2}' |awk '{print $1}' |head -1`
+cat /proc/interrupts | grep 'timer'
 echo $VAR
 sleep 10
 VAR10=`cat /proc/interrupts | grep 'timer' | awk -F '[:I]' '{print $2}'|awk '{print $1}' |head -1`
