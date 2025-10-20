@@ -123,6 +123,16 @@ TIENC_S_FUNC_ENCODE_AIRSHOW_P176x144_NV12_QCIF_H264 source 'ti_codecs.sh'; get_m
 
 TIENC_S_FUNC_ENCODE_VIDEOTESTSRC_ERROR_CASE source 'ti_codecs.sh'; insert_video_modules; gst-launch-1.0 videotestsrc do-timestamp=true num-buffers=100 ! video/x-raw, format="xRGB", width=1920, height=1080, framerate=30/1 ! v4l2h264enc ! fakesink || die "Encode operation did not complete successfully";
 
+# FFMPEG ENCODE CASES
+
+TIENC_S_FUNC_FFMPEG_ENCODE_PEDESTRIAN_NV12_H264 source 'ti_codecs.sh'; get_media encoder pedestrain_1080p_nv12.yuv; F=$(mktemp); ffmpeg -f rawvideo -pix_fmt yuv420p -s 1920x1080 -r 30 -i /usr/share/ti/tienc-encode/pedestrain_1080p_nv12.yuv -vf "pad=width=1920:height=1088:x=0:y=0:color=black" -c:v h264_v4l2m2m -f h264 $F -y -nostdin || die "Encode operation did not complete successfully"; MD5=$(md5sum ${F}); echo $MD5 | grep 213dc7cc61ea65fffd16becdeb838d03 || die "encoded file does not match expected md5sum"; remove_media encoder
+
+TIENC_S_FUNC_FFMPEG_ENCODE_PEDESTRIAN_NV12_H265 source 'ti_codecs.sh'; get_media encoder pedestrain_1080p_nv12.yuv; F=$(mktemp); ffmpeg -f rawvideo -pix_fmt yuv420p -s 1920x1080 -r 30 -i /usr/share/ti/tienc-encode/pedestrain_1080p_nv12.yuv -vf "pad=width=1920:height=1088:x=0:y=0:color=black" -c:v hevc_v4l2m2m -f hevc $F -y -nostdin || die "Encode operation did not complete successfully"; MD5=$(md5sum ${F}); echo $MD5 | grep b45ec5630c8ef9739c098ad5959d73e6 || die "encoded file does not match expected md5sum"; remove_media encoder
+
+TIENC_S_FUNC_FFMPEG_ENCODE_OLDTOWN_CROSS_H264 source 'ti_codecs.sh'; get_media encoder oldtowncross_1280x720_nv12.yuv; F=$(mktemp); ffmpeg -f rawvideo -pix_fmt yuv420p -s:v 1280x720 -r 30 -i  /usr/share/ti/tienc-encode/oldtowncross_1280x720_nv12.yuv -c:v h264_v4l2m2m -f h264 $F -y -nostdin || die "Encode operation did not complete successfully"; MD5=$(md5sum ${F}); echo $MD5 | grep e9ce27fcc5890145a88a54cdfd65cfee || die "encoded file does not match expected md5sum"; remove_media encoder
+
+TIENC_S_FUNC_FFMPEG_ENCODE_OLDTOWN_CROSS_H265 source 'ti_codecs.sh'; get_media encoder oldtowncross_1280x720_nv12.yuv; F=$(mktemp); ffmpeg -f rawvideo -pix_fmt yuv420p -s:v 1280x720 -r 30 -i  /usr/share/ti/tienc-encode/oldtowncross_1280x720_nv12.yuv -c:v hevc_v4l2m2m -f hevc $F -y -nostdin || die "Encode operation did not complete successfully"; MD5=$(md5sum ${F}); echo $MD5 | grep  f1d6963a2cde990cf089a26d5234addd || die "encoded file does not match expected md5sum"; remove_media encoder
+
 #Place holders for rgba format
 #TIENC_S_FUNC_ENCODE_AIRSHOW_P176x144_RGBA_QCIF_H264 source 'ti_codecs.sh'; get_media encoder; F=$(mktemp); run_tienc_encode -i /usr/share/ti/tienc-encode/airshow_p176x144_rgba_qcif.rgb -w 176 -h 144 -f RGBA -c H264 -o $F || die "Encode operation did not complete successfully"; MD5=$(md5sum ${F}) ; echo $MD5 | grep xxxx || die "encoded file does not match expected md5sum"
 
