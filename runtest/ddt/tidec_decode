@@ -241,3 +241,17 @@ TIDEC_S_FUNC_FFMPEG_DECODE_AUD_MW_E.264 source 'ti_codecs.sh'; get_media decoder
 TIDEC_S_FUNC_FFMPEG_DECODE_bbb_1080p30_30s.h264 source 'ti_codecs.sh'; get_media decoder SDK_Release_Streams/bbb_1080p30_30s.h264; insert_video_modules; F=$(mktemp); ffmpeg -re -codec:v h264_v4l2m2m -nostdin -y -i /usr/share/ti/tidec-decode/bbb_1080p30_30s.h264 -fps_mode:v passthrough -f rawvideo $F || die "FFmpeg operation did not complete successfully"; MD5=$(md5sum ${F}) ; echo $MD5 | grep 0dea2cf660e5000ac7d59c0983a47113 || die "decoded file does not match expected md5sum"; remove_media decoder
 
 TIDEC_S_FUNC_FFMPEG_DECODE_bbb_1080p30_30s.h265 source 'ti_codecs.sh'; get_media decoder SDK_Release_Streams/bbb_1080p30_30s.h265; insert_video_modules; F=$(mktemp); ffmpeg -re -codec:v hevc_v4l2m2m -nostdin -y -i /usr/share/ti/tidec-decode/bbb_1080p30_30s.h265 -fps_mode:v passthrough -f rawvideo $F || die "FFmpeg operation did not complete successfully"; MD5=$(md5sum ${F}) ; echo $MD5 | grep 605a2e592fdf7b2cde8b2a29c22279bb || die "decoded file does not match expected md5sum"; remove_media decoder
+
+## MPV Cases
+
+TIDEC_S_FUNC_MPV_DECODE_bbb_1080p30_30s.h264 source 'ti_codecs.sh'; get_media decoder SDK_Release_Streams/bbb_1080p30_30s.h264; export WAYLAND_DISPLAY=/run/user/1000/wayland-1; mpv --vo=gpu --hwdec=auto --no-correct-pts --fps=30 /usr/share/ti/tidec-decode/bbb_1080p30_30s.h264 || die "MPV operation did not complete successfully"; remove_media decoder
+
+TIDEC_S_FUNC_MPV_DECODE_bbb_1080p30_30s.h265 source 'ti_codecs.sh'; get_media decoder SDK_Release_Streams/bbb_1080p30_30s.h265; export WAYLAND_DISPLAY=/run/user/1000/wayland-1; mpv --vo=gpu --hwdec=auto --no-correct-pts --fps=30 /usr/share/ti/tidec-decode/bbb_1080p30_30s.h265 || die "MPV operation did not complete successfully"; remove_media decoder
+
+TIDEC_S_FUNC_MPV_DECODE_bbb_1080p60_30s.h264 source 'ti_codecs.sh'; get_media decoder SDK_Release_Streams/bbb_1080p60_30s.h264; export WAYLAND_DISPLAY=/run/user/1000/wayland-1; mpv --vo=gpu --hwdec=auto --no-correct-pts --fps=60 /usr/share/ti/tidec-decode/bbb_1080p60_30s.h264 || die "MPV operation did not complete successfully"; remove_media decoder
+
+TIDEC_S_FUNC_MPV_DECODE_bbb_1080p60_30s.h265 source 'ti_codecs.sh'; get_media decoder SDK_Release_Streams/bbb_1080p60_30s.h265; export WAYLAND_DISPLAY=/run/user/1000/wayland-1; mpv --vo=gpu --hwdec=auto --no-correct-pts --fps=60 /usr/share/ti/tidec-decode/bbb_1080p60_30s.h265 || die "MPV operation did not complete successfully"; remove_media decoder
+
+TIDEC_S_FUNC_MPV_DECODE_crowd_run_2560x1440_350frame_70mbps_60fps.264 source 'ti_codecs.sh'; get_media decoder SDK_Release_Streams/crowd_run_2560x1440_350frame_70mbps_60fps.264; export WAYLAND_DISPLAY=/run/user/1000/wayland-1; mpv --vo=gpu --hwdec=auto --no-correct-pts --fps=60 /usr/share/ti/tidec-decode/crowd_run_2560x1440_350frame_70mbps_60fps.264 || die "MPV operation did not complete successfully"; remove_media decoder
+
+TIDEC_S_FUNC_MPV_DECODE_crowd_run_2560x1440_350frame_75mbps_60fps.265 source 'ti_codecs.sh'; get_media decoder SDK_Release_Streams/crowd_run_2560x1440_350frame_75mbps_60fps.265; export WAYLAND_DISPLAY=/run/user/1000/wayland-1; mpv --vo=gpu --hwdec=auto --no-correct-pts --fps=60 /usr/share/ti/tidec-decode/crowd_run_2560x1440_350frame_75mbps_60fps.265 || die "MPV operation did not complete successfully"; remove_media decoder
