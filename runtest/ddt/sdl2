@@ -1,0 +1,7 @@
+SDL2_DRAW2 source 'common.sh'; do_cmd "graphics/python3 sdl2.py infinite testdraw2"
+SDL2_GEOMETRY source 'common.sh'; do_cmd "python3 graphics/sdl2.py infinite testgeometry"
+SDL2_GLES2_SDF source 'common.sh'; do_cmd "python3 graphics/sdl2.py infinite testgles2_sdf"
+SDL2_OFFSCREEN source 'common.sh'; do_cmd "python3 graphics/sdl2.py finite testoffscreen"
+SDL2_RNDR_TARGET source 'common.sh'; do_cmd "python3 graphics/sdl2.py infinite testrendertarget"
+SDL2_SPRITE2 source 'common.sh'; do_cmd "python3 graphics/sdl2.py infinite testsprite2"
+SDL2_YUV source 'common.sh'; do_cmd "python3 graphics/sdl2.py infinite testyuv"
