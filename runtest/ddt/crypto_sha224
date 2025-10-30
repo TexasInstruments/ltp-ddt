@@ -1,6 +1,6 @@
 # @name SHA224 Crypto Tests
 # @desc Run tcrypt module to exercise sha224 HW crypto operations
-# @requires crypto/crypto-omap/sha224
+# @requires crypto/crypto-omap/sha224 || crypto/dthev2/sha224
 # @setup_requires 
 
 CRYPTO_S_PERF_SHA224 source 'common.sh'; config_options=`get_modular_config_names.sh crypto`; check_config_options "ym" CONFIG_CRYPTO_HW $config_options; check_config_options "m" CONFIG_CRYPTO_TEST; echo /dev/null>/var/log/messages; crypto_ip=`get_crypto_ip.sh`; PRE=`get_crypto_int_count.sh $crypto_ip`; modprobe tcrypt mode=413 sec=1; POST=`get_crypto_int_count.sh $crypto_ip`; [[ $POST -gt $(( $PRE+17000 )) ]]|| die "IRQ count did not increase, no hardware crypto, looking for irq number $IRQ_NUM, initial count $PRE, final count $POST";crypto_test.sh

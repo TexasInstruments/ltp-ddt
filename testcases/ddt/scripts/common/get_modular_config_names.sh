@@ -116,7 +116,9 @@ for DRIVER in $DRIVERS
 		*crypto-omap)
 			crypto="CONFIG_CRYPTO_DEV_OMAP_AES:omap-aes CONFIG_CRYPTO_DEV_OMAP_SHAM:omap-sham";;
 		*sa2ul)
-			crypto="CONFIG_CRYPTO_DEV_SA2UL:sa2ul"
+			crypto="CONFIG_CRYPTO_DEV_SA2UL:sa2ul";;
+		*dthev2)
+			crypto="CONFIG_CRYPTO_DEV_TI_DTHEV2:dthev2";;
 		esac
 	done
 IFS=$IFS_ORIG

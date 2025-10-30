@@ -12,7 +12,7 @@ case $DRIVER in
 esac                                                              
 case $SOC in                                  
 am62xx|am62axx|am62dxx|am62lxx|am62pxx|am62xxsip|am64xx|am654|j7*)
-	count=`get_num_sa2ul_interrupts.sh -c 0`
+	count=`get_num_udma_interrupts.sh -c 0`
 ;;
 *)
 	IRQ_NUM=`get_irq_for_iface.sh -i $ip_type`
