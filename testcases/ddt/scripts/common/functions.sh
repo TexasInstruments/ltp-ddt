@@ -585,7 +585,8 @@ enable_pm_debug_messages()
 check_suspend()
 {
     local expect="PM: suspend of devices complete"
-    dmesg | grep -i "$expect" && report "suspend successfully" || die "suspend failed"
+    local k3_expect="PM: suspend entry"
+    dmesg | grep -i "$expect\|$k3_expect" && report "suspend successfully" || die "suspend failed"
 }
 
 # check if suspend/standby failed as expected by checking the kernel messages
@@ -599,7 +600,8 @@ check_suspend_fail()
 check_resume()
 {
     local expect="PM: resume of devices complete"
-    dmesg | grep -i "$expect" && report "resume successfully" || die "resume failed"
+    local k3_expect="PM: suspend exit"
+    dmesg | grep -i "$expect\|$k3_expect" && report "resume successfully" || die "resume failed"
 }
 
 check_suspend_errors()
