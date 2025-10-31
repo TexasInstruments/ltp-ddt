@@ -10,7 +10,7 @@ TEST_DIRECTORY = "/usr/libexec/installed-tests/SDL2"
 def test_setup():
     """Restart emptty, and set up enviroment variable"""
     subprocess.run("systemctl restart emptty", shell=True, check=True)
-    subprocess.run("systemctl status emptty", shell=True, check=False)
+    subprocess.run("systemctl status emptty --no-pager", shell=True, check=False)
 
     os.environ['WAYLAND_DISPLAY'] = '/run/user/1000/wayland-1'
 
