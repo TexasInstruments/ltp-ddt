@@ -4,6 +4,13 @@ am62lxx_evm-se
 adc/tscadc
 can
 counter/eqep
+crypto/dthev2
+crypto/dthev2/aes
+crypto/dthev2/md5
+crypto/dthev2/sha224
+crypto/dthev2/sha256
+crypto/dthev2/sha384
+crypto/dthev2/sha512
 gpio
 hwrng
 hyperflash/mtd

@@ -51,8 +51,7 @@ fi
 INT_NUM=0
 TOTAL_INT_NUM=0
 INT_CHAN=`cat /proc/interrupts | grep -i "Level" | grep -c "dma-controller"`
-((INT_CHAN=INT_CHAN-1))
-for i in $(seq 0 $INT_CHAN)
+for i in $(seq 1 $INT_CHAN)
 do
    IRQ_NUM=`cat /proc/interrupts | grep -i "Level" | grep -i "dma-controller" | head -n $i | tail -n 1| cut -d':' -f 1`
    if [ $IRQ_NUM ]
