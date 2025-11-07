@@ -1,0 +1,1 @@
+FLUTTER_SAMPLE_3 source 'common.sh'; do_cmd "python3 flutter/flutter.py"
