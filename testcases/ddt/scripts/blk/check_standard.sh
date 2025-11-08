@@ -89,7 +89,7 @@ if [[ "$DEVICE_TYPE" = "mmc" ]]; then
   case $MACHINE in
     j721* | j7200* | j784s4* | am69* | am68* | j742s2* )
       regaddr="0x04FB00FE";;
-    am62* | am64xx* | j722* )
+    am62* | beagleplay* | am64xx* | j722* )
       regaddr="0x0FA000FE";;
     *)
       die "No MMCSD1_HOST_CONTROLLER_VER register address for this platform in ltp-ddt/testcases/ddt/scripts/blk/check_standard.sh";;

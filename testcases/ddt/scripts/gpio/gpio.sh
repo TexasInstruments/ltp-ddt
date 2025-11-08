@@ -133,7 +133,7 @@ do_cmd "cat /sys/kernel/debug/gpio"
 
 platforms=("am180x-evm|omapl138-lcdk" "am335x-|beaglebone|beaglebone-black" "am335x-sk" 
            "beagleboard" "k2hk-evm|k2e-evm|k2l-evm" "am654x-evm|am654x-idk" "j721e" 
-           "j784" "j742" "am64xx|am62xx|am62axx|am62dxx|am62lxx" "j721s" "j7200" "am68|am69" "k2g-evm"
+           "j784" "j742" "am64xx|am62xx|beagleplay|am62axx|am62dxx|am62lxx" "j721s" "j7200" "am68|am69" "k2g-evm"
            "dra7xx-evm|am572x-idk|am571x-idk|am574x-idk" "am57xx-evm" 
            "am43xx-epos|am43xx-gpevm|am437x-idk" "am62p")
 

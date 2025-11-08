@@ -318,6 +318,9 @@ case $MACHINE in
               ;;
           esac
       ;;
+      beagleplay*)
+        die "No on-board i2c slave device exists for beagleplay."
+      ;;
   *)
     die "Invalid Machine name! No I2C slave addr found in get_i2c_slave_addr.sh"
                 ;;

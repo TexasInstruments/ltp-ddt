@@ -75,7 +75,7 @@ if [ "$expected_mode" = "" ]; then
 			dra7xx-evm | dra72x-evm )
 				expected_mode="HS200";;
 			 # Set expected eMMC bus mode to HS200 for am62px/j722s due to silicon errata i2458
-			am654x-evm | am654x-idk | j721e* | am62lxx* | am62xxsip* | am62xx* | am62axx* | am62dxx* | am64xx-evm | am64xx-hsevm | j722s*)
+			am654x-evm | am654x-idk | j721e* | am62lxx* | am62xxsip* | am62xx* | beagleplay* | am62axx* | am62dxx* | am64xx-evm | am64xx-hsevm | j722s*)
 				expected_mode="HS200";;
 			j7200* | j721s* | j784* | j742* | am69*)
 				expected_mode="HS400";;

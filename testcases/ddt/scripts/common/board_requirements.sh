@@ -65,8 +65,8 @@ get_acceptable_memory_size()
     am62xxsip*)
       # AM62 SK has 512MB */
       expected_memory=500000 ;;
-    am62xx*|am64xx*)
-      # AM62 SK & AM62 LP SK have 2GB */
+    am62xx*|am64xx*|beagleplay*)
+      # AM62 SK, AM62 LP SK, Beagleplay have 2GB */
       # AM64 SK/EVM have 2GB */
       expected_memory=1953125 ;;
     am62axx*)

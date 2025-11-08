@@ -70,7 +70,7 @@ for i in range(len(planes)):
         "CRTC_W": side,
         "CRTC_H": side,
     }
-    if re.match("am62.*|am62a.*|am62d.*|am62l.*|am62p.*|am62xxsip.*|am64.*|am65.*|am68.*|am69.*|j721.*|j722.*|j742.*|j784.*", platform, re.I):
+    if re.match("am62.*|am62a.*|am62d.*|am62l.*|am62p.*|am62xxsip.*|am64.*|am65.*|am68.*|am69.*|j721.*|j722.*|j742.*|j784.*|beagleplay.*", platform, re.I):
         p_props["zpos"] = i
         p_props["alpha"] = int(65535/(i+1))
     else:

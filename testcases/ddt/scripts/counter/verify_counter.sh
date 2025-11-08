@@ -147,6 +147,9 @@ case $MACHINE in
 	am64xx*)
 		eqep_inst=1
 		;;
+	beagleplay*)
+		die "No EQEP counter enabled for beagleplay."
+		;;
 esac
 
 ########################### REUSABLE TEST LOGIC ###############################
