@@ -30,7 +30,7 @@ case $platform in
     am62p)
         candata="mcu_mcan0 mcu_mcan1 main_mcan0 main_mcan1"
         ;;
-    am62*)
+    am62*|beagleplay*)
         candata="mcu_mcan0 mcu_mcan1 main_mcan0"
         ;;
     am64*)

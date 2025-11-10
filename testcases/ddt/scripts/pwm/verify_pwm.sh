@@ -168,6 +168,9 @@ case $MACHINE in
 		ecap_inst=3
 		ehrpwm_inst=5
 		;;
+	beagleplay*)
+		ecap_isnt=1
+		;;
 esac
 
 ########################### REUSABLE TEST LOGIC ###############################

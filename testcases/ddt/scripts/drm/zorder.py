@@ -43,7 +43,7 @@ for i in range(len(planes)):
     fbs.append(pykms.DumbFramebuffer(card, w, h, pykms.PixelFormat.RGB888))
     pykms.draw_rect(fbs[i], 0, 0, int(w/l_div), int(h/l_div), pykms.RGB(255*(1 & 2**(i%3)), 255*((2 & 2**(i%3)) >> i), 255*((4 & 2**(i%3)) >> i)))
 
-if not re.match("am62.*|am62a.*||am62d.*|am62l.*|am62p.*|am62xxsip.*|am5.*|am64.*|am65.*|am68.*|am69.*|j721.*|j722.*|j742.*|j784.*", platform, re.I):
+if not re.match("am62.*|am62a.*||am62d.*|am62l.*|am62p.*|am62xxsip.*|am5.*|am64.*|am65.*|am68.*|am69.*|j721.*|j722.*|j742.*|j784.*|beagleplay.*", platform, re.I):
     crtc.set_props({
         "trans-key-mode": 0,
         "trans-key": 0,
@@ -69,7 +69,7 @@ for i in range(len(planes)):
         "CRTC_W": int(w/l_div),
         "CRTC_H": int(h/l_div),
     }
-    if re.match("am62.*|am65.*|j721.*|j722.*|j784.*|j742.*|am68.*|am69.*", platform, re.I):
+    if re.match("am62.*|am65.*|j721.*|j722.*|j784.*|j742.*|am68.*|am69.*|beagleplay.*", platform, re.I):
         p_props["zpos"] = i
     else:
         p_props["zorder"] = i

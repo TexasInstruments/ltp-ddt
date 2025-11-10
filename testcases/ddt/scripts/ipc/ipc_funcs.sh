@@ -249,13 +249,13 @@ ins_pru_mods()
     am65*|am64*)
       local __modules=(pruss pru_rproc icssg_prueth rpmsg_pru)
     ;;
-    am62xxsip*|am62xx*)
+    am62xxsip*|am62xx*|beagleplay*)
       local __modules=(pruss pru_rproc rpmsg_pru)
     ;;
   esac
 
   case $MACHINE in
-    am57*|am43xx*|am335x*|am65*|am64*|am62xxsip*|am62xx*)
+    am57*|am43xx*|am335x*|am65*|am64*|am62xxsip*|am62xx*|beagleplay*)
       for __mod in ${__modules[@]}
       do
         modprobe ${__mod}
@@ -304,7 +304,7 @@ start_mpm_daemon()
 get_num_remote_procs()
 {
   case $SOC in
-    *j721*|*j722*|*j7200*|*am64xx*|*am62xx*|*am65*|*j784*|*j742*|*am68*|*am69*|*am62xxsip*|*am62pxx*)
+    *j721*|*j722*|*j7200*|*am64xx*|*am62xx*|*am65*|*j784*|*j742*|*am68*|*am69*|*am62xxsip*|*am62pxx*|beagleplay*)
       # returns only those procs that have ping-pong
       echo $(cat /sys/class/remoteproc/*/name | grep -iE 'r5f|dsp|m4f' | wc -l)  
       ;;
@@ -945,7 +945,7 @@ rpmsg_client_sample_test()
   local __delay=3
   
   case $SOC in
-    *j721*|*j722*|*j7200*|*am64xx*|*am62xx*|*am65*|*j784*|*j742*|*am68*|*am69*|*am62xxsip*|*am62pxx*)
+    *j721*|*j722*|*j7200*|*am64xx*|*am62xx*|*am65*|*j784*|*j742*|*am68*|*am69*|*am62xxsip*|*am62pxx*|beagleplay*)
         rpmsg_client_sample_test_k3 $*
         return $?
     ;;
@@ -1150,7 +1150,7 @@ list_rprocs()
     am64xx)
       echo "78000000.r5f 78400000.r5f 5000000.m4fss"
     ;;
-    am62xxsip|am62xx)
+    am62xxsip|am62xx|beagleplay*)
       echo "78000000.r5f 5000000.m4fss"
     ;;
     am62pxx|am62axx|am62lxx)
