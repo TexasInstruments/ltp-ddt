@@ -33,7 +33,7 @@ fi
                                                                                 
 for rtc_node in  ${DEV_NODE[@]};
 do
-	udev_output=`udevadm info --a --name=$rtc_node | grep $1`
+	udev_output=`udevadm info --attribute-walk --name=$rtc_node | grep $1`
 	if [ ! -z "$udev_output" ]; then
 		echo $rtc_node 
 		exit 0
