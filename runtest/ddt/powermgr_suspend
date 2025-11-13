@@ -20,13 +20,13 @@ POWERMGR_L_STRESS_SIMPLE_STANDBY source 'functions.sh'; suspend -i 100 -p "stand
 
 POWERMGR_XL_STRESS_SIMPLE_STANDBY source 'functions.sh'; suspend -i 1000 -p "standby"
 
-POWERMGR_XS_FUNC_SIMPLE_SUSPEND_OFF source 'functions.sh'; OM_PATH='/sys/kernel/debug/pm_debug/enable_off_mode'; do_cmd "echo 1 > ${OM_PATH}" && suspend -i 2 -p "mem" && do_cmd "echo 0 > ${OM_PATH}" || ("echo 0 > ${OM_PATH}"; exit 1)
+POWERMGR_XS_FUNC_SIMPLE_SUSPEND_OFF source 'functions.sh'; OM_PATH='/sys/kernel/debug/pm_debug/enable_off_mode'; do_cmd "echo 1 > ${OM_PATH}" && suspend -i 2 -p "mem" && do_cmd "echo 0 > ${OM_PATH}" || ("echo 0 > ${OM_PATH}"; echo "Verify PM_DEBUG is enabled"; exit 1)
 
-POWERMGR_S_FUNC_SIMPLE_SUSPEND_OFF source 'functions.sh'; OM_PATH='/sys/kernel/debug/pm_debug/enable_off_mode'; do_cmd "echo 1 > ${OM_PATH}" && suspend -i 10 -p "mem" && do_cmd "echo 0 > ${OM_PATH}" || ("echo 0 > ${OM_PATH}"; exit 1)
+POWERMGR_S_FUNC_SIMPLE_SUSPEND_OFF source 'functions.sh'; OM_PATH='/sys/kernel/debug/pm_debug/enable_off_mode'; do_cmd "echo 1 > ${OM_PATH}" && suspend -i 10 -p "mem" && do_cmd "echo 0 > ${OM_PATH}" || ("echo 0 > ${OM_PATH}"; echo "Verify PM_DEBUG is enabled"; exit 1)
 
-POWERMGR_L_STRESS_SIMPLE_SUSPEND_OFF source 'functions.sh'; OM_PATH='/sys/kernel/debug/pm_debug/enable_off_mode'; do_cmd "echo 1 > ${OM_PATH}" && suspend -i 100 -p "mem" && do_cmd "echo 0 > ${OM_PATH}" || ("echo 0 > ${OM_PATH}"; exit 1)
+POWERMGR_L_STRESS_SIMPLE_SUSPEND_OFF source 'functions.sh'; OM_PATH='/sys/kernel/debug/pm_debug/enable_off_mode'; do_cmd "echo 1 > ${OM_PATH}" && suspend -i 100 -p "mem" && do_cmd "echo 0 > ${OM_PATH}" || ("echo 0 > ${OM_PATH}"; echo "Verify PM_DEBUG is enabled"; exit 1)
 
-POWERMGR_XL_STRESS_SIMPLE_SUSPEND_OFF source 'functions.sh'; OM_PATH='/sys/kernel/debug/pm_debug/enable_off_mode'; do_cmd "echo 1 > ${OM_PATH}" && suspend -i 1000 -p "mem" && do_cmd "echo 0 > ${OM_PATH}" || ("echo 0 > ${OM_PATH}"; exit 1)
+POWERMGR_XL_STRESS_SIMPLE_SUSPEND_OFF source 'functions.sh'; OM_PATH='/sys/kernel/debug/pm_debug/enable_off_mode'; do_cmd "echo 1 > ${OM_PATH}" && suspend -i 1000 -p "mem" && do_cmd "echo 0 > ${OM_PATH}" || ("echo 0 > ${OM_PATH}"; echo "Verify PM_DEBUG is enabled"; exit 1)
 
 POWERMGR_S_FUNC_SUSPEND_STANDBY source 'functions.sh'; declare -a arr=("mem" "standby"); for i in `seq 10`; do test_print_trc "Outer Loop: $i"; suspend -i 1 -p ${arr[$(( $RANDOM % 2 )) ]}; done
 
