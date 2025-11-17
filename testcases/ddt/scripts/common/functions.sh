@@ -509,12 +509,20 @@ suspend()
                 : ${usb_module:=''};;
     esac      
 
+    case "$MACHINE" in        
+        am335x-evm|am335x-sk|beaglebone|beaglebone-black|beaglebone_green_eco-gp)
+                rtc_dev="/dev/rtc1";;                                          
+        *)                                                              
+                rtc_dev="/dev/rtc0";;
+    esac 
+
     test_print_trc "suspend function: power_state: $power_state"
     test_print_trc "suspend function: max_stime: $max_stime"
     test_print_trc "suspend function: max_atime: $max_atime"
     test_print_trc "suspend function: iterations: $_iterations"
     test_print_trc "suspend function: usb_remove: $usb_remove"
     test_print_trc "suspend function: usb_module: $usb_module"
+    test_print_trc "suspend function: rtc_dev: $rtc_dev"
 
     enable_pm_debug_messages
 
@@ -540,19 +548,19 @@ suspend()
       # clear dmesg before suspend
       dmesg -c > /dev/null
       local suspend_failures=`get_value_for_key_from_file /sys/kernel/debug/suspend_stats fail :`
-      if [ -e /dev/rtc0 ]; then
+      if [ -e ${rtc_dev} ]; then
           report "Use rtc to suspend resume, adding 10 secs to suspend time"
           suspend_time=$((suspend_time+10))
           # sending twice in case a late interrupt aborted the suspend path.
           # since this is not common, it is expected that 2 tries should be enough
-          rtcwake -d /dev/rtc0 -m ${power_state} -s ${suspend_time} || rtcwake -d /dev/rtc0 -m ${power_state} -s $(expr ${suspend_time} + 10) || die "rtcwake failed 2 consecutive times"
+          rtcwake -d ${rtc_dev} -m ${power_state} -s ${suspend_time} || rtcwake -d ${rtc_dev} -m ${power_state} -s $(expr ${suspend_time} + 10) || die "rtcwake failed 2 consecutive times"
       elif [ -e $DEBUGFS_LOCATION/pm_debug/wakeup_timer_seconds ]; then
           report "Use wakeup_timer"
           report "suspend(sec=$sec msec=$msec off=$off bug=$bug)"
           echo -n "$power_state" > /sys/power/state
       else
           # Stop the test if there is no rtcwake or wakeup_timer support 
-          die "There is no automated way (wakeup_timer or /dev/rtc0) to wakeup the board. No suspend!"
+          die "There is no automated way (wakeup_timer or ${rtc_dev}) to wakeup the board. No suspend!" 
       fi
      
       if [ $usb_remove = 2 ]; then
