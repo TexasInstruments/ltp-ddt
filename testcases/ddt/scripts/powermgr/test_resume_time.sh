@@ -71,8 +71,21 @@ while [ $i -lt $t_iteration ]; do
   test_print_trc "===test_resume_time iteration $i==="
   dmesg -c > /dev/null
   suspend -p "$power_state" -t "$max_stime" -i 1
-  expect="PM: resume of devices complete after"
-  r_time=`dmesg |grep -i "$expect" |cut -d" " -f8`
+
+  case "$MACHINE" in
+    am62pxx_sk-fs|am62axx_sk-fs|am62pxx_sk-fs|am62lxx_evm-fs|am62dxx_evm-fs|am62xx*)
+      r_start_expect="Enabling non-boot CPUs";;
+    *)
+      r_start_expect="PM: Wakeup source";;
+  esac
+  r_end_expect="PM: suspend exit"
+
+  r_start_time=`dmesg |grep -i "$r_start_expect" | grep -oE '[0-9]+\.[0-9]+'`
+  r_end_time=`dmesg |grep -i "$r_end_expect" | grep -oE '[0-9]+\.[0-9]+'`
+  r_time=$( bc -l <<< "scale=6; $r_end_time - $r_start_time" )
+
+  test_print_trc "Iteration $i resume latency: $r_time"
+
   if (( $(echo "$r_time > $r_time_threshold" | bc -l) )); then
     die "It takes too long to resume" 
   fi
