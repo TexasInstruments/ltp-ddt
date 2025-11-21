@@ -479,11 +479,12 @@ no_suspend()
 #                              0 indicates 'dont care'; 1 indicates 'remove usb module'; 2 indicates 'do not remove usb module'
 #   -m usb_module   optional; usb_module to indicate the name of usb module to be removed; default to ''
 #   -a max_atime    optional; maximum active time between suspend calls; default to 5s; it will be a random number
+#   -c suspend_console  optional; suspend console prints; default to '0' to keep console prints; '1' for suspending console prints
 suspend()
 {
     OPTIND=1 
     local _iterations
-    while getopts :p:t:i:u:m: arg
+    while getopts :p:t:a:i:u:m:c: arg
     do case $arg in
       p)  power_state="$OPTARG";;
       t)  max_stime="$OPTARG";;
@@ -491,6 +492,7 @@ suspend()
       i)  _iterations="$OPTARG";;
       u)  usb_remove="$OPTARG";;
       m)  usb_module="$OPTARG";;
+      c)  suspend_console="$OPTARG";;
 
       \?)  test_print_trc "Invalid Option -$OPTARG ignored." >&2
       exit 1
@@ -505,6 +507,7 @@ suspend()
     : ${_iterations:='1'}
     : ${usb_remove:='0'}
     : ${usb_module:=''}
+    : ${suspend_console:='0'}
 
     case "$MACHINE" in        
         am335x-evm|am335x-sk|beaglebone|beaglebone-black|beaglebone_green_eco-gp)
@@ -519,9 +522,14 @@ suspend()
     test_print_trc "suspend function: iterations: $_iterations"
     test_print_trc "suspend function: usb_remove: $usb_remove"
     test_print_trc "suspend function: usb_module: $usb_module"
+    test_print_trc "suspend function: suspend_console: $suspend_console"
     test_print_trc "suspend function: rtc_dev: $rtc_dev"
 
     enable_pm_debug_messages
+
+    if [ $suspend_console -eq 1 ]; then
+        suspend_console
+    fi
 
     if [ $use_wakelock -ne 0 ]; then
         report "removing wakelock $PSID (sec=$sec msec=$msec off=$off bug=$bug)"
@@ -620,6 +628,14 @@ check_suspend_stats()
 {
     local failures=`get_value_for_key_from_file /sys/kernel/debug/suspend_stats fail :`
     [ $((failures - $1)) -le 1 ] || die "/sys/kernel/debug/suspend_stats reports failures"
+}
+
+suspend_console()
+{
+    local consoles=$(find /sys/bus/platform/devices/*.serial/ -name console)
+    for console in ${consoles}; do
+        echo -n N > ${console}
+    done
 }
 
 check_cpufreq_files() {
