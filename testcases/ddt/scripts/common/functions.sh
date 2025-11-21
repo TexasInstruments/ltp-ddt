@@ -503,11 +503,8 @@ suspend()
     : ${max_stime:='10'}
     : ${max_atime:='5'}
     : ${_iterations:='1'}
-    case $MACHINE in                                                  
-        *)                                                              
-                : ${usb_remove:='0'}
-                : ${usb_module:=''};;
-    esac      
+    : ${usb_remove:='0'}
+    : ${usb_module:=''}
 
     case "$MACHINE" in        
         am335x-evm|am335x-sk|beaglebone|beaglebone-black|beaglebone_green_eco-gp)
