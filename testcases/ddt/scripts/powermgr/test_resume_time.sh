@@ -70,7 +70,7 @@ i=0
 while [ $i -lt $t_iteration ]; do
   test_print_trc "===test_resume_time iteration $i==="
   dmesg -c > /dev/null
-  suspend -p "$power_state" -t "$max_stime" -i 1
+  suspend -p "$power_state" -t "$max_stime" -i 1 -c 1
 
   case "$MACHINE" in
     am62pxx_sk-fs|am62axx_sk-fs|am62pxx_sk-fs|am62lxx_evm-fs|am62dxx_evm-fs|am62xx*)
