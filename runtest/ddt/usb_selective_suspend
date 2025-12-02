@@ -1,0 +1,6 @@
+# @name USB Selective Suspend Test
+# @desc Tests USB selective suspend/resume functionality by toggling USB ethernet interface up/down
+# @requires usb/host
+# @setup_requires usbhosteth
+
+USBHOST_S_FUNC_SELECTIVE_SUSPEND source 'common.sh'; iface_list=`get_active_eth_interfaces.sh`; echo "${iface_list[@]}"; iface=`usb_eth_search_device.sh 'usb'` || die "error getting usb eth interface name"; usb_dev=`ls -alh /sys/class/net/${iface}/ | grep 'device ->' | sed 's/.*\([0-9]-[0-9]\+\(\.[0-9]\+\)\?\).*/\1/'` || die "error getting usb device number"; echo "USB device number: $usb_dev"; ls -alh /sys/bus/usb/devices/${usb_dev}/power; do_cmd "do_eth_up_down.sh -i $iface -d up"; echo "auto" > /sys/bus/usb/devices/${usb_dev}/power/control; sleep 2; status=$(cat /sys/bus/usb/devices/${usb_dev}/power/runtime_status); echo "Runtime status with interface UP: $status"; [ "$status" = "active" ] || die "Expected runtime_status to be 'active' with interface UP, got: $status"; do_cmd "do_eth_up_down.sh -i $iface -d down"; sleep 5; status=$(cat /sys/bus/usb/devices/${usb_dev}/power/runtime_status); echo "Runtime status with interface DOWN: $status"; [ "$status" = "suspended" ] || die "Expected runtime_status to be 'suspended' with interface DOWN, got: $status";
