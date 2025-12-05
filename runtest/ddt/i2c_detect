@@ -1,15 +1,9 @@
 # @name I2C detect
-# @desc Using i2c-detect utility to detect the attached slaves 
-# @requires i2c 
+# @desc Using i2c-detect utility to detect the attached slaves
+# @requires i2c
 
-I2C_S_FUNC_I2CDETECT source 'common.sh'; i2cbus=`ls /dev/i2c* |head -1 |cut -d'-' -f2`; do_cmd i2cdetect -y -r "$i2cbus" 
+I2C_S_FUNC_I2CDETECT source 'common.sh'; if [[ -z "${IRQ}" ]]; then i2cbus=`ls /dev/i2c* |head -1 |cut -d'-' -f2`; else i2c=`cat /proc/interrupts | grep "i2c" | grep "$IRQ" | awk '{print $NF}'` && i2cbus=`dmesg | grep "$i2c" | awk '/bus/ {print $(NF-4)}'`; fi; do_cmd i2cdetect -y -r "$i2cbus"
 
-I2C_M_FUNC_I2CDETECT_20TIMES source 'common.sh'; i2cbus=`ls /dev/i2c* |head -1 |cut -d'-' -f2`; loop=20; i=0; while [ $i -lt $loop ]; do echo "===i2cdetect loop $i"; do_cmd i2cdetect -y -r "$i2cbus"; i=`expr $i + 1`; done 
+I2C_M_FUNC_I2CDETECT_20TIMES source 'common.sh'; i2cbus=`ls /dev/i2c* |head -1 |cut -d'-' -f2`; loop=20; i=0; while [ $i -lt $loop ]; do echo "===i2cdetect loop $i"; do_cmd i2cdetect -y -r "$i2cbus"; i=`expr $i + 1`; done
 
-I2C_S_FUNC_GET_FUNCTIONALITY source 'common.sh'; i2c_bus_numbers=`get_i2c_test_busses.sh` || die "No I2C buses being found"; for i2c_bus in $i2c_bus_numbers; do echo "Testing i2c-$i2c_bus "; i2cdetect -F $i2c_bus; done 
- 
-
-
-
-
-
+I2C_S_FUNC_GET_FUNCTIONALITY source 'common.sh'; i2c_bus_numbers=`get_i2c_test_busses.sh` || die "No I2C buses being found"; for i2c_bus in $i2c_bus_numbers; do echo "Testing i2c-$i2c_bus "; i2cdetect -F $i2c_bus; done
