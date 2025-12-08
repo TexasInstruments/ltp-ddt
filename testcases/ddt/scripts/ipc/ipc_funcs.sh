@@ -1088,6 +1088,18 @@ list_prus()
   esac
 }
 
+
+#sub function to search rpmsg sysfs entries for pru devices
+list_rpmsg_prus()
+{
+	for i in $(seq 0 15)
+	do
+		if [ -e "/sys/class/rpmsg/rpmsg${i}" ] && ls -l "/sys/class/rpmsg/rpmsg${i}" | grep -q "^.*pru.*$"; then
+		echo "/dev/rpmsg${i}"
+	fi
+	done
+}
+
 # Funtion to obtain the list of pru devices
 # Returns the list of PRU devices based on the MACHINE var value
 list_pru_devs()
@@ -1116,16 +1128,10 @@ list_pru_devs()
       done
     ;;
     am64*)
-      for i in `seq 0 7`
-      do
-        echo "/dev/rpmsg_pru3${i}"
-      done
+      list_rpmsg_prus
     ;;
     am62*)
-      for i in `seq 0 1`
-      do
-        echo "/dev/rpmsg_pru3${i}"
-      done
+      list_rpmsg_prus
     ;;
     *)
       echo "Machine ${MACHINE} not supported"
