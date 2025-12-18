@@ -71,7 +71,7 @@ check_state(){
 
     if [ "$state" = "CLK_STATE_NOT_READY" ]; then
         echo " Given clock id is not ready... Enabling clock id $clk_id"
-        cmd_enable_clock $clk_id
+        cmd_enable_clock $dev_id $clk_id
         status=$(cmd_dump_clock_state $dev_id $clk_id)
         state=$(echo $status | awk -F":" '{print $2}' | xargs)
         if [ "$state" = "CLK_STATE_NOT_READY" ]; then
