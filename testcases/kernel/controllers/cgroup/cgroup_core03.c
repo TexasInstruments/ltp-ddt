@@ -5,8 +5,6 @@
  */
 
 /*\
- * [Description]
- *
  * This test is copied from kselftest
  * tools/testing/selftests/cgroup/test_kill.c.
  *
@@ -24,7 +22,7 @@
 #define PID_NUM MIN(MAX_PID_NUM, (tst_ncpus_available() + 1))
 #define BUF_LEN (20 * PID_NUM)
 
-static int *data_ptr;
+static tst_atomic_t *data_ptr;
 static char *buf;
 static struct tst_cg_group *cg_child_test_simple;
 

@@ -4,8 +4,6 @@
  */
 
 /*\
- * [Description]
- *
  * Verify the basic functionality of futex(FUTEX_CMP_REQUEUE).
  *
  * futex(FUTEX_CMP_REQUEUE) can wake up the number of waiters specified
@@ -24,8 +22,8 @@
 
 struct shared_data {
 	futex_t futexes[2];
-	int spurious;
-	int test_done;
+	tst_atomic_t spurious;
+	tst_atomic_t test_done;
 };
 
 static struct shared_data *sd;

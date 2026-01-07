@@ -4,8 +4,6 @@
  */
 
 /*\
- * [Description]
- *
  * CVE-2017-1000111
  *
  * Check for race condition between packet_set_ring() and tp_reserve.
@@ -123,7 +121,7 @@ static struct tst_test test = {
 	.test_all = run,
 	.setup = setup,
 	.cleanup = cleanup,
-	.runtime = 150,
+	.min_runtime = 150,
 	.needs_kconfigs = (const char *[]) {
 		"CONFIG_USER_NS=y",
 		"CONFIG_NET_NS=y",

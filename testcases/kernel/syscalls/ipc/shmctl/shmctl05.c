@@ -4,8 +4,6 @@
  */
 
 /*\
- * [Description]
- *
  * Regression test for commit
  * 3f05317d9889 (ipc/shm: fix use-after-free of shm file via remap_file_pages()).
  *
@@ -106,7 +104,7 @@ static void cleanup(void)
 }
 
 static struct tst_test test = {
-	.runtime = 10,
+	.min_runtime = 40,
 	.setup = setup,
 	.test_all = do_test,
 	.cleanup = cleanup,

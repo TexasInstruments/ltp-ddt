@@ -5,8 +5,6 @@
  */
 
 /*\
- * [Description]
- *
  * Tests a slave mount: slave mount is like a shared mount except that
  * mount and umount events only propagate towards it.
  *
@@ -21,15 +19,19 @@
  *   mount
  * - There are two testcases (where X is parent namespace and Y child
  *   namespace):
- *  1. First test case
- *   .. X: bind mounts DIRB to DIRA
- *   .. Y: must see the file DIRA/"B"
- *   .. X: umounts DIRA
- *  2. Second test case
- *   .. Y: bind mounts DIRB to DIRA
- *   .. X: must see only the DIRA/"A" and must not see DIRA/"B" (as slave mount does
- *         not forward propagation)
- *   .. Y: umounts DIRA
+ *
+ *   1. First test case
+ *
+ *     - X: bind mounts DIRB to DIRA
+ *     - Y: must see the file DIRA/"B"
+ *     - X: umounts DIRA
+ *
+ *   2. Second test case
+ *
+ *     - Y: bind mounts DIRB to DIRA
+ *     - X: must see only the DIRA/"A" and must not see DIRA/"B" (as slave mount does
+ *          not forward propagation)
+ *     - Y: umounts DIRA
  */
 
 #include <sys/wait.h>

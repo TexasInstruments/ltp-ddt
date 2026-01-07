@@ -5,8 +5,6 @@
  */
 
 /*\
- * [Description]
- *
  * Clone a process with CLONE_NEWPID flag and check for the maxium amount of
  * nested containers.
  */
@@ -23,7 +21,7 @@ static const struct tst_clone_args args = {
 	.flags = CLONE_NEWPID,
 	.exit_signal = SIGCHLD,
 };
-static int *level;
+static tst_atomic_t *level;
 
 static pid_t child_func(void)
 {

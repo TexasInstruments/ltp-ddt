@@ -4,8 +4,6 @@
  */
 
 /*\
- * [Description]
- *
  * Detect heavy swapping during first time swap use.
  *
  * This case is used for testing kernel commit:
@@ -40,8 +38,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include "tst_test.h"
 #include "tst_safe_stdio.h"
-#include "mem.h"
 
 /* allow swapping 1 * phy_mem in maximum */
 #define COE_DELTA       1

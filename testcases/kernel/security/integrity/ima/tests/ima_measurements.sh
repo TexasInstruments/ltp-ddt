@@ -1,19 +1,20 @@
 #!/bin/sh
 # SPDX-License-Identifier: GPL-2.0-or-later
 # Copyright (c) 2009 IBM Corporation
-# Copyright (c) 2018-2021 Petr Vorel <pvorel@suse.cz>
+# Copyright (c) 2018-2025 Petr Vorel <pvorel@suse.cz>
 # Author: Mimi Zohar <zohar@linux.ibm.com>
 #
 # Verify that measurements are added to the measurement list based on policy.
+# Test requires either ima_policy=tcb or example policy loadable with LTP_IMA_LOAD_POLICY=1.
 
 TST_NEEDS_CMDS="awk cut sed"
 TST_SETUP="setup"
 TST_CNT=3
+REQUIRED_BUILTIN_POLICY="tcb"
+REQUIRED_POLICY_CONTENT='tcb.policy'
 
 setup()
 {
-	require_ima_policy_cmdline "tcb"
-
 	TEST_FILE="$PWD/test.txt"
 	[ -f "$IMA_POLICY" ] || tst_res TINFO "not using default policy"
 }
@@ -70,10 +71,16 @@ test3()
 	local user="nobody"
 	local dir="$PWD/user"
 	local file="$dir/test.txt"
+	local cmd="grep $file $ASCII_MEASUREMENTS"
 
 	# Default policy does not measure user files
 	tst_res TINFO "verify not measuring user files"
 	tst_check_cmds sudo || return
+
+	if [ "$IMA_MISSING_POLICY_CONTENT" = 1 ]; then
+		tst_res TCONF "test requires specific policy, try load it with LTP_IMA_LOAD_POLICY=1"
+		return
+	fi
 
 	if ! id $user >/dev/null 2>/dev/null; then
 		tst_res TCONF "missing system user $user (wrong installation)"
@@ -87,7 +94,11 @@ test3()
 	sudo -n -u $user sh -c "echo $(cat /proc/uptime) user file > $file; cat $file > /dev/null"
 	cd ..
 
-	EXPECT_FAIL "grep $file $ASCII_MEASUREMENTS"
+	if ! tst_rod "$cmd" 2> /dev/null; then
+		tst_res TPASS "$cmd failed as expected"
+	else
+		tst_res $IMA_FAIL "$cmd passed unexpectedly"
+	fi
 }
 
 . ima_setup.sh

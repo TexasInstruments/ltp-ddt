@@ -4,8 +4,6 @@
  */
 
 /*\
- * [Description]
- *
  * Create a file using buffered writes while other processes are doing
  * O_DIRECT reads and check if the buffer reads always see zero.
  */
@@ -30,7 +28,7 @@ static int numchildren = 8;
 static long long writesize = 32 * 1024 * 1024;
 static long long readsize = 32 * 1024 * 1024;
 static long long filesize = 128 * 1024 * 1024;
-static int *children_completed;
+static tst_atomic_t *children_completed;
 static char *iobuf;
 static int fd;
 

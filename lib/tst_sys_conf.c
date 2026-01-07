@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
+#include <ctype.h>
 
 #define TST_NO_DEFAULT_MAIN
 #include "tst_test.h"
@@ -145,3 +146,66 @@ void tst_sys_conf_restore(int verbose)
 	}
 }
 
+int tst_read_bool_sys_param(const char *filename)
+{
+	char buf[PATH_MAX];
+	int i, fd, ret;
+
+	fd = open(filename, O_RDONLY);
+
+	if (fd < 0)
+		return -1;
+
+	ret = read(fd, buf, PATH_MAX - 1);
+	SAFE_CLOSE(fd);
+
+	if (ret < 1)
+		return -1;
+
+	buf[ret] = '\0';
+
+	for (i = 0; buf[i] && !isspace(buf[i]); i++)
+		;
+
+	buf[i] = '\0';
+
+	if (isdigit(buf[0])) {
+		tst_parse_int(buf, &ret, INT_MIN, INT_MAX);
+		return ret;
+	}
+
+	if (!strcasecmp(buf, "N"))
+		return 0;
+
+	/* Assume that any other value than 0 or N means the param is enabled */
+	return 1;
+}
+
+long tst_sys_conf_long_get_(const char *file, const int lineno,
+			    const char *path)
+{
+	long ret;
+
+	safe_file_scanf(file, lineno, NULL, path, "%ld", &ret);
+
+	return ret;
+}
+
+void tst_sys_conf_long_set_(const char *file, const int lineno,
+			    const char *path, long val, int check)
+{
+	tst_res_(file, lineno, TINFO, "Setting %s to %ld", path, val);
+
+	safe_file_printf(file, lineno, NULL, path, "%ld", val);
+
+	if (check) {
+		long read_val;
+
+		safe_file_scanf(file, lineno, NULL, path, "%ld", &read_val);
+
+		if (val != read_val)
+			tst_brk_(file, lineno, TBROK,
+				 "Wrote %ld to %s but read back %ld",
+				 val, path, read_val);
+	}
+}

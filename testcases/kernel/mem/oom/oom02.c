@@ -4,8 +4,6 @@
  * Copyright (c) Linux Test Project, 2011-2023
  */
 /*\
- * [Description]
- *
  * Out Of Memory (OOM) test for mempolicy - need NUMA system support
  */
 
@@ -16,11 +14,12 @@
 #include <fcntl.h>
 #include <stdio.h>
 #if HAVE_NUMA_H
-#include <numa.h>
+# include <numa.h>
 #endif
 
+#include "tst_test.h"
 #include "numa_helper.h"
-#include "mem.h"
+#include "oom.h"
 
 #ifdef HAVE_NUMA_V2
 

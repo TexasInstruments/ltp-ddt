@@ -5,8 +5,6 @@
  */
 
 /*\
- * [Description]
- *
  * On some old ppc64 kernel, when hpage is mmaped on 32 bit boundary and
  * normal page below it, it triggers the bug caused by off-by-one error.
  *
@@ -45,7 +43,7 @@ static void run_test(void)
 		below_start = FOURGB;
 		above_end = 1024ULL*1024*1024*1024;
 
-		if (range_is_mapped(below_start, above_end) == 1) {
+		if (tst_mapping_in_range(below_start, above_end) == 1) {
 			tst_res(TINFO|TERRNO, "region 4G-IT is not free & "
 					"mmap() failed expected");
 			tst_res(TPASS, "Successful but inconclusive");
@@ -70,7 +68,7 @@ static void run_test(void)
 		below_start = FOURGB - MMAP_GRANULARITY;
 		above_end = FOURGB;
 
-		if (range_is_mapped(below_start, above_end) == 1) {
+		if (tst_mapping_in_range(below_start, above_end) == 1) {
 			tst_res(TINFO|TERRNO, "region (4G-MMAP_GRANULARITY)-4G is not free & "
 					"mmap() failed expected");
 			tst_res(TPASS, "Successful but inconclusive");

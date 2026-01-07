@@ -4,8 +4,6 @@
  *    AUTHOR		: Saji Kumar.V.R <saji.kumar@wipro.com>
  */
 /*\
- * [Description]
- *
  * Gets round-robin time quantum by calling sched_rr_get_interval() and
  * checks that the value is sane.
  *
@@ -44,6 +42,8 @@ static void setup(void)
 	tst_res(TINFO, "Testing variant: %s", tv->desc);
 
 	tp.type = tv->ts_type;
+
+	tst_check_rt_group_sched_support();
 
 	if ((sys_sched_setscheduler(0, SCHED_RR, &p)) == -1)
 		tst_res(TFAIL | TERRNO, "sched_setscheduler() failed");

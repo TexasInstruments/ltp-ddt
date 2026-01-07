@@ -5,8 +5,6 @@
  */
 
 /*\
- * [Description]
- *
  * Basic test for the BLKRRPART ioctl, it is the same as blockdev
  * --rereadpt command.
  */
@@ -25,15 +23,6 @@
 static char dev_path[1024];
 static int dev_num, attach_flag, dev_fd;
 static char loop_partpath[1026], sys_loop_partpath[1026];
-
-static void change_partition(const char *const cmd[])
-{
-	int ret;
-
-	ret = tst_cmd(cmd, NULL, NULL, TST_CMD_PASS_RETVAL);
-	if (ret)
-		tst_brk(TBROK, "parted return %i", ret);
-}
 
 static void check_partition(int part_num, bool value)
 {
@@ -66,14 +55,14 @@ static void verify_ioctl(void)
 					      "mklabel", "msdos", "mkpart",
 					      "primary", "ext4", "1M", "10M",
 					      NULL};
-	const char *const cmd_parted_new[] = {"parted", "-s", "test.img",
+	const char *const cmd_parted_new[] = {"parted", "-s", dev_path,
 					      "mklabel", "msdos", "mkpart",
 					      "primary", "ext4", "1M", "10M",
 					      "mkpart", "primary", "ext4",
 					      "10M", "20M", NULL};
 	struct loop_info loopinfo = {0};
 
-	change_partition(cmd_parted_old);
+	SAFE_CMD(cmd_parted_old, NULL, NULL);
 	tst_attach_device(dev_path, "test.img");
 	attach_flag = 1;
 
@@ -82,7 +71,7 @@ static void verify_ioctl(void)
 	check_partition(1, true);
 	check_partition(2, false);
 
-	change_partition(cmd_parted_new);
+	SAFE_CMD(cmd_parted_new, NULL, NULL);
 	TST_RETRY_FUNC(ioctl(dev_fd, BLKRRPART, 0), TST_RETVAL_EQ0);
 	check_partition(1, true);
 	check_partition(2, true);

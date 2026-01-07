@@ -1,7 +1,7 @@
 #!/bin/sh
 # SPDX-License-Identifier: GPL-2.0-or-later
 # Copyright (c) 2009 IBM Corporation
-# Copyright (c) 2018-2020 Petr Vorel <pvorel@suse.cz>
+# Copyright (c) 2018-2025 Petr Vorel <pvorel@suse.cz>
 # Author: Mimi Zohar <zohar@linux.ibm.com>
 
 TST_TESTFUNC="test"
@@ -11,6 +11,7 @@ TST_CLEANUP_CALLER="$TST_CLEANUP"
 TST_CLEANUP="ima_cleanup"
 TST_NEEDS_ROOT=1
 TST_MOUNT_DEVICE=1
+TST_SKIP_LSM_WARNINGS=1
 
 # TST_MOUNT_DEVICE can be unset, therefore specify explicitly
 TST_NEEDS_TMPDIR=1
@@ -18,6 +19,9 @@ TST_NEEDS_TMPDIR=1
 SYSFS="/sys"
 UMOUNT=
 TST_FS_TYPE="ext3"
+
+IMA_FAIL="TFAIL"
+IMA_BROK="TBROK"
 
 # TODO: find support for rmd128 rmd256 rmd320 wp256 wp384 tgr128 tgr160
 compute_digest()
@@ -72,34 +76,28 @@ require_policy_readable()
 	fi
 }
 
+check_policy_writable()
+{
+	[ -f $IMA_POLICY ] || return 1
+	# workaround for kernels < v4.18 without fix
+	# ffb122de9a60b ("ima: Reflect correct permissions for policy")
+	echo "" 2> log > $IMA_POLICY
+	grep -q "Device or resource busy" log && return 1
+	return 0
+}
+
 require_policy_writable()
 {
-	local err="IMA policy already loaded and kernel not configured to enable multiple writes to it (need CONFIG_IMA_WRITE_POLICY=y)"
-
-	[ -f $IMA_POLICY ] || tst_brk TCONF "$err"
-	# CONFIG_IMA_READ_POLICY
-	echo "" 2> log > $IMA_POLICY
-	grep -q "Device or resource busy" log && tst_brk TCONF "$err"
+	check_policy_writable || tst_brk TCONF \
+		"IMA policy already loaded and kernel not configured to enable multiple writes to it (need CONFIG_IMA_WRITE_POLICY=y)"
 }
 
 check_ima_policy_content()
 {
 	local pattern="$1"
-	local grep_params="${2--q}"
 
 	check_policy_readable || return 1
-	grep $grep_params "$pattern" $IMA_POLICY
-}
-
-require_ima_policy_content()
-{
-	local pattern="$1"
-	local grep_params="${2--q}"
-
-	require_policy_readable
-	if ! grep $grep_params "$pattern" $IMA_POLICY; then
-		tst_brk TCONF "IMA policy does not specify '$pattern'"
-	fi
+	grep -q "$pattern" $IMA_POLICY
 }
 
 check_ima_policy_cmdline()
@@ -158,8 +156,103 @@ print_ima_config()
 	tst_res TINFO "/proc/cmdline: $(cat /proc/cmdline)"
 }
 
+# Check for required
+# 1) IMA builtin policy (based on /proc/cmdline)
+# 2) IMA policy content (actual content of /sys/kernel/security/ima/policy)
+# When missing CONFIG_IMA_READ_POLICY=y on required policy convert: test, but convert TFAIL => TCONF.
+# $REQUIRED_POLICY_CONTENT: file with required IMA policy
+# $REQUIRED_BUILTIN_POLICY: IMA policy specified as kernel cmdline
+# return: 1 if need to load policy 0 otherwise
+verify_ima_policy()
+{
+	local check_content line
+	local file="$TST_DATAROOT/$REQUIRED_POLICY_CONTENT"
+
+	if [ -z "$REQUIRED_POLICY_CONTENT" -a -z "$REQUIRED_BUILTIN_POLICY" ]; then
+		return 0
+	fi
+
+	if [ -n "$REQUIRED_POLICY_CONTENT" ]; then
+		check_content=1
+		if [ -n "$REQUIRED_BUILTIN_POLICY" ] && check_ima_policy_cmdline "$REQUIRED_BUILTIN_POLICY"; then
+			tst_res TINFO "booted with IMA policy: $REQUIRED_BUILTIN_POLICY"
+			return 0
+		fi
+	elif [ -n "$REQUIRED_BUILTIN_POLICY" ]; then
+		require_ima_policy_cmdline "$REQUIRED_BUILTIN_POLICY"
+	fi
+
+	if [ "$check_content" = 1 ]; then
+		[ -e $file ] || tst_brk TBROK "policy file '$file' does not exist (LTPROOT=$LTPROOT)"
+		tst_res TINFO "test requires IMA policy:"
+		cat $file
+		if check_policy_readable; then
+			# check IMA policy content
+			while read line; do
+				if ! grep -q "$line" $IMA_POLICY; then
+					tst_res TINFO "WARNING: missing required policy content: '$line'"
+					IMA_MISSING_POLICY_CONTENT=1
+					return 1
+				fi
+			done < $file
+			tst_res TINFO "SUT has required policy content"
+		else
+			tst_res TINFO "WARNING: policy is not readable, failure will be treated as TCONF"
+			IMA_FAIL="TCONF"
+			IMA_BROK="TCONF"
+			return 1
+		fi
+	fi
+	return 0
+}
+
+load_ima_policy()
+{
+	local file="$TST_DATAROOT/$REQUIRED_POLICY_CONTENT"
+	local ret
+
+	if [ "$LTP_IMA_LOAD_POLICY" != 1 ]; then
+		if [ "$IMA_MISSING_POLICY_CONTENT" = 1 ]; then
+			tst_brk TCONF "missing required policy, example policy can be loaded with LTP_IMA_LOAD_POLICY=1"
+		fi
+		return
+	fi
+
+	tst_res TINFO "trying to load '$file' policy:"
+	cat $file
+	if ! check_policy_writable; then
+		tst_res TINFO "WARNING: IMA policy already loaded and kernel not configured to enable multiple writes to it (need CONFIG_IMA_WRITE_POLICY=y), reboot required, failures will be treated as TCONF"
+		IMA_FAIL="TCONF"
+		IMA_BROK="TCONF"
+		LTP_IMA_LOAD_POLICY=
+		return
+	fi
+
+	cat "$file" 2> log > $IMA_POLICY
+	ret=$?
+	if grep -q "Device or resource busy" log; then
+		tst_brk TBROK "loading policy failed"
+	fi
+
+	if grep -q "write error: Permission denied" log; then
+		tst_brk TCONF "loading unsigned policy failed"
+	fi
+
+	if [ $ret -ne 0 ]; then
+		tst_brk TBROK "loading policy failed"
+	fi
+
+	IMA_POLICY_LOADED=1
+
+	tst_res TINFO "example policy successfully loaded"
+	IMA_FAIL="TFAIL"
+	IMA_BROK="TBROK"
+}
+
 ima_setup()
 {
+	local load_policy
+
 	SECURITYFS="$(mount_helper securityfs $SYSFS/kernel/security)"
 
 	IMA_DIR="$SECURITYFS/ima"
@@ -180,7 +273,16 @@ ima_setup()
 		cd "$TST_MNTPOINT"
 	fi
 
+	verify_ima_policy
+	load_policy=$?
+
+	# Run setup in case of TCONF before loading policy
 	[ -n "$TST_SETUP_CALLER" ] && $TST_SETUP_CALLER
+
+	if [ "$load_policy" = 1 ]; then
+		load_ima_policy
+	fi
+
 }
 
 ima_cleanup()
@@ -192,6 +294,10 @@ ima_cleanup()
 	for dir in $UMOUNT; do
 		umount $dir
 	done
+
+	if [ "$IMA_POLICY_LOADED" = 1 ]; then
+		tst_res TINFO "WARNING: policy loaded via LTP_IMA_LOAD_POLICY=1, reboot recommended"
+	fi
 }
 
 set_digest_index()
@@ -204,7 +310,7 @@ set_digest_index()
 	# parse digest index
 	# https://www.kernel.org/doc/html/latest/security/IMA-templates.html#use
 	case "$template" in
-	ima|ima-ng|ima-sig) DIGEST_INDEX=4 ;;
+	ima|ima-buf|ima-ng|ima-sig) DIGEST_INDEX=4 ;;
 	*)
 		# using ima_template_fmt kernel parameter
 		local IFS="|"
@@ -286,7 +392,7 @@ ima_check()
 		algorithm=$(cat tmp | cut -d'|' -f1)
 		digest=$(cat tmp | cut -d'|' -f2)
 	else
-		tst_brk TBROK "failed to get algorithm/digest for '$test_file'"
+		tst_brk $IMA_BROK "failed to get algorithm/digest for '$test_file'"
 	fi
 
 	tst_res TINFO "computing digest for $algorithm algorithm"
@@ -341,6 +447,13 @@ require_evmctl()
 	if ! check_evmctl $required; then
 		tst_brk TCONF "evmctl >= $required required"
 	fi
+}
+
+# 56dc986a6b20b ("ima: require signed IMA policy when UEFI secure boot is enabled") # v6.5-rc4
+check_need_signed_policy()
+{
+	tst_secureboot_enabled && tst_kvcmp -ge '6.5' && tst_require_kconfigs \
+		'CONFIG_IMA_KEYRINGS_PERMIT_SIGNED_BY_BUILTIN_OR_SECONDARY'
 }
 
 # loop device is needed to use only for tmpfs

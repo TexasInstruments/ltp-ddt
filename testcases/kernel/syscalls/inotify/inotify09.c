@@ -6,8 +6,6 @@
  */
 
 /*\
- * [Description]
- *
  * Test for inotify mark connector destruction race.
  *
  * Kernels prior to 4.17 have a race when the last fsnotify mark on the inode
@@ -98,6 +96,7 @@ static struct tst_test test = {
 	.cleanup = cleanup,
 	.test_all = verify_inotify,
 	.runtime = 150,
+	.min_runtime = 2,
 	.tags = (const struct tst_tag[]) {
 		{"linux-git", "d90a10e2444b"},
 		{}

@@ -4,8 +4,6 @@
  */
 
 /*\
- * [Description]
- *
  * Prerequisites:
  *
  * ksm and ksmtuned daemons need to be disabled. Otherwise, it could
@@ -38,7 +36,7 @@
 #include <signal.h>
 #include <stdio.h>
 #include <unistd.h>
-#include "mem.h"
+#include "tst_test.h"
 #include "ksm_common.h"
 
 #ifdef HAVE_NUMA_V2
@@ -63,7 +61,7 @@ static void verify_ksm(void)
 	}
 	create_same_memory(size, num, unit);
 
-	write_cpusets(tst_cg, node);
+	write_node_cpusets(tst_cg, node);
 	create_same_memory(size, num, unit);
 }
 

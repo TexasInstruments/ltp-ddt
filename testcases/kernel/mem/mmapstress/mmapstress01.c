@@ -6,7 +6,6 @@
  * 10/03/2022	Refactor to LTP framework	edliaw@google.com
  */
 /*\
- * [Description]
  * This test stresses mmaps, without dealing with fragments or anything!
  * It forks a specified number of children,
  * all of whom mmap the same file, make a given number of accesses
@@ -159,7 +158,7 @@ static void child_mapper(char *file, unsigned int procno, unsigned int nprocs)
 	nloops = (randloops) ? (lrand48() % MAXLOOPS) : MAXLOOPS;
 
 	if (debug)
-		tst_res(TINFO, "child %d (pid %d): seed %d, fsize %lld, mapsize %ld, off %lld, loop %d",
+		tst_res(TINFO, "child %u (pid %d): seed %d, fsize %lld, mapsize %ld, off %lld, loop %d",
 			procno, getpid(), seed, (long long)filesize,
 			(long)mapsize, (long long)offset / pagesize, nloops);
 
@@ -179,7 +178,7 @@ static void child_mapper(char *file, unsigned int procno, unsigned int nprocs)
 		for (i = procno; i < validsize; i += nprocs) {
 			if (*((unsigned char *)(paddr + i))
 			    != ((procno + pattern) & 0xff))
-				tst_brk(TFAIL, "child %d: invalid data <x%x>\n"
+				tst_brk(TFAIL, "child %u: invalid data <x%x>\n"
 					" at pg %d off %d, exp <x%x>", procno,
 					*((unsigned char *)(paddr + i)),
 					randpage, i, (procno + pattern) & 0xff);

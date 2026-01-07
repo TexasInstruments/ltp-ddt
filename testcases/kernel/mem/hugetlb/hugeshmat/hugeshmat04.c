@@ -55,7 +55,7 @@ static void shared_hugepage(void)
 		tst_brk(TBROK | TERRNO, "shmget");
 
 	while (boundary <= BOUNDARY_MAX
-		&& range_is_mapped(boundary, boundary+SIZE))
+		&& tst_mapping_in_range(boundary, boundary+SIZE))
 		boundary += 128*1024*1024;
 	if (boundary > BOUNDARY_MAX)
 		tst_brk(TCONF, "failed to find free unmapped range");
@@ -82,7 +82,7 @@ static void setup(void)
 	long hpage_size, orig_hugepages;
 	unsigned long new_shmmax;
 
-	orig_hugepages = get_sys_tune("nr_hugepages");
+	orig_hugepages = TST_SYS_CONF_LONG_GET("/proc/sys/vm/nr_hugepages");
 	SAFE_FILE_SCANF(PATH_SHMMAX, "%lu", &new_shmmax);
 
 	if (new_shmmax < SIZE)

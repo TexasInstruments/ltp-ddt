@@ -5,8 +5,6 @@
  */
 
 /*\
- * [Description]
- *
  * This code tests the following flags:
  *
  * - AT_STATX_FORCE_SYNC
@@ -114,6 +112,9 @@ static void setup(void)
 {
 	int ret;
 	char server_path[BUFF_SIZE];
+
+	if (access("/var/lib/nfs/etab", F_OK) < 0)
+		tst_brk(TCONF, "nfs-server might not set up");
 
 	mode_t old_umask = umask(0);
 

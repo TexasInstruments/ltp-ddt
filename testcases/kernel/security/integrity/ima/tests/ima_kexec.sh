@@ -1,12 +1,13 @@
 #!/bin/sh
 # SPDX-License-Identifier: GPL-2.0-or-later
 # Copyright (c) 2020 Microsoft Corporation
-# Copyright (c) 2020 Petr Vorel <pvorel@suse.cz>
+# Copyright (c) 2020-2025 Petr Vorel <pvorel@suse.cz>
 # Author: Lachlan Sneff <t-josne@linux.microsoft.com>
 #
 # Verify that kexec cmdline is measured correctly.
 # Test attempts to kexec the existing running kernel image.
 # To kexec a different kernel image export IMA_KEXEC_IMAGE=<pathname>.
+# Test requires example IMA policy loadable with LTP_IMA_LOAD_POLICY=1.
 
 TST_NEEDS_CMDS="grep kexec sed"
 TST_CNT=3
@@ -14,7 +15,7 @@ TST_SETUP="setup"
 TST_MIN_KVER="5.3"
 
 IMA_KEXEC_IMAGE="${IMA_KEXEC_IMAGE:-/boot/vmlinuz-$(uname -r)}"
-REQUIRED_POLICY='^measure.*func=KEXEC_CMDLINE'
+REQUIRED_POLICY_CONTENT='kexec.policy'
 
 measure()
 {
@@ -41,15 +42,38 @@ measure()
 
 setup()
 {
-	tst_res TINFO "using kernel $IMA_KEXEC_IMAGE"
+	local arch
+
+	if [ ! -f "$IMA_KEXEC_IMAGE" ]; then
+		for arg in $(cat /proc/cmdline); do
+			if echo "$arg" |grep -q '^BOOT_IMAGE'; then
+				eval "$arg"
+			fi
+		done
+
+		tst_res TINFO "using as kernel BOOT_IMAGE from /proc/cmdline: '$BOOT_IMAGE'"
+
+		# replace grub partition, e.g. (hd0,gpt2) => /boot
+		if echo "$BOOT_IMAGE" |grep -q '(.d[0-9]'; then
+			echo "$BOOT_IMAGE" | sed 's|(.*,.*)/|/boot/|'
+		fi
+
+		if [ -f "$BOOT_IMAGE" ]; then
+			IMA_KEXEC_IMAGE="$BOOT_IMAGE"
+		fi
+	fi
 
 	if [ ! -f "$IMA_KEXEC_IMAGE" ]; then
 		tst_brk TCONF "kernel image not found, specify path in \$IMA_KEXEC_IMAGE"
 	fi
 
-	if check_policy_readable; then
-		require_ima_policy_content "$REQUIRED_POLICY"
-		policy_readable=1
+	tst_res TINFO "using kernel $IMA_KEXEC_IMAGE"
+
+	tst_res TINFO "$(kexec -v)"
+
+	REUSE_CMDLINE_SUPPORTED=
+	if kexec -h 2>&1 | grep -q reuse-cmdline; then
+		REUSE_CMDLINE_SUPPORTED=1
 	fi
 }
 
@@ -79,11 +103,14 @@ kexec_test()
 {
 	local param="$1"
 	local cmdline="$2"
-	local res=TFAIL
 	local kexec_cmd
 
 	kexec_cmd="$param=$cmdline"
 	if [ "$param" = '--reuse-cmdline' ]; then
+		if [ "$REUSE_CMDLINE_SUPPORTED" != 1 ]; then
+			tst_res TCONF "--reuse-cmdline not supported"
+			return
+		fi
 		cmdline="$(sed 's/BOOT_IMAGE=[^ ]* //' /proc/cmdline)"
 		kexec_cmd="$param"
 	fi
@@ -97,13 +124,10 @@ kexec_test()
 
 	ROD kexec -su
 	if ! measure "$cmdline"; then
-		if [ "$policy_readable" != 1 ]; then
-			tst_res TWARN "policy not readable, it might not contain required policy '$REQUIRED_POLICY'"
-			res=TBROK
-		fi
-		tst_brk $res "unable to find a correct measurement"
+		tst_res $IMA_FAIL "unable to find a correct measurement"
+	else
+		tst_res TPASS "kexec cmdline was measured correctly"
 	fi
-	tst_res TPASS "kexec cmdline was measured correctly"
 }
 
 test()

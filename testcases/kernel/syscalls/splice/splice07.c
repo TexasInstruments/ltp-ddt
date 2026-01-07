@@ -5,8 +5,6 @@
  */
 
 /*\
- * [Description]
- *
  * Iterate over all kinds of file descriptors and feed splice() with all possible
  * combinations where at least one file descriptor is invalid. We do expect the
  * syscall to fail either with EINVAL or EBADF.
@@ -29,6 +27,7 @@ static void check_splice(struct tst_fd *fd_in, struct tst_fd *fd_out)
 		case TST_FD_UNIX_SOCK:
 		case TST_FD_INET_SOCK:
 		case TST_FD_MEMFD:
+		case TST_FD_MEMFD_SECRET:
 			return;
 		default:
 		break;
@@ -42,6 +41,7 @@ static void check_splice(struct tst_fd *fd_in, struct tst_fd *fd_out)
 		case TST_FD_FILE:
 		case TST_FD_PROC_MAPS:
 		case TST_FD_MEMFD:
+		case TST_FD_MEMFD_SECRET:
 			return;
 		/* And this complains about socket not being connected */
 		case TST_FD_INET_SOCK:

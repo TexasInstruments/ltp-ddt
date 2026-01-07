@@ -5,8 +5,6 @@
  * Copyright (c) 2020-2021 SUSE LLC <rpalethorpe@suse.com>
  */
 /*\
- * [Description]
- *
  * The LTP CGroups API tries to present a consistent interface to the
  * many possible CGroup configurations a system could have.
  *
@@ -255,5 +253,9 @@ int safe_cg_occursin(const char *file, const int lineno,
 			 const struct tst_cg_group *const cg,
 			 const char *const file_name,
 			 const char *const needle);
+
+int tst_cg_memory_recursiveprot(struct tst_cg_group *cg);
+
+void tst_check_rt_group_sched_support(void);
 
 #endif /* TST_CGROUP_H */

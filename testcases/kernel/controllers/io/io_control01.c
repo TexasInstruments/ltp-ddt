@@ -4,8 +4,6 @@
  */
 /*\
  *
- * [Description]
- *
  * Perform some I/O on a file and check if at least some of it is
  * recorded by the I/O controller.
  *
@@ -64,11 +62,10 @@ static void run(void)
 		if (convs < 2)
 			continue;
 
-		tst_res(TINFO, "Found %u:%u in io.stat", dev_major, dev_minor);
-
-		if (start.mjr == dev_major || start.mnr == dev_minor)
+		if (start.mjr == dev_major && start.mnr == dev_minor) {
+			tst_res(TINFO, "Found %u:%u in io.stat", dev_major, dev_minor);
 			break;
-
+		}
 		line = strtok_r(NULL, "\n", &buf_ptr);
 	}
 

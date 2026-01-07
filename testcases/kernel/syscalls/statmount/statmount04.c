@@ -4,8 +4,6 @@
  */
 
 /*\
- * [Description]
- *
  * This test verifies that statmount() is correctly reading propagation from
  * what mount in current namespace using STATMOUNT_PROPAGATE_FROM.
  *
@@ -94,10 +92,6 @@ static struct tst_test test = {
 	.mount_device = 1,
 	.mntpoint = MNTPOINT,
 	.all_filesystems = 1,
-	.skip_filesystems = (const char *const []) {
-		"fuse",
-		NULL
-	},
 	.bufs = (struct tst_buffers []) {
 		{&st_mount, .size = sizeof(struct statmount)},
 		{}

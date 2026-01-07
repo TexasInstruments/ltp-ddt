@@ -116,11 +116,6 @@ metadata documentation:
     sha1 ltp-full-YYYYMMDD.tar.xz > ltp-full-YYYYMMDD.tar.xz.sha1
     sha256sum ltp-full-YYYYMMDD.tar.xz > ltp-full-YYYYMMDD.tar.xz.sha256
 
-    # Generate metadata documentation
-    ./configure --with-metadata-generator=asciidoctor
-    make -C metadata
-    cp -v docparse/metadata.html ../metadata.YYYYMMDD.html
-
 You can use :master:`tools/create-tarballs-metadata.sh` script to have the above
 procedure automated. All generated files are placed in the
 ``ltp-release-YYYYMMDD`` directory.
@@ -143,7 +138,6 @@ procedure automated. All generated files are placed in the
     ===== Generate metadata documentation =====
     checking for a BSD-compatible install... /usr/bin/install -c
     ...
-    'docparse/metadata.html' -> '/home/foo/ltp-release-YYYYMMDD/metadata.YYYYMMDD.html'
     Generated files are in '/home/foo/ltp-release-YYYYMMDD', upload them to github
 
 Upload the generated files to GitHub
@@ -160,9 +154,10 @@ Send release announcement
 
 The announcement is sent to:
 
-* ltp at lists.linux.it
+* ltp at lists.linux.it (requires a subscription)
 * linux-kernel at vger.kernel.org
-* libc-alpha at sourceware.org
+* libc-alpha at sourceware.org (requires a subscription)
+* valgrind-developers at lists.sourceforge.net (requires a subscription)
 
 CCed to:
 

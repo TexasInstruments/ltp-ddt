@@ -20,6 +20,9 @@ setup()
 	[ -f $INVALID_POLICY ] || tst_brk TCONF "missing $INVALID_POLICY"
 }
 
+# NOTE: function spaws a new process, therefore it should not call tst_brk()
+# (or otherwise exit a test), because that calls ima_cleanup() twice (which
+# breaks umount on TMPDIR or removing TMPDIR).
 load_policy()
 {
 	local ret
@@ -64,12 +67,15 @@ test2()
 	load_policy $VALID_POLICY & p2=$!
 	wait "$p1"; rc1=$?
 	wait "$p2"; rc2=$?
+
 	if [ $rc1 -eq 0 ] && [ $rc2 -eq 0 ]; then
 		tst_res TFAIL "policy opened concurrently"
 	elif [ $rc1 -eq 0 ] || [ $rc2 -eq 0 ]; then
 		tst_res TPASS "policy was loaded just by one process and able to loaded multiple times"
+	elif check_need_signed_policy; then
+		tst_res TCONF "policy have to be signed"
 	else
-		tst_res TFAIL "problem loading or extending policy (may require policy to be signed)"
+		tst_res TFAIL "problem loading or extending policy"
 	fi
 }
 

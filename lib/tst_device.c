@@ -3,6 +3,7 @@
  * Copyright (C) 2014 Cyril Hrubis chrubis@suse.cz
  */
 
+#define _GNU_SOURCE
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/ioctl.h>
@@ -17,6 +18,7 @@
 #include <sys/sysmacros.h>
 #include <linux/btrfs.h>
 #include <linux/limits.h>
+#include <sys/statfs.h>
 #include "lapi/syscalls.h"
 #include "test.h"
 #include "safe_macros.h"
@@ -427,27 +429,67 @@ int tst_umount(const char *path)
 	return -1;
 }
 
-int tst_is_mounted(const char *path)
+int tst_mount_has_opt(const char *path, const char *opt)
 {
 	char line[PATH_MAX];
+	char abspath[PATH_MAX];
 	FILE *file;
 	int ret = 0;
+
+	if (!realpath(path, abspath)) {
+		tst_resm(TWARN | TERRNO, "realpath(%s) failed", path);
+		return 0;
+	}
 
 	file = SAFE_FOPEN(NULL, "/proc/mounts", "r");
 
 	while (fgets(line, sizeof(line), file)) {
-		if (strstr(line, path) != NULL) {
+		char mount_point[PATH_MAX], options[PATH_MAX];
+
+		if (sscanf(line, "%*s %s %*s %s", mount_point, options) < 2)
+			continue;
+
+		if (strcmp(mount_point, abspath) != 0)
+			continue;
+
+		if (!opt) {
 			ret = 1;
 			break;
 		}
+
+		char *tok = strtok(options, ",");
+		while (tok) {
+			if (strcmp(tok, opt) == 0) {
+				ret = 1;
+				break;
+			}
+			tok = strtok(NULL, ",");
+		}
+		if (ret)
+			break;
 	}
 
 	SAFE_FCLOSE(NULL, file);
+	return ret;
+}
 
+int tst_is_mounted(const char *path)
+{
+	int ret = tst_mount_has_opt(path, NULL);
 	if (!ret)
 		tst_resm(TINFO, "No device is mounted at %s", path);
 
 	return ret;
+}
+
+int tst_is_mounted_ro(const char *path)
+{
+	return tst_mount_has_opt(path, "ro");
+}
+
+int tst_is_mounted_rw(const char *path)
+{
+	return tst_mount_has_opt(path, "rw");
 }
 
 int tst_is_mounted_at_tmpdir(const char *path)
@@ -520,20 +562,189 @@ unsigned long tst_dev_bytes_written(const char *dev)
 	return dev_bytes_written;
 }
 
+static void btrfs_get_uevent_path(char *tmp_path, char *uevent_path)
+{
+	int fd;
+	struct btrfs_ioctl_fs_info_args args = {0};
+	char btrfs_uuid_str[UUID_STR_SZ];
+	struct dirent *d;
+	char bdev_path[PATH_MAX];
+	DIR *dir;
+
+	tst_resm(TINFO, "Use BTRFS specific strategy");
+
+	fd = SAFE_OPEN(NULL, tmp_path, O_DIRECTORY);
+	if (!ioctl(fd, BTRFS_IOC_FS_INFO, &args)) {
+		sprintf(btrfs_uuid_str,
+			UUID_FMT,
+			args.fsid[0], args.fsid[1],
+			args.fsid[2], args.fsid[3],
+			args.fsid[4], args.fsid[5],
+			args.fsid[6], args.fsid[7],
+			args.fsid[8], args.fsid[9],
+			args.fsid[10], args.fsid[11],
+			args.fsid[12], args.fsid[13],
+			args.fsid[14], args.fsid[15]);
+		sprintf(bdev_path,
+			"/sys/fs/btrfs/%s/devices", btrfs_uuid_str);
+	} else {
+		tst_brkm(TBROK | TERRNO, NULL, "BTRFS ioctl on %s failed.", tmp_path);
+	}
+	SAFE_CLOSE(NULL, fd);
+
+	dir = SAFE_OPENDIR(NULL, bdev_path);
+	while ((d = SAFE_READDIR(NULL, dir))) {
+		if (d->d_name[0] != '.')
+			break;
+	}
+
+	uevent_path[0] = '\0';
+
+	if (d)
+		sprintf(uevent_path, "%s/%s/uevent", bdev_path, d->d_name);
+	else
+		tst_brkm(TBROK | TERRNO, NULL, "No backing device found while looking in %s", bdev_path);
+
+	if (SAFE_READDIR(NULL, dir))
+		tst_resm(TINFO, "Warning: used first of multiple backing device.");
+
+	SAFE_CLOSEDIR(NULL, dir);
+}
+
+static char *overlay_mount_from_dev(dev_t dev)
+{
+	unsigned int dev_major, dev_minor, mnt_major, mnt_minor;
+	FILE *fp;
+	char line[4096];
+	char *mountpoint;
+	int ret;
+
+	dev_major = major(dev);
+	dev_minor = minor(dev);
+
+	fp = SAFE_FOPEN(NULL, "/proc/self/mountinfo", "r");
+	while (fgets(line, sizeof(line), fp) != NULL) {
+		ret = sscanf(line, "%*d %*d %u:%u %*s %ms",
+			     &mnt_major, &mnt_minor, &mountpoint);
+		if (ret != 3)
+			tst_brkm(TBROK, NULL,
+				 "failed to parse mountinfo line: '%s'",
+				 line);
+		if (mnt_major == dev_major && mnt_minor == dev_minor)
+			break;
+		free(mountpoint);
+		mountpoint = NULL;
+	}
+	SAFE_FCLOSE(NULL, fp);
+	if (!mountpoint)
+		tst_brkm(TBROK, NULL,
+			 "Unable to find mount entry for device %u:%u",
+			 dev_major, dev_minor);
+
+	return mountpoint;
+}
+
+static char *overlay_get_upperdir(char *mountpoint)
+{
+	FILE *mntf;
+	struct mntent *mnt;
+	char *optstr, *optstart, *optend;
+	char *upperdir = NULL;
+
+	mntf = setmntent("/proc/self/mounts", "r");
+	if (!mntf)
+		tst_brkm(TBROK | TERRNO, NULL, "Can't open /proc/self/mounts");
+
+	while ((mnt = getmntent(mntf)) != NULL) {
+		if (strcmp(mnt->mnt_dir, mountpoint))
+			continue;
+
+		if (strcmp(mnt->mnt_type, "overlay"))
+			tst_brkm(TBROK, NULL,
+				 "expected overlayfs on mount point \"%s\", but it is of type %s.",
+				 mountpoint, mnt->mnt_type);
+
+		optstr = hasmntopt(mnt, "upperdir");
+
+		if (optstr) {
+			optstart = strchr(optstr, '=');
+			optstart++;
+			optend = strchrnul(optstr, ',');
+			upperdir = strndup(optstart, optend - optstart);
+			break;
+		}
+
+		tst_brkm(TBROK, NULL,
+			 "mount point %s does not contain an upperdir",
+			 mountpoint);
+	}
+	endmntent(mntf);
+
+	if (!upperdir)
+		tst_brkm(TBROK, NULL,
+			 "Unable to find mount point \"%s\" in mount table",
+			 mountpoint);
+
+	return upperdir;
+}
+
+/*
+ * To get from a file or directory on an overlayfs to a device
+ * for an underlying mountpoint requires the following steps:
+ *
+ * 1. stat() the pathname and pick out st_dev.
+ * 2. use the st_dev to look up the mount point of the file
+ *    system in /proc/self/mountinfo
+ *
+ * Because 'mountinfo' is a much more complicated file format than
+ * 'mounts', we switch to looking up the mount point in /proc/mounts,
+ * and use the mntent.h helpers to parse the entries.
+ *
+ * 3. Using getmntent(), find the entry for the mount point identified
+ *    in step 2.
+ * 4. Call hasmntopt() to find the upperdir option, and parse that
+ *    option to get to the path name for the upper directory.
+ * 5. Call stat on the upper directory.  This should now contain
+ *    the major and minor number for the underlying device (assuming
+ *    that there aren't nested overlay file systems).
+ * 6. Populate the uevent path.
+ *
+ * Example /proc/self/mountinfo line for overlayfs:
+ *    471 69 0:48 / /tmp rw,relatime shared:242 - overlay overlay rw,seclabel,lowerdir=/tmp,upperdir=/mnt/upper/upper,workdir=/mnt/upper/work,uuid=null
+ *
+ * See section 3.5 of the kernel's Documentation/filesystems/proc.rst file
+ * for a detailed explanation of the mountinfo format.
+ */
+static void overlay_get_uevent_path(char *tmp_path, char *uevent_path)
+{
+	struct stat st;
+	char *mountpoint, *upperdir;
+
+	tst_resm(TINFO, "Use OVERLAYFS specific strategy");
+
+	SAFE_STAT(NULL, tmp_path, &st);
+
+	mountpoint = overlay_mount_from_dev(st.st_dev);
+	upperdir = overlay_get_upperdir(mountpoint);
+	free(mountpoint);
+
+	SAFE_STAT(NULL, upperdir, &st);
+	free(upperdir);
+
+	tst_resm(TINFO, "WARNING: used first of multiple backing devices");
+	sprintf(uevent_path, "/sys/dev/block/%d:%d/uevent",
+		major(st.st_dev), minor(st.st_dev));
+}
+
 __attribute__((nonnull))
 void tst_find_backing_dev(const char *path, char *dev, size_t dev_size)
 {
 	struct stat buf;
-	struct btrfs_ioctl_fs_info_args args = {0};
-	struct dirent *d;
+	struct statfs fsbuf;
 	char uevent_path[PATH_MAX+PATH_MAX+10]; //10 is for the static uevent path
 	char dev_name[NAME_MAX];
-	char bdev_path[PATH_MAX];
 	char tmp_path[PATH_MAX];
-	char btrfs_uuid_str[UUID_STR_SZ];
-	DIR *dir;
 	unsigned int dev_major, dev_minor;
-	int fd;
 
 	if (stat(path, &buf) < 0)
 		tst_brkm(TWARN | TERRNO, NULL, "stat() failed");
@@ -547,50 +758,15 @@ void tst_find_backing_dev(const char *path, char *dev, size_t dev_size)
 	dev_minor = minor(buf.st_dev);
 	*dev = '\0';
 
-	if (dev_major == 0) {
-		tst_resm(TINFO, "Use BTRFS specific strategy");
+	if (statfs(path, &fsbuf) < 0)
+		tst_brkm(TBROK | TERRNO, NULL, "statfs() failed");
 
-		fd = SAFE_OPEN(NULL, tmp_path, O_DIRECTORY);
-		if (!ioctl(fd, BTRFS_IOC_FS_INFO, &args)) {
-			sprintf(btrfs_uuid_str,
-				UUID_FMT,
-				args.fsid[0], args.fsid[1],
-				args.fsid[2], args.fsid[3],
-				args.fsid[4], args.fsid[5],
-				args.fsid[6], args.fsid[7],
-				args.fsid[8], args.fsid[9],
-				args.fsid[10], args.fsid[11],
-				args.fsid[12], args.fsid[13],
-				args.fsid[14], args.fsid[15]);
-			sprintf(bdev_path,
-				"/sys/fs/btrfs/%s/devices", btrfs_uuid_str);
-		} else {
-			if (errno == ENOTTY)
-				tst_brkm(TBROK | TERRNO, NULL, "BTRFS ioctl failed. Is %s on a tmpfs?", path);
-
-			tst_brkm(TBROK | TERRNO, NULL, "BTRFS ioctl on %s failed.", tmp_path);
-		}
-		SAFE_CLOSE(NULL, fd);
-
-		dir = SAFE_OPENDIR(NULL, bdev_path);
-		while ((d = SAFE_READDIR(NULL, dir))) {
-			if (d->d_name[0] != '.')
-				break;
-		}
-
-		uevent_path[0] = '\0';
-
-		if (d) {
-			sprintf(uevent_path, "%s/%s/uevent",
-				bdev_path, d->d_name);
-		} else {
-			tst_brkm(TBROK | TERRNO, NULL, "No backing device found while looking in %s.", bdev_path);
-		}
-
-		if (SAFE_READDIR(NULL, dir))
-			tst_resm(TINFO, "Warning: used first of multiple backing device.");
-
-		SAFE_CLOSEDIR(NULL, dir);
+	if (fsbuf.f_type == TST_BTRFS_MAGIC) {
+		btrfs_get_uevent_path(tmp_path, uevent_path);
+	} else if (fsbuf.f_type == TST_OVERLAYFS_MAGIC) {
+		overlay_get_uevent_path(tmp_path, uevent_path);
+	} else if (dev_major == 0) {
+		tst_brkm(TBROK, NULL, "%s resides on an unsupported pseudo-file system", path);
 	} else {
 		tst_resm(TINFO, "Use uevent strategy");
 		sprintf(uevent_path,

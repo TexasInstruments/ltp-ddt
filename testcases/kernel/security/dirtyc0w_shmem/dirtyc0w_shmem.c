@@ -4,8 +4,6 @@
  */
 
 /*\
- * [Description]
- *
  * This is a regression test for a write race that allowed unprivileged programs
  * to change readonly files located on tmpfs/shmem on the system using
  * userfaultfd "minor fault handling" (CVE-2022-2590).
@@ -106,6 +104,7 @@ static void cleanup(void)
 
 static struct tst_test test = {
 	.needs_checkpoints = 1,
+	.child_needs_reinit =1,
 	.forks_child = 1,
 	.needs_root = 1,
 	.runtime = 120,

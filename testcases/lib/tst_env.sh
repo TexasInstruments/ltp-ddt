@@ -18,11 +18,6 @@ if [ -z "$LINENO" ]; then
 	LINENO=-1
 fi
 
-if [ -z "$LTP_IPC_PATH" ]; then
-	echo "This script has to be executed from a LTP loader!"
-	exit 1
-fi
-
 tst_brk_()
 {
 	tst_res_ "$@"

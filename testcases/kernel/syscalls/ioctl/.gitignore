@@ -7,6 +7,7 @@
 /ioctl07
 /ioctl08
 /ioctl09
+/ioctl10
 /ioctl_loop01
 /ioctl_loop02
 /ioctl_loop03
@@ -28,3 +29,10 @@
 /ioctl_ficlone04
 /ioctl_ficlonerange01
 /ioctl_ficlonerange02
+/ioctl_fiemap01
+/ioctl_pidfd01
+/ioctl_pidfd02
+/ioctl_pidfd03
+/ioctl_pidfd04
+/ioctl_pidfd05
+/ioctl_pidfd06

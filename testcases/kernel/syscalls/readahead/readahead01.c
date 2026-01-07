@@ -5,13 +5,11 @@
  */
 
 /*\
- * [Description]
- *
  * Verify that readahead() syscall fails with:
  *
  * - EBADF when fd is not a valid file descriptor or is not open for reading.
  * - EINVAL when fd does not refer to a file type to which readahead()
- *          can be applied.
+ *   can be applied.
  */
 #define _GNU_SOURCE
 #include <errno.h>

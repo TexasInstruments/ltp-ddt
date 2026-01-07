@@ -4,8 +4,6 @@
  */
 
 /*\
- * [Description]
- *
  * CVE-2016-8655
  *
  * Check for race condition between packet_set_ring() and tp_version. On some
@@ -110,7 +108,7 @@ static struct tst_test test = {
 	.test_all = run,
 	.setup = setup,
 	.cleanup = cleanup,
-	.runtime = 270,
+	.min_runtime = 270,
 	.taint_check = TST_TAINT_W | TST_TAINT_D,
 	.needs_kconfigs = (const char *[]) {
 		"CONFIG_USER_NS=y",

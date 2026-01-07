@@ -5,8 +5,6 @@
  */
 
 /*\
- * [Description]
- *
  * Test for feature MS_BIND of mount, which performs a bind mount, making a file
  * or a directory subtree visible at another point within a file system.
  */
@@ -37,7 +35,7 @@ static void cleanup(void)
 	if (tst_is_mounted(MNTPOINT1))
 		SAFE_UMOUNT(MNTPOINT1);
 
-	if (tst_is_mounted(MNTPOINT2))
+	if (!access(MNTPOINT2, F_OK) && tst_is_mounted(MNTPOINT2))
 		SAFE_UMOUNT(MNTPOINT2);
 }
 

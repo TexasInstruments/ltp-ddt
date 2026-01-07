@@ -3,8 +3,6 @@
  * Copyright (c) 2021 Richard Palethorpe <rpalethorpe@suse.com>
  */
 /*
- * [Description]
- *
  * This verifies Fuzzy Sync's ability to reproduce a particular
  * outcome to a data race when multiple races are present.
  *
@@ -63,7 +61,7 @@ struct race {
 	const struct window b;
 };
 
-static int H, D;
+static tst_atomic_t H, D;
 static struct tst_fzsync_pair pair;
 
 /**
