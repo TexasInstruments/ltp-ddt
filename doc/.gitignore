@@ -1,4 +1,6 @@
+.venv/
 html/
 build/
 _static/syscalls.rst
+_static/tests.rst
 syscalls.tbl

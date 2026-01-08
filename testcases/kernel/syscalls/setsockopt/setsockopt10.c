@@ -3,8 +3,6 @@
  * Copyright (C) 2023 SUSE LLC Richard Palethorpe <rpalethorpe@suse.com>
  */
 /*\
- * [Description]
- *
  * Reproducer for CVE-2023-0461 which is an exploitable use-after-free
  * in a TLS socket. In fact it is exploitable in any User Level
  * Protocol (ULP) which does not clone its context when accepting a
@@ -147,7 +145,16 @@ static void run(void)
 	TST_CHECKPOINT_WAKE(1);
 
 	tst_res(TINFO, "parent: Disconnect by setting unspec address");
-	SAFE_CONNECT(tcp1_sk, &unspec_addr, sizeof(unspec_addr));
+	TEST(connect(tcp1_sk, &unspec_addr, sizeof(unspec_addr)));
+	if (TST_RET == -1) {
+		if (TST_ERR == EOPNOTSUPP)
+			tst_res(TPASS | TTERRNO, "parent: tls disallows disconnect");
+		else
+			tst_res(TFAIL | TTERRNO, "parent: unexpected errno from connect");
+		TST_CHECKPOINT_WAKE(2);
+		tst_reap_children();
+		return;
+	}
 	SAFE_BIND(tcp1_sk, (struct sockaddr *)&tcp1_addr, sizeof(tcp1_addr));
 
 	TEST(listen(tcp1_sk, 1));

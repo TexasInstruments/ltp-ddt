@@ -42,22 +42,34 @@ users.
      - Path to the block device to be used. C Language: ``.needs_device = 1``.
        Shell language: ``TST_NEEDS_DEVICE=1``.
 
+   * - LTP_REPRODUCIBLE_OUTPUT
+     - When set to ``1`` or ``y`` discards the actual content of the messages
+       printed by the test (suitable for a reproducible output).
+
    * - LTP_SINGLE_FS_TYPE
-     - Testing only - specifies filesystem instead all supported
+     - Specifies single filesystem to run the test on instead all supported
        (for tests with ``.all_filesystems``).
+
+   * - LTP_FORCE_SINGLE_FS_TYPE
+     - Testing only. Behaves like LTP_SINGLE_FS_TYPE but ignores test skiplists.
 
    * - LTP_DEV_FS_TYPE
      - Filesystem used for testing (default: ``ext2``).
 
    * - LTP_TIMEOUT_MUL
      - Multiplies timeout, must be number >= 0.1 (> 1 is useful for slow
-       machines to avoid unexpected timeout).
+       machines to avoid unexpected timeout). It's mainly for shell API, which
+       does not have LTP_RUNTIME_MUL. In C API it scales the default 30 sec
+       safety margin, probably LTP_RUNTIME_MUL should be used instead.
 
    * - LTP_RUNTIME_MUL
      - Multiplies maximal test iteration runtime. Tests that run for more than a
        second or two are capped on runtime. You can scale the default runtime
        both up and down with this multiplier. This is not yet implemented in the
        shell API.
+
+   * - LTP_IMA_LOAD_POLICY
+     - Load IMA example policy, see :master:`testcases/kernel/security/integrity/ima/README.md`.
 
    * - LTP_VIRT_OVERRIDE
      - Overrides virtual machine detection in the test library. Setting it to

@@ -4,8 +4,6 @@
  * Copyright (c) Linux Test Project, 2011-2023
  */
 /*\
- * [Description]
- *
  * Out Of Memory (OOM) test for CPUSET
  */
 
@@ -16,11 +14,12 @@
 #include <fcntl.h>
 #include <stdio.h>
 #if HAVE_NUMA_H
-#include <numa.h>
+# include <numa.h>
 #endif
 
+#include "tst_test.h"
 #include "numa_helper.h"
-#include "mem.h"
+#include "oom.h"
 
 #ifdef HAVE_NUMA_V2
 
@@ -60,7 +59,7 @@ static void setup(void)
 	if (ret < 0)
 		tst_brk(TBROK, "Failed to get a memory node "
 			      "using get_allowed_nodes()");
-	write_cpusets(tst_cg, memnode);
+	write_node_cpusets(tst_cg, memnode);
 	SAFE_CG_PRINTF(tst_cg, "cgroup.procs", "%d", getpid());
 }
 

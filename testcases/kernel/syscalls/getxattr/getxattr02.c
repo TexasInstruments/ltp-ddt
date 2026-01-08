@@ -6,8 +6,6 @@
  */
 
 /*\
- * [Description]
- *
  * In the user.* namespace, only regular files and directories can
  * have extended attributes. Otherwise getxattr(2) will return -1
  * and set errno to ENODATA.
@@ -15,13 +13,13 @@
  * There are 4 test cases:
  *
  * - Get attribute from a FIFO, setxattr(2) should return -1 and
- *    set errno to ENODATA
+ *   set errno to ENODATA
  * - Get attribute from a char special file, setxattr(2) should
- *    return -1 and set errno to ENODATA
+ *   return -1 and set errno to ENODATA
  * - Get attribute from a block special file, setxattr(2) should
- *    return -1 and set errno to ENODATA
+ *   return -1 and set errno to ENODATA
  * - Get attribute from a UNIX domain socket, setxattr(2) should
- *    return -1 and set errno to ENODATA
+ *   return -1 and set errno to ENODATA
  */
 
 #include <sys/types.h>

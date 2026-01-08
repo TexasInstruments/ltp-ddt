@@ -4,8 +4,6 @@
  * Copyright (c) Linux Test Project, 2011-2023
  */
 /*\
- * [Description]
- *
  * Out Of Memory (OOM) test
  */
 
@@ -16,20 +14,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "mem.h"
+#include "tst_test.h"
+#include "oom.h"
+
+#define OVERCOMMIT_MEMORY "/proc/sys/vm/overcommit_memory"
 
 static void verify_oom(void)
 {
 	/* we expect mmap to fail before OOM is hit */
-	set_sys_tune("overcommit_memory", 2, 1);
+	TST_SYS_CONF_LONG_SET(OVERCOMMIT_MEMORY, 2, 1);
 	oom(NORMAL, 0, ENOMEM, 0);
 
 	/* with overcommit_memory set to 0 or 1 there's no
 	 * guarantee that mmap fails before OOM */
-	set_sys_tune("overcommit_memory", 0, 1);
+	TST_SYS_CONF_LONG_SET(OVERCOMMIT_MEMORY, 0, 1);
 	oom(NORMAL, 0, ENOMEM, 1);
 
-	set_sys_tune("overcommit_memory", 1, 1);
+	TST_SYS_CONF_LONG_SET(OVERCOMMIT_MEMORY, 1, 1);
 	testoom(0, 0, ENOMEM, 1);
 }
 
@@ -40,7 +41,7 @@ static struct tst_test test = {
 	.test_all = verify_oom,
 	.skip_in_compat = 1,
 	.save_restore = (const struct tst_path_val[]) {
-		{"/proc/sys/vm/overcommit_memory", NULL, TST_SR_TBROK},
+		{OVERCOMMIT_MEMORY, NULL, TST_SR_TBROK},
 		{}
 	},
 };

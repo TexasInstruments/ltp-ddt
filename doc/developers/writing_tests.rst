@@ -63,12 +63,13 @@ things are done.
 
 Never ever comment the obvious.
 
-In case of LTP testcases, it's customary to add an asciidoc formatted comment
-paragraph with high-level test description at the beginning of the file right
-under the GPL SPDX header. This helps other people to understand the overall
-goal of the test before they dive into the technical details. It's also
-exported into generated documentation hence it should mostly explain what is
-tested.
+In case of LTP testcases, it's customary to add an `RST
+<https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html>`_
+formatted comment paragraph with high-level test description at the beginning
+of the file right under the GPL SPDX header. This helps other people to
+understand the overall goal of the test before they dive into the technical
+details. It's also exported into generated documentation hence it should mostly
+explain what is tested.
 
 DRY (Code duplication)
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -118,8 +119,8 @@ The following linting code can be found when we run ``make check``:
         errno are overwritten before the test has chance to check them.
 
         The macros which are clearly intended to update these variables. That
-        is ``TEST`` and those in ``tst_test_macros.h``. Are of course allowed to
-        update these variables.
+        is ``TEST`` and those in :master:`include/tst_test_macros.h`. Are of
+        course allowed to update these variables.
 
     * - LTP-003
       - Externally visible library symbols have the ``tst_`` prefix
@@ -138,7 +139,7 @@ The following linting code can be found when we run ``make check``:
 
     * - LTP-005
       - Array must terminate with a sentinel value (i.e. ``NULL`` or ``{}``)
-      - When defining arrays in the ``struct tst_test`` structure, we need to
+      - When defining arrays in the :ref:`struct tst_test` structure, we need to
         end the array items with a sentinel ``NULL`` value.
 
 Shell coding style
@@ -362,7 +363,7 @@ LTP C And Shell Test API Comparison
 .. list-table::
     :header-rows: 1
 
-    * - C API ``struct tst_test`` members
+    * - C API :ref:`struct tst_test` members
       - Shell API ``$TST_*`` variables
 
     * - .all_filesystems
@@ -396,7 +397,9 @@ LTP C And Shell Test API Comparison
       - TST_FORMAT_DEVICE
 
     * - .max_runtime
-      - \-
+      - TST_TIMEOUT (not exactly the same, a real timeout based on old .timeout
+        concept. .max_runtime has also an extra 30 sec safety margin for
+        teardown of the test.)
 
     * - .min_cpus
       - not applicable
@@ -506,9 +509,6 @@ LTP C And Shell Test API Comparison
     * - .test_variants
       - \-
 
-    * - .timeout
-      - TST_TIMEOUT
-
     * - .tst_hugepage
       - not applicable
 
@@ -533,5 +533,5 @@ LTP C And Shell Test API Comparison
     * - C API other structs
       - Shell API ``$TST_*`` variables
 
-    * - struct tst_device
+    * - :ref:`struct tst_device`
       - TST_DEVICE

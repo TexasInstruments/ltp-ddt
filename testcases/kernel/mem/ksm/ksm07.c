@@ -3,8 +3,6 @@
  * Copyright (C) 2023  Red Hat, Inc.
  */
 /*\
- * [Description]
- *
  * Kernel Samepage Merging (KSM) for smart scan feature
  *
  * Test allocates a page and fills it with 'a' characters. It captures the
@@ -23,7 +21,8 @@
  */
 
 #include <sys/wait.h>
-#include "mem.h"
+#include "tst_test.h"
+#include "ksm_helper.h"
 
 /* This test allocates one page, fills the page with a's, captures the
  * full_scan and pages_skipped counters. Then it makes sure at least 3

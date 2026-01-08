@@ -1,7 +1,19 @@
 # Copyright (c) 2021-2024 Petr Vorel <pvorel@suse.cz>
 
 name: "Test building in various distros in Docker"
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      SERIES_ID:
+        description: LTP patch series ID
+        required: false
+        default: ''
+      SERIES_MBOX:
+        description: LTP patch series URL
+        required: false
+        default: ''
 
 permissions:
   contents: read # to fetch code (actions/checkout)
@@ -49,7 +61,6 @@ jobs:
           - container: "alpine:latest"
             env:
               CC: gcc
-              METADATA: asciidoctor
 
           # build with minimal dependencies
           - container: "debian:stable"
@@ -66,13 +77,11 @@ jobs:
           - container: "quay.io/centos/centos:stream9"
             env:
               CC: gcc
-              METADATA: asciidoc-pdf
               TREE: out
 
           - container: "debian:testing"
             env:
               CC: gcc
-              METADATA: asciidoctor-pdf
 
           - container: "debian:oldstable"
             env:
@@ -83,33 +92,27 @@ jobs:
             env:
               CC: clang
               MAKE_INSTALL: 1
-              METADATA: asciidoctor-pdf
 
           - container: "opensuse/leap:latest"
             env:
               CC: gcc
-              METADATA: asciidoc-pdf
 
           - container: "debian:oldstable"
             env:
               CC: gcc
-              METADATA: asciidoctor
 
           - container: "debian:testing"
             env:
               CC: clang
-              METADATA: asciidoctor-pdf
 
           - container: "ubuntu:jammy"
             env:
               CC: gcc
-              METADATA: asciidoctor
               TREE: out
 
           - container: "ubuntu:bionic"
             env:
               CC: gcc
-              METADATA: asciidoc-pdf
 
     container:
       image: ${{ matrix.container }}
@@ -128,11 +131,33 @@ jobs:
         INSTALL=${{ matrix.container }}
         INSTALL="${INSTALL%%:*}"
         INSTALL="${INSTALL%%/*}"
-        ACTION="$VARIANT" ./ci/$INSTALL.sh
+        ACTION="$VARIANT" ./ci/$INSTALL.sh || if [ $? -eq 106 ]; then
+          echo "::warning ::Skipping job due broken repositories"
+          ./ci/tools/patchwork.sh check \
+            "${{ inputs.SERIES_ID }}" \
+            "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            "${{ matrix.container }}" \
+            "pending" "Skipping job due broken repositories"
+          exit 0
+        fi
         if [ "$VARIANT" ]; then ./ci/$INSTALL.$VARIANT.sh; fi
 
     - name: Compiler version
       run: $CC --version
+
+    - name: Apply Patchwork series
+      if: inputs.SERIES_ID != '' && inputs.SERIES_MBOX != ''
+      env:
+        PATCHWORK_TOKEN: ${{ secrets.PATCHWORK_TOKEN }}
+      run: |
+        git config --global user.name 'GitHub CI'
+        git config --global user.email 'github@example.com'
+        git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+        git checkout -b review_patch_series_"${{ inputs.SERIES_ID }}"
+        curl -k "${{ inputs.SERIES_MBOX }}" | git am
+
+        ./ci/tools/patchwork.sh state "${{ inputs.SERIES_ID }}" "needs-review-ack"
 
     - name: ver_linux
       run: ./ver_linux
@@ -142,11 +167,8 @@ jobs:
 
     - name: Configure
       run: |
-        if [ "$METADATA" = "asciidoc-pdf" ]; then CONFIGURE_OPT_EXTRA="--with-metadata-generator=asciidoc --enable-metadata-pdf"; fi
-        if [ "$METADATA" = "asciidoctor" ]; then CONFIGURE_OPT_EXTRA="--with-metadata-generator=asciidoctor"; fi
-        if [ "$METADATA" = "asciidoctor-pdf" ]; then CONFIGURE_OPT_EXTRA="--with-metadata-generator=asciidoctor --enable-metadata-pdf"; fi
         case "$VARIANT" in cross-compile*) BUILD="cross";; i386) BUILD="32";; *) BUILD="native";; esac
-        CONFIGURE_OPT_EXTRA="$CONFIGURE_OPT_EXTRA" ./build.sh -r configure -o ${TREE:-in} -t $BUILD -c $CC
+        ./build.sh -r configure -o ${TREE:-in} -t $BUILD -c $CC
 
     - name: Compile
       run: ./build.sh -r build -o ${TREE:-in}
@@ -170,3 +192,14 @@ jobs:
       run: |
         if [ "$MAKE_INSTALL" = 1 ]; then INSTALL_OPT="-i"; fi
         ./build.sh -r install -o ${TREE:-in} $INSTALL_OPT
+
+    - name: Send results to Patchwork
+      if: always() && inputs.SERIES_ID != '' && inputs.SERIES_MBOX != ''
+      env:
+        PATCHWORK_TOKEN: ${{ secrets.PATCHWORK_TOKEN }}
+      run: |
+        ./ci/tools/patchwork.sh check \
+          "${{ inputs.SERIES_ID }}" \
+          "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+          "${{ matrix.container }}" \
+          "${{ job.status }}"

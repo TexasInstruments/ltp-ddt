@@ -55,7 +55,7 @@ void tst_res_(const char *file, const int lineno, int ttype,
 /**
  * tst_res() - Reports a test result.
  *
- * @ttype: An enum tst_res_type.
+ * @ttype: An &enum tst_res_flags.
  * @arg_fmt: A printf-like format.
  * @...: A printf-like parameters.
  *
@@ -83,7 +83,7 @@ void tst_resm_hexd_(const char *file, const int lineno, int ttype,
  * This call is the same as tst_res() but includes a pointer and size of the
  * buffer that is going to be printed in the output in a hexadecimal format.
  *
- * @ttype: An enum tst_res_type.
+ * @ttype: An &enum tst_res_flags.
  * @buf: A pointer to a buffer to print in hexadecimal format.
  * @size: A size of the buffer.
  * @arg_fmt: A printf-like format.
@@ -98,28 +98,32 @@ void tst_brk_(const char *file, const int lineno, int ttype,
               __attribute__ ((format (printf, 4, 5)));
 
 /**
- * tst_brk() - Reports a breakage and exits the test.
+ * tst_brk() - Reports a breakage and exits the test or test process.
  *
- * @ttype: An enum tst_res_type.
+ * @ttype: An &enum tst_res_flags.
  * @arg_fmt: A printf-like format.
  * @...: A printf-like parameters.
  *
- * Reports either TBROK or TCONF and exits the test immediately. When called
- * all children in the same process group as the main test library process are
- * killed. This function, unless in a test cleanup, calls _exit() and does not
- * return.
+ * Reports a single result and exits immediately. The call behaves differently
+ * based on the ttype parameter. For all ttype results but TBROK the call exits
+ * the current test process, i.e. increments test result counters and calls
+ * exit(0).
+ *
+ * The TBROK ttype is special that apart from exiting the current test process
+ * it also tells to the test library to exit immediately. When TBROK is
+ * triggered by any of the test processes the whole process group is killed so
+ * that there are no processes left after the library process exits. This also
+ * means that any subsequent test iterations are not executed, e.g. if a test
+ * runs for all filesystems and tst_brk() with TBROK is called, the test exits
+ * and does not attempt to continue a test iteration for the next filesystem.
  *
  * When test is in cleanup() function TBROK is converted into TWARN by the test
  * library and we attempt to carry on with a cleanup even when tst_brk() was
  * called. This makes it possible to use SAFE_FOO() macros in the test cleanup
  * without interrupting the cleanup process on a failure.
  */
-#define tst_brk(ttype, arg_fmt, ...)						\
-	({									\
-		TST_BRK_SUPPORTS_ONLY_TCONF_TBROK(!((ttype) &			\
-			(TBROK | TCONF | TFAIL)));				\
-		tst_brk_(__FILE__, __LINE__, (ttype), (arg_fmt), ##__VA_ARGS__);\
-	})
+#define tst_brk(ttype, arg_fmt, ...) \
+		tst_brk_(__FILE__, __LINE__, (ttype), (arg_fmt), ##__VA_ARGS__)
 
 void tst_printf(const char *const fmt, ...)
 		__attribute__((nonnull(1), format (printf, 1, 2)));
@@ -456,6 +460,14 @@ struct tst_fs {
  *           (e.g., TIMEOUT_MUL), ensuring consistent test duration across
  *           different environments (e.g., debug vs. stock kernels).
  *
+ * @min_runtime: Optional lower bound (in seconds) applied after runtime is
+ *           scaled by LTP_RUNTIME_MUL. If the scaled runtime is smaller
+ *           than this value, it will be clamped up to min_runtime.
+ *           This is useful for tests that require a minimum execution
+ *           time to gather sufficient samples or trigger events (e.g.,
+ *           probabilistic or fuzzy synchronization tests).
+ *           If not set, a default minimum of 1 second is enforced.
+ *
  * @setup: Setup callback is called once at the start of the test in order to
  *         prepare the test environment.
  *
@@ -580,6 +592,7 @@ struct tst_fs {
 
 	int timeout;
 	int runtime;
+	int min_runtime;
 
 	void (*setup)(void);
 	void (*cleanup)(void);

@@ -6,8 +6,6 @@
  */
 
 /*\
- * [Description]
- *
  * This test verifies inheritance of file descriptors from parent to child
  * process. We open a file from parent, then we check if file offset changes
  * accordingly with file descriptor usage.
@@ -15,6 +13,7 @@
  * [Algorithm]
  *
  * Test steps are the following:
+ *
  * - create a file made in three parts -> | aa..a | bb..b | cc..c |
  * - from parent, open the file
  * - from child, move file offset after the first part

@@ -8,8 +8,6 @@
  */
 
 /*\
- * [Description]
- *
  * This test checks if exit_group() correctly ends a spawned child and all its
  * running threads.
  */
@@ -25,7 +23,7 @@ static int cpu_count;
 
 static struct worker_data {
 	pid_t tid;
-	int counter;
+	tst_atomic_t counter;
 } *workers_data;
 
 static void *worker(void *arg)

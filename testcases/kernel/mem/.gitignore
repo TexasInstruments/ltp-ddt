@@ -1,4 +1,5 @@
 /cpuset/cpuset01
+/cpuset/cpuset02
 /hugetlb/hugefallocate/hugefallocate01
 /hugetlb/hugefallocate/hugefallocate02
 /hugetlb/hugefork/hugefork01
@@ -88,7 +89,6 @@
 /shmt/shmt03
 /shmt/shmt04
 /shmt/shmt05
-/shmt/shmt06
 /shmt/shmt07
 /shmt/shmt08
 /shmt/shmt09

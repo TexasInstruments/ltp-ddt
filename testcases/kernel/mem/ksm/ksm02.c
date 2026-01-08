@@ -53,7 +53,7 @@
 #include <signal.h>
 #include <stdio.h>
 #include <unistd.h>
-#include "mem.h"
+#include "tst_test.h"
 #include "ksm_common.h"
 
 #ifdef HAVE_NUMA_V2
@@ -76,7 +76,7 @@ static void verify_ksm(void)
 	}
 	create_same_memory(size, num, unit);
 
-	write_cpusets(tst_cg, node);
+	write_node_cpusets(tst_cg, node);
 	SAFE_CG_PRINTF(tst_cg, "cgroup.procs", "%d", getpid());
 	create_same_memory(size, num, unit);
 	SAFE_CG_PRINTF(tst_cg_drain, "cgroup.procs", "%d", getpid());

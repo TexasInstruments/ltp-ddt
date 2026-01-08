@@ -213,6 +213,7 @@ static inline int fanotify_mark_supported_on_fs(uint64_t flag, const char *fname
 
 #define TST_FANOTIFY_INIT_KNOWN_FLAGS                                      \
 	(FAN_REPORT_DFID_NAME_TARGET | FAN_REPORT_TID | FAN_REPORT_PIDFD | \
+	 FAN_REPORT_FD_ERROR | \
 	FAN_CLASS_NOTIF | FAN_CLASS_CONTENT | FAN_CLASS_PRE_CONTENT)
 
 /*
@@ -275,6 +276,9 @@ static inline void fanotify_flags_err_msg(const char *flags_str,
 
 #define FANOTIFY_MARK_FLAGS_ERR_MSG(mark, fail) \
 	fanotify_flags_err_msg((mark)->name, __FILE__, __LINE__, tst_res_, (fail))
+
+#define FANOTIFY_EVENTS_ERR_MSG(event, fail) \
+	fanotify_flags_err_msg(#event, __FILE__, __LINE__, tst_res_, (fail))
 
 #define REQUIRE_FANOTIFY_INIT_FLAGS_SUPPORTED_ON_FS(flags, fname) \
 	fanotify_flags_err_msg(#flags, __FILE__, __LINE__, tst_brk_, \

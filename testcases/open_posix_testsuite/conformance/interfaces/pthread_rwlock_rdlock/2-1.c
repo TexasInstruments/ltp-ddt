@@ -6,12 +6,13 @@
 
  * Test that pthread_rwlock_rdlock(pthread_rwlock_t *rwlock)
  *
- * 	If the Thread Execution Scheduling option is supported,
- *	and the threads involved in the lock are executing with the
- *	scheduling policies SCHED_FIFO or SCHED_RR, the calling thread shall not
- *	acquire the lock if a writer holds the lock or if writers of
- *	higher or equal priority are blocked on the lock;
- *	otherwise, the calling thread shall acquire the lock.
+ *	If the Thread Execution Scheduling option is supported,
+ *	and the threads that hold or are blocked on the lock are
+ *	executing with the scheduling policies SCHED_FIFO or SCHED_RR,
+ *	the calling thread shall not acquire the lock if a writer
+ *	holds the lock or if the calling thread does not already hold
+ *	a read lock and writers of higher or equal priority are blocked
+ *	on the lock; otherwise, the calling thread shall acquire the lock.
  *
  * In this case, we test "higher priority writer block"
  *
@@ -143,13 +144,19 @@ int main(void)
 	int cnt = 0;
 	pthread_t rd_thread, wr_thread;
 	int priority;
+	pthread_rwlockattr_t attr;
+
+	pthread_rwlockattr_init(&attr);
+#ifdef __GNUC__
+	pthread_rwlockattr_setkind_np(&attr, PTHREAD_RWLOCK_PREFER_WRITER_NONRECURSIVE_NP);
+#endif
 
 	/* main thread needs to have the highest priority */
 	priority = sched_get_priority_min(TRD_POLICY) + 2;
 	set_priority(pthread_self(), TRD_POLICY, priority);
 	printf("main: has priority: %d\n", priority);
 
-	if (pthread_rwlock_init(&rwlock, NULL) != 0) {
+	if (pthread_rwlock_init(&rwlock, &attr) != 0) {
 		printf("main: Error at pthread_rwlock_init()\n");
 		return PTS_UNRESOLVED;
 	}

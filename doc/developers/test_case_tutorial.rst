@@ -36,17 +36,19 @@ guide will refer to files and directories.
     git clone git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
 
 There are a number of other repositories which are useful for reference as
-well, including the GNU C library ``glibc`` and the alternative C library
-``musl``. Some system calls are partially or even entirely implemented in user
+well, including the `GNU C library (glibc) <https://www.gnu.org/software/libc/>`_
+and the alternative C library `musl <https://musl.libc.org/>`_.
+Some system calls are partially or even entirely implemented in user
 land as part of the standard C library. So in these cases, the C library is an
-important reference. ``glibc`` is the most common C library for Linux, however
-``musl`` is generally easier to understand.
+important reference. glibc is the most common C library for Linux, however
+musl is generally easier to understand.
 
 How system calls are implemented varies from one architecture to another and
 across kernel and C library versions. To find out whether a system call is
 actually accessing the kernel (whether it is actually a system call) on any
-given machine you can use the ``strace`` utility. This intercepts system calls
-made by an executable and prints them. We will use this later in the tutorial.
+given machine you can use the `strace <https://strace.io/>`_ utility. This
+intercepts system calls made by an executable and prints them. We will use this
+later in the tutorial.
 
 Choose a System Call to test
 ----------------------------
@@ -107,17 +109,15 @@ kernel version if necessary. I will explain what the code does below.
 
     // SPDX-License-Identifier: GPL-2.0-or-later
     /*
-    * Copyright (c) 2017 Instruction Ignorer <"can't"@be.bothered.com>
-    */
+     * Copyright (c) 2017 Instruction Ignorer <"can't"@be.bothered.com>
+     */
 
     /*\
-    * [Description]
-    *
-    * All tests should start with a description of _what_ we are testing.
-    * Non-trivial explanations of _how_ the code works should also go here.
-    * Include relevant links, Git commit hashes and CVE numbers.
-    * Inline comments should be avoided.
-    */
+     * All tests should start with a description of _what_ we are testing.
+     * Non-trivial explanations of _how_ the code works should also go here.
+     * Include relevant links, Git commit hashes and CVE numbers.
+     * Inline comments should be avoided.
+     */
 
     #include "tst_test.h"
 
@@ -135,10 +135,10 @@ Starting with the ``#include`` statement we copy in the main LTP test library
 headers. This includes the most common test API functions and the test harness
 initialization code. It is important to note that this is a completely
 ordinary, independent C program, however ``main()`` is missing because it is
-implemented in ``tst_test.h``.
+implemented in :master:`include/tst_test.h`.
 
-We specify what code we want to run as part of the test using the ``tst_test
-test`` structure. Various callbacks can be set by the test writer, including
+We specify what code we want to run as part of the test using :ref:`struct tst_test`.
+Various callbacks can be set by the test writer, including
 ``test.test_all``, which we have set to ``run()``. The test harness will execute
 this callback in a separate process (using ``fork()``), forcibly terminating it
 if it does not return after ``test.timeout`` seconds.

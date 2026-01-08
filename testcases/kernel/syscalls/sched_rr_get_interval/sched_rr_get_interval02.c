@@ -4,8 +4,6 @@
  *    AUTHOR		: Saji Kumar.V.R <saji.kumar@wipro.com>
  */
 /*\
- * [Description]
- *
  * Verify that for a process with scheduling policy SCHED_FIFO,
  * sched_rr_get_interval() writes zero into timespec structure
  * for tv_sec & tv_nsec.
@@ -37,6 +35,8 @@ static void setup(void)
 	tst_res(TINFO, "Testing variant: %s", tv->desc);
 
 	tp.type = tv->ts_type;
+
+	tst_check_rt_group_sched_support();
 
 	if ((sys_sched_setscheduler(0, SCHED_FIFO, &p)) == -1)
 		tst_res(TFAIL | TERRNO, "sched_setscheduler() failed");

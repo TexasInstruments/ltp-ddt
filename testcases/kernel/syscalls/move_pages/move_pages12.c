@@ -8,8 +8,6 @@
  */
 
 /*\
- * [Description]
- *
  * *Test 1*
  *
  * This is a regression test for the race condition between move_pages()
@@ -76,7 +74,7 @@
 
 #ifdef HAVE_NUMA_V2
 
-#define LOOPS	1000
+#define LOOPS	10000
 #define PATH_MEMINFO	"/proc/meminfo"
 #define PATH_NR_HUGEPAGES	"/proc/sys/vm/nr_hugepages"
 #define PATH_HUGEPAGES	"/sys/kernel/mm/hugepages/"
@@ -102,7 +100,7 @@ static void *addr;
 static int do_soft_offline(int tpgs)
 {
 	if (madvise(addr, tpgs * hpsz, MADV_SOFT_OFFLINE) == -1) {
-		if (errno != EINVAL && errno != EBUSY)
+		if (errno != EINVAL && errno != EBUSY && errno != ENOMEM)
 			tst_res(TFAIL | TERRNO, "madvise failed");
 		return errno;
 	}

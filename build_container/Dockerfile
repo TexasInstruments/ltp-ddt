@@ -9,6 +9,11 @@ ARG KERNEL_BRANCH=SPECIFY_ME
 LABEL TI_IMAGE_SOURCE=$BASE_DISTRO
 LABEL maintainer="Minas Hambardzumyan <minas@ti.com>"
 
+ENV http_proxy http://webproxy.ext.ti.com:80
+ENV https_proxy http://webproxy.ext.ti.com:80
+ENV ftp_proxy http://webproxy.ext.ti.com:80
+
+
 #Install all packages needed
 RUN export DEBIAN_FRONTEND=noninteractive; \
     apt-get update \
@@ -28,10 +33,10 @@ RUN export DEBIAN_FRONTEND=noninteractive; \
 # Install missing library
 WORKDIR /opt
 
-ENV SDK_PATH="/opt/arm-gnu-toolchain-13.3.rel1-x86_64-aarch64-none-linux-gnu"
+ENV SDK_PATH="/opt/arm-gnu-toolchain-15.2.rel1-x86_64-aarch64-none-linux-gnu"
 # Install ARM toolchain
 RUN mkdir ${SDK_PATH} \
-    && curl -k -L "https://developer.arm.com/-/media/Files/downloads/gnu/13.3.rel1/binrel/arm-gnu-toolchain-13.3.rel1-x86_64-aarch64-none-linux-gnu.tar.xz" | tar xvJ --strip-components=1 -C ${SDK_PATH} 
+    && curl -k -L "https://developer.arm.com/-/media/Files/downloads/gnu/15.2.rel1/binrel/arm-gnu-toolchain-15.2.rel1-x86_64-aarch64-none-linux-gnu.tar.xz" | tar xvJ --strip-components=1 -C ${SDK_PATH} 
 
 ENV TARGET_SYS=aarch64-none-linux-gnu
 ENV CROSS_COMPILER=${TARGET_SYS}-
@@ -57,9 +62,11 @@ WORKDIR /dependencies
 
 ENV GIT_SSL_NO_VERIFY=1
 #install tirpc
+COPY ./tirpc.patch /dependencies/tirpc.patch
 RUN git clone https://github.com/alisw/libtirpc.git \
     && cd /dependencies/libtirpc \
     && git checkout libtirpc-1-2-6 \
+    && git apply /dependencies/tirpc.patch \
     && autoupdate \
     && autoreconf --install \
     && ./configure --enable-shared=yes --enable-static=no --with-pic --host=${TARGET_SYS} --prefix=${SDK_PATH}/${TARGET_SYS} --disable-gssapi \
@@ -79,7 +86,7 @@ RUN mkdir -p /workspace /target /home/user \
     && touch /workspace/.docker-local /target/.docker-local /dependencies/ti-linux-kernel/.docker-local \
     && groupadd -r user -g 1000 \
     && useradd -u 1000 -r -g user -d /home/user -s /bin/bash -c "Docker user" user \
-    && sed -i 's/PATH="/PATH="\/opt\/arm-gnu-toolchain-13.2.rel1-x86_64-aarch64-none-linux-gnu\/bin:/g' /etc/environment \
+    && sed -i 's/PATH="/PATH="\/opt\/arm-gnu-toolchain-15.2.rel1-x86_64-aarch64-none-linux-gnu\/bin:/g' /etc/environment \
     && chown -R user:user /workspace /target /home/user
 
 VOLUME /workspace

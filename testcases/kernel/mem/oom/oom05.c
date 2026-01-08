@@ -4,8 +4,6 @@
  * Copyright (c) Linux Test Project, 2014-2023
  */
 /*\
- * [Description]
- *
  * Out Of Memory (OOM) test for MEMCG and CPUSET
  */
 
@@ -16,11 +14,12 @@
 #include <fcntl.h>
 #include <stdio.h>
 #if HAVE_NUMA_H
-#include <numa.h>
+# include <numa.h>
 #endif
 
+#include "tst_test.h"
 #include "numa_helper.h"
-#include "mem.h"
+#include "oom.h"
 
 #ifdef HAVE_NUMA_V2
 
@@ -46,9 +45,9 @@ static void verify_oom(void)
 		tst_res(TINFO, "OOM on CPUSET & MEMCG with "
 				"special memswap limitation:");
 		if (!TST_CG_VER_IS_V1(tst_cg, "memory"))
-			SAFE_CG_PRINTF(tst_cg, "memory.swap.max", "%lu", MB);
+			SAFE_CG_PRINTF(tst_cg, "memory.swap.max", "%lu", TST_MB);
 		else
-			SAFE_CG_PRINTF(tst_cg, "memory.swap.max", "%lu", TESTMEM + MB);
+			SAFE_CG_PRINTF(tst_cg, "memory.swap.max", "%lu", TESTMEM + TST_MB);
 
 		testoom(0, 1, ENOMEM, 1);
 
@@ -80,7 +79,7 @@ void setup(void)
 		tst_brk(TBROK, "Failed to get a memory node "
 			      "using get_allowed_nodes()");
 
-	write_cpusets(tst_cg, memnode);
+	write_node_cpusets(tst_cg, memnode);
 	SAFE_CG_PRINTF(tst_cg, "cgroup.procs", "%d", getpid());
 	SAFE_CG_PRINTF(tst_cg, "memory.max", "%lu", TESTMEM);
 }

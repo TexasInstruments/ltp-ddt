@@ -4,8 +4,6 @@
  */
 
 /*\
- * [Description]
- *
  * This test verifies that statmount() is correctly reading basic filesystem
  * info using STATMOUNT_SB_BASIC.
  * The btrfs validation is currently skipped due to the lack of support for VFS.
@@ -22,7 +20,6 @@
 #include "statmount.h"
 #include "lapi/stat.h"
 #include "lapi/sched.h"
-#include <linux/btrfs.h>
 
 #define MNTPOINT "mntpoint"
 
@@ -71,7 +68,6 @@ static struct tst_test test = {
 	.format_device = 1,
 	.all_filesystems = 1,
 	.skip_filesystems = (const char *const []) {
-		"fuse",
 		"btrfs",
 		NULL
 	},

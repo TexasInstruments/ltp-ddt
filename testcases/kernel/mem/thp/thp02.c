@@ -4,8 +4,6 @@
  */
 
 /*\
- * [Description]
- *
  * Test for detecting mremap bug when THP is enabled.
  *
  * There was a bug in mremap THP support, sometimes causing crash
@@ -38,7 +36,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include "mem.h"
+#include "tst_test.h"
+#include "thp.h"
 
 static int ps;
 static long hps, size;

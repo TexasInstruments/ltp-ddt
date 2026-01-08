@@ -7,7 +7,6 @@
  */
 
 /*\
- * [Description]
  * This test file has been designed to ensure that the fanotify
  * system calls fanotify_init(2) and fanotify_mark(2) return the
  * correct error code to the calling process when an invalid flag or
@@ -237,6 +236,26 @@ static struct test_case_t {
 		.mark = FLAGS_DESC(FAN_MARK_FILESYSTEM),
 		.mask = { FAN_ACCESS, "anonymous pipe"},
 		.pfd = pipes,
+		.expected_errno = EINVAL,
+	},
+	/* permission events in mask with priority < FAN_CLASS_CONTENT are not valid */
+	{
+		.init = FLAGS_DESC(FAN_CLASS_NOTIF),
+		.mark = FLAGS_DESC(FAN_MARK_INODE),
+		.mask = FLAGS_DESC(LTP_ALL_PERM_EVENTS),
+		.expected_errno = EINVAL,
+	},
+	/* pre-content events in mask with priority < FAN_CLASS_PRE_CONTENT are not valid */
+	{
+		.init = FLAGS_DESC(FAN_CLASS_NOTIF),
+		.mark = FLAGS_DESC(FAN_MARK_INODE),
+		.mask = FLAGS_DESC(LTP_PRE_CONTENT_EVENTS),
+		.expected_errno = EINVAL,
+	},
+	{
+		.init = FLAGS_DESC(FAN_CLASS_CONTENT),
+		.mark = FLAGS_DESC(FAN_MARK_INODE),
+		.mask = FLAGS_DESC(LTP_PRE_CONTENT_EVENTS),
 		.expected_errno = EINVAL,
 	},
 };

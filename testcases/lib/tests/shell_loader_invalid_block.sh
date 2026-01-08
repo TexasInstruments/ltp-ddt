@@ -4,9 +4,6 @@
 #
 # ---
 # doc
-#
-# [Description]
-#
 # This is a simple shell test loader example.
 # ---
 #
@@ -25,4 +22,9 @@
 
 . tst_loader.sh
 
-tst_res TPASS "This should pass!"
+tst_test()
+{
+	tst_res TPASS "This should pass!"
+}
+
+. tst_run.sh

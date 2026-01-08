@@ -145,6 +145,16 @@ int tst_dir_is_empty_(void (*cleanup)(void), const char *name, int verbose);
  */
 int tst_get_path(const char *prog_name, char *buf, size_t buf_len);
 
+/**
+ * tst_path_exists() - checks if path exists
+ *
+ * @fmt: A printf-like format used to construct the path.
+ * @...: A printf-like parameter list.
+ * return: Non-zero if path exists, zero otherwise.
+ */
+int tst_path_exists(const char *fmt, ...)
+    __attribute__ ((format (printf, 1, 2)));
+
 /*
  * Fill a file with specified pattern
  * @fd: file descriptor
@@ -192,13 +202,6 @@ enum tst_fs_impl {
  * @fs_type A filesystem name to check the support for.
  */
 enum tst_fs_impl tst_fs_is_supported(const char *fs_type);
-
-/*
- * Returns NULL-terminated array of kernel-supported filesystems.
- *
- * @skiplist A NULL terminated array of filesystems to skip.
- */
-const char **tst_get_supported_fs_types(const char *const *skiplist);
 
 /*
  * Returns 1 if filesystem is in skiplist 0 otherwise.

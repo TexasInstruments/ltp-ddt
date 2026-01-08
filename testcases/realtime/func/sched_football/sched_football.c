@@ -6,8 +6,6 @@
  */
 
 /*\
- * [Description]
- *
  * Scheduler test that uses a football analogy.
  *
  * The premise is that we want to make sure that lower priority threads
@@ -43,21 +41,23 @@
 #define SPIN_TIME_NS 200000000ULL
 #define SLEEP_TIME_NS 50000000ULL
 
-static int the_ball;
+static tst_atomic_t the_ball;
 static int players_per_team = 0;
 static int game_length = DEF_GAME_LENGTH;
-static int players_ready;
+static tst_atomic_t kickoff_flag;
+static tst_atomic_t game_over;
 
 static char *str_game_length;
 static char *str_players_per_team;
+static pthread_barrier_t start_barrier;
 
 /* These are fans running across the field. They're trying to interrupt/distract everyone */
 void *thread_fan(void *arg LTP_ATTRIBUTE_UNUSED)
 {
 	prctl(PR_SET_NAME, "crazy_fan", 0, 0, 0);
-	tst_atomic_add_return(1, &players_ready);
+	pthread_barrier_wait(&start_barrier);
 	/*occasionally wake up and run across the field */
-	while (1) {
+	while (!tst_atomic_load(&game_over)) {
 		struct timespec start, stop;
 		nsec_t nsec;
 
@@ -80,9 +80,12 @@ void *thread_fan(void *arg LTP_ATTRIBUTE_UNUSED)
 void *thread_defense(void *arg LTP_ATTRIBUTE_UNUSED)
 {
 	prctl(PR_SET_NAME, "defense", 0, 0, 0);
-	tst_atomic_add_return(1, &players_ready);
+	pthread_barrier_wait(&start_barrier);
+	while (!tst_atomic_load(&kickoff_flag))
+		;
+
 	/*keep the ball from being moved */
-	while (1) {
+	while (!tst_atomic_load(&game_over)) {
 	}
 
 	return NULL;
@@ -92,8 +95,11 @@ void *thread_defense(void *arg LTP_ATTRIBUTE_UNUSED)
 void *thread_offense(void *arg LTP_ATTRIBUTE_UNUSED)
 {
 	prctl(PR_SET_NAME, "offense", 0, 0, 0);
-	tst_atomic_add_return(1, &players_ready);
-	while (1) {
+	pthread_barrier_wait(&start_barrier);
+	while (!tst_atomic_load(&kickoff_flag))
+		sched_yield();
+
+	while (!tst_atomic_load(&game_over)) {
 		tst_atomic_add_return(1, &the_ball); /* move the ball ahead one yard */
 	}
 
@@ -116,19 +122,30 @@ void referee(int game_length)
 	now = start;
 
 	/* Start the game! */
-	tst_atomic_store(0, &the_ball);
 	atrace_marker_write("sched_football", "Game_started!");
+	pthread_barrier_wait(&start_barrier);
+	usleep(200000);
+
+	tst_atomic_store(0, &the_ball);
+	tst_atomic_store(1, &kickoff_flag);
+	if (tst_check_preempt_rt())
+		usleep(20000);
+	else
+		usleep(2000000);
 
 	/* Watch the game */
 	while ((now.tv_sec - start.tv_sec) < game_length) {
 		sleep(1);
 		gettimeofday(&now, NULL);
 	}
-	atrace_marker_write("sched_football", "Game_Over!");
-	final_ball = tst_atomic_load(&the_ball);
 
 	/* Blow the whistle */
+	final_ball = tst_atomic_load(&the_ball);
 	tst_res(TINFO, "Final ball position: %d", final_ball);
+
+	/* Stop the game! */
+	tst_atomic_store(1, &game_over);
+	atrace_marker_write("sched_football", "Game_Over!");
 
 	TST_EXP_EXPR(final_ball == 0);
 }
@@ -142,14 +159,16 @@ static void do_test(void)
 	if (players_per_team == 0)
 		players_per_team = get_numcpus();
 
-	tst_atomic_store(0, &players_ready);
-
 	tst_res(TINFO, "players_per_team: %d game_length: %d",
 	       players_per_team, game_length);
+
+	/* total = offense + defense + fans + referee */
+	pthread_barrier_init(&start_barrier, NULL, players_per_team * 4 + 1);
 
 	/* We're the ref, so set our priority right */
 	param.sched_priority = sched_get_priority_min(SCHED_FIFO) + 80;
 	sched_setscheduler(0, SCHED_FIFO, &param);
+	tst_atomic_store(0, &kickoff_flag);
 
 	/*
 	 * Start the offense
@@ -161,10 +180,6 @@ static void do_test(void)
 	for (i = 0; i < players_per_team; i++)
 		create_fifo_thread(thread_offense, NULL, priority);
 
-	/* Wait for the offense threads to start */
-	while (tst_atomic_load(&players_ready) < players_per_team)
-		usleep(100);
-
 	/* Start the defense */
 	priority = 30;
 	tst_res(TINFO, "Starting %d defense threads at priority %d",
@@ -172,26 +187,16 @@ static void do_test(void)
 	for (i = 0; i < players_per_team; i++)
 		create_fifo_thread(thread_defense, NULL, priority);
 
-	/* Wait for the defense threads to start */
-	while (tst_atomic_load(&players_ready) < players_per_team * 2)
-		usleep(100);
-
 	/* Start the crazy fans*/
 	priority = 50;
-	tst_res(TINFO, "Starting %d fan threads at priority %d",
-	       players_per_team, priority);
+	tst_res(TINFO, "Starting %d crazy-fan threads at priority %d",
+	       players_per_team*2, priority);
 	for (i = 0; i < players_per_team*2; i++)
 		create_fifo_thread(thread_fan, NULL, priority);
 
-	/* Wait for the crazy fan threads to start */
-	while (tst_atomic_load(&players_ready) < players_per_team * 4)
-		usleep(100);
-
-	/* let things get into steady state */
-	sleep(2);
-	/* Ok, everyone is on the field, bring out the ref */
-
 	referee(game_length);
+
+	pthread_barrier_destroy(&start_barrier);
 }
 
 static void do_setup(void)

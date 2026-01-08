@@ -4,8 +4,6 @@
  */
 
 /*\
- * [Description]
- *
  * The VT_DISALLOCATE ioctl can free a virtual console while VT_RESIZEX ioctl is
  * still running, causing a use-after-free in vt_ioctl(). Because VT_RESIZEX ioctl
  * have not make sure vc_cons[i].d is not NULL after grabbing console_lock().
@@ -115,6 +113,7 @@ static struct tst_test test = {
 	.needs_root = 1,
 	.taint_check = TST_TAINT_W | TST_TAINT_D,
 	.runtime = 150,
+	.min_runtime = 16,
 	.tags = (const struct tst_tag[]) {
 		{ "linux-git", "6cd1ed50efd8"},
 		{}

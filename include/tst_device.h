@@ -15,6 +15,8 @@ struct tst_device {
 	const char *dev;
 	const char *fs_type;
 	uint64_t size;
+	/* If device was mounted by the test library this flag is set for fuse fileystems. */
+	int is_fuse;
 };
 
 /*
@@ -32,7 +34,10 @@ int tst_umount(const char *path);
  * Verifies if an earlier mount is successful or not.
  * @path: Mount path to verify
  */
+int tst_mount_has_opt(const char *path, const char *opt);
 int tst_is_mounted(const char *path);
+int tst_is_mounted_ro(const char *path);
+int tst_is_mounted_rw(const char *path);
 int tst_is_mounted_at_tmpdir(const char *path);
 
 /*

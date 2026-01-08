@@ -17,7 +17,6 @@
 #include <errno.h>
 #include <sys/wait.h>
 #include "tst_test.h"
-#include "mem.h"
 
 #define PALIGN(p, a) ((void *)LTP_ALIGN((unsigned long)(p), (a)))
 
@@ -28,6 +27,8 @@
 #ifndef SHM_HUGETLB
 #define SHM_HUGETLB	04000	/* segment is mapped via hugetlb */
 #endif
+
+#define PATH_SHMMAX "/proc/sys/kernel/shmmax"
 
 #ifndef barrier
 # ifdef mb
@@ -56,4 +57,7 @@ int getipckey(void);
 int getuserid(char *user);
 void rm_shm(int shm_id);
 int do_readback(void *p, size_t size, char *desc);
+
+void update_shm_size(size_t *shm_size);
+
 #endif /* hugetlb.h */

@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 enum data_type {
 	DATA_ARRAY,
@@ -212,7 +213,7 @@ static inline int data_node_hash_del(struct data_node *self, const char *id)
 	return 1;
 }
 
-static struct data_node *data_node_hash_get(struct data_node *self, const char *id)
+static inline struct data_node *data_node_hash_get(struct data_node *self, const char *id)
 {
 	unsigned int i;
 	struct data_node_hash *hash = &self->hash;
@@ -226,6 +227,13 @@ static struct data_node *data_node_hash_get(struct data_node *self, const char *
 		return NULL;
 
 	return hash->elems[i].node;
+}
+
+static inline unsigned int data_node_hash_len(struct data_node *self)
+{
+	struct data_node_hash *hash = &self->hash;
+
+	return hash->elems_used;
 }
 
 static inline int data_node_array_add(struct data_node *self, struct data_node *payload)
@@ -283,6 +291,18 @@ static inline void data_print_padd(unsigned int i)
 {
 	while (i-- > 0)
 		putchar(' ');
+}
+
+static inline bool data_node_is_empty(struct data_node *self)
+{
+	switch (self->type) {
+	case DATA_ARRAY:
+		return data_node_array_len(self) == 0;
+	case DATA_HASH:
+		return data_node_hash_len(self) == 0;
+	default:
+		return false;
+	}
 }
 
 static inline void data_node_print_(struct data_node *self, unsigned int padd)
@@ -396,14 +416,16 @@ static inline void data_to_json_(struct data_node *self, FILE *f, unsigned int p
 		data_fprintf(f, padd, "null");
 	break;
 	case DATA_HASH:
+		data_fprintf(f, do_padd ? padd : 0, "{\n");
 		for (i = 0; i < self->hash.elems_used; i++) {
-			data_fprintf(f, padd, "\"%s\": ", self->hash.elems[i].id);
+			data_fprintf(f, padd+1, "\"%s\": ", self->hash.elems[i].id);
 			data_to_json_(self->hash.elems[i].node, f, padd+1, 0);
 			if (i < self->hash.elems_used - 1)
 				fprintf(f, ",\n");
 			else
 				fprintf(f, "\n");
 		}
+		data_fprintf(f, padd, "}");
 	break;
 	case DATA_ARRAY:
 		data_fprintf(f, do_padd ? padd : 0, "[\n");
@@ -421,9 +443,7 @@ static inline void data_to_json_(struct data_node *self, FILE *f, unsigned int p
 
 static inline void data_to_json(struct data_node *self, FILE *f, unsigned int padd)
 {
-	fprintf(f, "{\n");
-	data_to_json_(self, f, padd + 1, 1);
-	data_fprintf(f, padd, "}");
+	data_to_json_(self, f, padd, 0);
 }
 
 #endif /* DATA_STORAGE_H__ */

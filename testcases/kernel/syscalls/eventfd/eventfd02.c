@@ -7,13 +7,11 @@
  */
 
 /*\
- * [Description]
- *
  * Verify write operation for eventfd fail with:
  *
  * - EAGAIN when counter is zero on non blocking fd
  * - EINVAL when buffer size is less than 8 bytes, or if an attempt is made to
- *	write the value 0xffffffffffffffff
+ *   write the value 0xffffffffffffffff
  */
 
 #include <stdlib.h>

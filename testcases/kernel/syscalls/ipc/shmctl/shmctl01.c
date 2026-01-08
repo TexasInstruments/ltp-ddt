@@ -5,8 +5,6 @@
  */
 
 /*\
- * [Description]
- *
  * Verify that shmctl() IPC_STAT and SHM_STAT reports correct data.
  *
  * The shm_nattach is excercised by:
@@ -244,9 +242,9 @@ static int get_shm_idx_from_id(int shm_id)
 
 static void setup(void)
 {
-	ctime_min = tst_get_fs_timestamp();
+	ctime_min = tst_fs_timestamp_start();
 	shm_id = SAFE_SHMGET(IPC_PRIVATE, SHM_SIZE, IPC_CREAT | SHM_RW);
-	ctime_max = tst_get_fs_timestamp();
+	ctime_max = tst_fs_timestamp_end();
 
 	shm_idx = get_shm_idx_from_id(shm_id);
 

@@ -4,8 +4,6 @@
  */
 
 /*\
- * [Description]
- *
  * This test verifies STATMOUNT_MNT_ROOT and STATMOUNT_MNT_POINT functionalities
  * of statmount(). In particular, STATMOUNT_MNT_ROOT will give the mount root
  * (i.e. mount --bind /mnt /bla -> /mnt) and STATMOUNT_MNT_POINT will
@@ -112,10 +110,6 @@ static struct tst_test test = {
 	.mount_device = 1,
 	.mntpoint = MNTPOINT,
 	.all_filesystems = 1,
-	.skip_filesystems = (const char *const []) {
-		"fuse",
-		NULL
-	},
 	.bufs = (struct tst_buffers []) {
 		{&st_mount, .size = SM_SIZE},
 		{}

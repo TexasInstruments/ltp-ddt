@@ -3,8 +3,6 @@
  * Copyright (C) 2013-2017  Red Hat, Inc.
  */
 /*\
- * [Description]
- *
  * The case is designed to test sysfs boolean knob
  * /sys/kernel/mm/ksm/merge_across_nodes.
  *
@@ -33,8 +31,10 @@
 #include <unistd.h>
 #include <limits.h>
 
-#include "mem.h"
+#include "tst_test.h"
 #include "tst_numa.h"
+#include "ksm_helper.h"
+#include "ksm_test.h"
 
 #ifdef HAVE_NUMA_V2
 # include <numa.h>

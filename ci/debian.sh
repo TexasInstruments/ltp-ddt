@@ -23,6 +23,8 @@ pkg_minimal="
 	debhelper
 	devscripts
 	clang
+	curl
+	jq
 	gcc
 	git
 	iproute2
@@ -35,13 +37,9 @@ pkg_minimal="
 
 pkg_nonessential="
 	acl-dev
-	asciidoc-base
-	asciidoc-dblatex
-	asciidoctor
 	libacl1-dev
 	libaio-dev
 	libcap-dev
-	libjson-perl
 	libkeyutils-dev
 	libnuma-dev
 	libmnl-dev
@@ -49,9 +47,6 @@ pkg_nonessential="
 	libsepol-dev
 	libssl-dev
 "
-
-# Missing on Ubuntu 18.04 LTS (Bionic Beaver)
-pkg_maybe_nonessential="ruby-asciidoctor-pdf"
 
 case "$ACTION" in
 	minimal)
@@ -61,12 +56,10 @@ case "$ACTION" in
 	remove-nonessential)
 		echo "=== Make sure devel libraries are removed ==="
 		$remove $pkg_nonessential
-		$remove $pkg_maybe_nonessential || true
 		;;
 	*)
 		echo "=== Installing dependencies ==="
 		$install $pkg_minimal $pkg_nonessential
-		$install $pkg_maybe_nonessential || true
 		;;
 esac
 

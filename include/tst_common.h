@@ -13,6 +13,8 @@
 #define LTP_ATTRIBUTE_UNUSED		__attribute__((unused))
 #define LTP_ATTRIBUTE_UNUSED_RESULT	__attribute__((warn_unused_result))
 
+#define LTP_VAR_USED(p) asm volatile("" :: "m"(p)); p
+
 #ifndef ARRAY_SIZE
 # define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 #endif
@@ -76,9 +78,6 @@
 
 #define TST_BUILD_BUG_ON(condition) \
 	do { ((void)sizeof(char[1 - 2 * !!(condition)])); } while (0)
-
-#define TST_BRK_SUPPORTS_ONLY_TCONF_TBROK(condition) \
-	TST_BUILD_BUG_ON(condition)
 
 #define TST_RES_SUPPORTS_TCONF_TDEBUG_TFAIL_TINFO_TPASS_TWARN(condition) \
 	TST_BUILD_BUG_ON(condition)
