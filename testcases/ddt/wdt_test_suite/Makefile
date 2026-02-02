@@ -12,7 +12,7 @@ UNWANTED_FILES          := Makefile
 
 INSTALL_MODE            := 00755
 
-CFLAGS		= -g -Wall -D__EXPORTED_HEADERS__
+CFLAGS		+= -g -Wall -D__EXPORTED_HEADERS__
 LDFLAGS         += -g
 INCLUDES        = -I $(KERNEL_USR_INC) -I src/interface/common -I ../utils/user
 
