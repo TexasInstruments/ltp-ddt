@@ -320,6 +320,46 @@ check_config_options()
   IFS=$OIFS
 }
 
+# Check if at least ANY one of the given config options is enabled
+# $1: check type, either 'y', 'm', 'ym' or 'n'
+# $2+: Config options to check (space-separated). Succeeds if ANY is found.
+check_config_options_any()
+{
+  config_cmd='zcat /proc/config.gz'
+  ls /boot/config-`uname -r` &> /dev/null && config_cmd="cat /boot/config-"`uname -r`
+  case $1 in
+    y) check='=y';;
+    m) check='=m';;
+    ym) check='(=y|=m)';;
+    n) check=' is not set';;
+    *) die "$1 is not a valid check_config_options_any() option"
+  esac
+  shift
+  local options="$*"
+  local found=0
+  for option in $options; do
+    if $config_cmd | egrep -q "$option$check"; then
+      found=1
+      break
+    fi
+  done
+  if [ $found -eq 0 ]; then
+    # Check if all options are optional
+    local all_optional=1
+    for option in $options; do
+      if ! is_opt_config "$option"; then
+        all_optional=0
+        break
+      fi
+    done
+    if [ $all_optional -eq 1 ]; then
+      skip_test "none of optional configs ($options) enabled"
+    else
+      die "none of configs ($options) is $check"
+    fi
+  fi
+}
+
 # To get instance number from dev node
 # Input: 
 #   $1: dev node like /dev/rtc0, /dev/mmcblk0, /dev/sda1, /dev/mtdblk12 etc 
@@ -387,7 +427,9 @@ opt_config_values=(
 "CONFIG_CRYPTO_DEV_OMAP_AES" \
 "CONFIG_CRYPTO_DEV_OMAP_SHAM" \
 "CONFIG_CRYPTO_TEST" \
+"CONFIG_CRYPTO_BENCHMARK" \
 "CONFIG_CRYPTO_MANAGER_DISABLE_TESTS" \
+"CONFIG_CRYPTO_SELFTESTS" \
 "CONFIG_MTD_TESTS" \
 "CONFIG_SPI_SPIDEV" \
 "CONFIG_USB_TEST" \
