@@ -1,7 +1,7 @@
 # @name K3CONF Tests
 # @desc Testcases to verify working of k3conf
 
-K3CONF_SOC_REV_KERNEL_CRASH source "common.sh"; k3conf_test.sh "k3conf --version" "k3conf show hosts" "k3conf show device" "k3conf show clock" "k3conf show processor"
+K3CONF_SOC_REV_KERNEL_CRASH source "common.sh"; k3conf_test.sh "k3conf --version" "k3conf show hosts" "k3conf show device" "k3conf show clock" "k3conf show processor" "k3conf ddrbw 1 10"
 K3CONF_AM62L_REV_KERNEL_CRASH source "common.sh"; k3conf_test.sh "k3conf --version" "k3conf show device" "k3conf show device 0" "k3conf show clock" "k3conf dump device" "k3conf dump clock" "k3conf dump device 0"
 K3CONF_SOC_PD_TEST source "common.sh"; k3conf_pd_test.sh "0 53" "1" "37 52" "disable"
 K3CONF_SOC_CLK_EN_TEST source "common.sh"; k3conf_clk_en_test.sh "0 0" "0 1" "0 2" "0 3"
