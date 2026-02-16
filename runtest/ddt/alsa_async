@@ -1,0 +1,14 @@
+# @name ALSA McASP Async Mode Test
+# @desc Test simultaneous playback and recording to validate McASP async mode
+#       where playback and capture serializers use independent clocks.
+#       Playback and capture use different sample rates to validate independent clocking.
+# @requires sound
+
+# Playback at 48kHz with capture at 44.1kHz, max channels per device, for 10s.
+ALSA_S_FUNC_ASYNC_P48K_C44K source 'common.sh' ; do_cmd install_modules.sh 'sound' ; do_cmd 'alsa_async_test.sh -r 48000 -s 44100 -d 10'
+# Playback at 44.1kHz with capture at 48kHz, max channels per device, for 10s.
+ALSA_S_FUNC_ASYNC_P44K_C48K source 'common.sh' ; do_cmd install_modules.sh 'sound' ; do_cmd 'alsa_async_test.sh -r 44100 -s 48000 -d 10'
+# 4-channel: playback at 48kHz with capture at 44.1kHz for 10s.
+ALSA_S_FUNC_ASYNC_4CH source 'common.sh' ; do_cmd install_modules.sh 'sound' ; do_cmd 'alsa_async_test.sh -r 48000 -s 44100 -c 4 -d 10'
+# Stress test: playback at 48kHz with capture at 44.1kHz, max channels per device, for 300s.
+ALSA_M_STRESS_ASYNC source 'common.sh' ; do_cmd install_modules.sh 'sound' ; do_cmd 'alsa_async_test.sh -r 48000 -s 44100 -d 300'
