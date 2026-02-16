@@ -1,0 +1,7 @@
+# @name Crypto Self-Test Status
+# @desc Check /proc/crypto self-test status for all algorithms and their sources
+# @requires crypto
+
+CRYPTO_SELFTEST_STATUS crypto_selftest_status.sh
+CRYPTO_SELFTEST_STATUS_VERBOSE crypto_selftest_status.sh -v
+CRYPTO_SELFTEST_STATUS_FAILED_ONLY crypto_selftest_status.sh -f
