@@ -6,7 +6,8 @@
  */
 
 /*\
- * Tests ioctl() on loopdevice with LO_FLAGS_AUTOCLEAR and LO_FLAGS_PARTSCAN flags.
+ * Tests :manpage:`ioctl(2)` on loopdevice with LO_FLAGS_AUTOCLEAR and
+ * LO_FLAGS_PARTSCAN flags.
  *
  * For LO_FLAGS_AUTOCLEAR flag, only checks autoclear field value in sysfs
  * and also gets lo_flags by using LOOP_GET_STATUS.
@@ -78,43 +79,40 @@ static void check_loop_value(int set_flag, int get_flag, int autoclear_field)
 
 static void verify_ioctl_loop(void)
 {
-	int ret;
-	const char *const cmd_parted[] = {"parted", "-s", dev_path, "mklabel", "msdos", "mkpart",
-					"primary", "ext4", "1M", "10M", NULL};
-
-	tst_fill_file("test.img", 0, 1024 * 1024, 10);
-	tst_attach_device(dev_path, "test.img");
-
-	ret = tst_cmd(cmd_parted, NULL, NULL, TST_CMD_PASS_RETVAL);
-	if (!ret)
-		parted_sup = 1;
-	else if (ret == 255)
-		tst_res(TCONF, "parted binary not installed or failed");
-	else
-		tst_res(TCONF, "parted exited with %i", ret);
-
-	attach_flag = 1;
-
 	TST_ASSERT_INT(partscan_path, 0);
 	TST_ASSERT_INT(autoclear_path, 0);
 	TST_ASSERT_STR(backing_path, backing_file_path);
+
+	dev_fd = SAFE_OPEN(dev_path, O_RDWR);
 
 	check_loop_value(SET_FLAGS, GET_FLAGS, 1);
 
 	tst_res(TINFO, "Test flag can be clear");
 	check_loop_value(0, LO_FLAGS_PARTSCAN, 0);
 
-	tst_detach_device_by_fd(dev_path, dev_fd);
-	dev_fd = SAFE_OPEN(dev_path, O_RDWR);
+	tst_detach_device_by_fd(dev_path, &dev_fd);
 
 	attach_flag = 0;
 }
 
 static void setup(void)
 {
+	parted_sup = tst_cmd_present("parted");
+
+	const char *const cmd_parted[] = {"parted", "-s", dev_path, "mklabel", "msdos", "mkpart",
+	                                  "primary", "ext4", "1M", "10M", NULL};
+
 	dev_num = tst_find_free_loopdev(dev_path, sizeof(dev_path));
 	if (dev_num < 0)
 		tst_brk(TBROK, "Failed to find free loop device");
+
+	tst_fill_file("test.img", 0, 1024 * 1024, 10);
+
+	tst_attach_device(dev_path, "test.img");
+	attach_flag = 1;
+
+	if (parted_sup)
+		SAFE_CMD(cmd_parted, NULL, NULL);
 
 	sprintf(partscan_path, "/sys/block/loop%d/loop/partscan", dev_num);
 	sprintf(autoclear_path, "/sys/block/loop%d/loop/autoclear", dev_num);
@@ -122,7 +120,6 @@ static void setup(void)
 	sprintf(sys_loop_partpath, "/sys/block/loop%d/loop%dp1", dev_num, dev_num);
 	backing_file_path = tst_tmpdir_genpath("test.img");
 	sprintf(loop_partpath, "%sp1", dev_path);
-	dev_fd = SAFE_OPEN(dev_path, O_RDWR);
 }
 
 static void cleanup(void)
@@ -146,6 +143,10 @@ static struct tst_test test = {
 	.tags = (const struct tst_tag[]) {
 		{"linux-git", "10c70d95c0f2"},
 		{"linux-git", "6ac92fb5cdff"},
+		{}
+	},
+	.needs_cmds = (struct tst_cmd[]) {
+		{.cmd = "parted", .optional = 1},
 		{}
 	},
 	.needs_tmpdir = 1,

@@ -19,6 +19,7 @@
    :hidden:
    :caption: For developers
 
+   developers/ground_rules
    developers/setup_mailinglist
    developers/writing_tests
    developers/test_case_tutorial
@@ -30,6 +31,7 @@
    developers/build_system
    developers/debugging
    developers/documentation
+   developers/todo
 
 .. toctree::
    :maxdepth: 3
@@ -65,7 +67,7 @@ For developers
 .. descriptions here are active
 
 :doc:`developers/setup_mailinglist`
-   How to configure git and to start sending patches via :git_man:`send-email`.
+   How to configure git and to start sending patches via :manpage:`git-send-email(1)`.
 
 :doc:`developers/writing_tests`
    Starting guide on writing tests
@@ -96,6 +98,9 @@ For developers
 
 :doc:`developers/documentation`
    How to use and develop LTP documentation
+
+:doc:`developers/todo`
+   List of tasks maintainers are working on
 
 For maintainers
 ---------------

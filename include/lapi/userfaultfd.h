@@ -2,6 +2,7 @@
 /*
  * Copyright (C) 2007 Davide Libenzi <davidel@xmailserver.org>
  * Copyright (C) 2015,2022 Red Hat, Inc.
+ * Copyright (c) Linux Test Project, 2025
  *
  * Mostly copied/adapted from <linux/userfaultfd.h>
  */
@@ -9,6 +10,7 @@
 #ifndef LAPI_USERFAULTFD_H__
 #define LAPI_USERFAULTFD_H__
 
+#include <stdbool.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include "lapi/syscalls.h"
@@ -158,6 +160,12 @@ struct uffdio_zeropage {
 #define UFFD_USER_MODE_ONLY 1
 #endif /* UFFD_USER_MODE_ONLY */
 
+#ifndef USERFAULTFD_IOC
+#define USERFAULTFD_IOC		0xAA
+#endif /* USERFAULTFD_IOC */
+#ifndef USERFAULTFD_IOC_NEW
+#define USERFAULTFD_IOC_NEW	_IO(USERFAULTFD_IOC, 0x00)
+#endif /* USERFAULTFD_IOC_NEW */
 
 /* UFFD_PAGEFAULT_FLAG_MINOR and UFFDIO_CONTINUE were added in v5.13 */
 #ifndef UFFD_PAGEFAULT_FLAG_MINOR
@@ -186,5 +194,74 @@ struct uffdio_continue {
 #ifndef UFFD_FEATURE_MINOR_SHMEM
 #define UFFD_FEATURE_MINOR_SHMEM		(1<<10)
 #endif /* UFFD_FEATURE_MINOR_SHMEM */
+
+#ifndef HAVE_STRUCT_UFFDIO_MOVE
+#define _UFFDIO_MOVE			(0x05)
+#define UFFDIO_MOVE		_IOWR(UFFDIO, _UFFDIO_MOVE,     \
+				      struct uffdio_move)
+
+struct uffdio_move {
+	__u64 dst;
+	__u64 src;
+	__u64 len;
+	/*
+	 * Especially if used to atomically remove memory from the
+	 * address space the wake on the dst range is not needed.
+	 */
+#define UFFDIO_MOVE_MODE_DONTWAKE		((__u64)1<<0)
+#define UFFDIO_MOVE_MODE_ALLOW_SRC_HOLES	((__u64)1<<1)
+	__u64 mode;
+	/*
+	 * "move" is written by the ioctl and must be at the end: the
+	 * copy_from_user will not read the last 8 bytes.
+	 */
+	__s64 move;
+};
+#endif	/* HAVE_STRUCT_UFFDIO_MOVE */
+
+#ifndef HAVE_STRUCT_UFFDIO_WRITEPROTECT
+#define UFFD_FEATURE_PAGEFAULT_FLAG_WP		(1<<0)
+#define _UFFDIO_WRITEPROTECT			(0x06)
+#define UFFDIO_WRITEPROTECT	_IOWR(UFFDIO, _UFFDIO_WRITEPROTECT, \
+				      struct uffdio_writeprotect)
+
+struct uffdio_writeprotect {
+	struct uffdio_range range;
+#define UFFDIO_WRITEPROTECT_MODE_WP		((__u64)1<<0)
+#define UFFDIO_WRITEPROTECT_MODE_DONTWAKE	((__u64)1<<1)
+	__u64 mode;
+};
+#endif	/* HAVE_STRUCT_UFFDIO_WRITEPROTECT */
+
+#define SAFE_USERFAULTFD(flags, retry) \
+	safe_userfaultfd(__FILE__, __LINE__, (flags), (retry))
+
+static inline int safe_userfaultfd(const char *file, const int lineno, int
+				   flags, bool retry)
+{
+	int ret;
+
+retry:
+	ret = tst_syscall(__NR_userfaultfd, flags);
+	if (ret == -1) {
+		if (errno == EPERM) {
+			if (retry && !(flags & UFFD_USER_MODE_ONLY)) {
+				flags |= UFFD_USER_MODE_ONLY;
+				goto retry;
+			}
+			tst_res_(file, lineno, TINFO,
+				 "Hint: check /proc/sys/vm/unprivileged_userfaultfd");
+			tst_brk_(file, lineno, TCONF | TERRNO,
+				"userfaultfd() requires CAP_SYS_PTRACE on this system");
+		}
+		tst_brk_(file, lineno, TBROK | TERRNO,
+				 "syscall(__NR_userfaultfd, %d) failed", flags);
+	} else if (ret < 0) {
+		tst_brk_(file, lineno, TBROK | TERRNO,
+			 "Invalid syscall(__NR_userfaultfd, %d) return value %d", flags, ret);
+	}
+
+	return ret;
+}
 
 #endif /* LAPI_USERFAULTFD_H__ */

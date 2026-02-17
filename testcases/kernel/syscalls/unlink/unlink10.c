@@ -6,8 +6,8 @@
  */
 
 /*\
- * Verify that unlink(2) fails with EROFS when target file is on a read-only
- * filesystem.
+ * Verify that :manpage:`unlink(2)`: fails with EROFS when target file is on
+ * a read-only filesystem.
  */
 
 #include <sys/ioctl.h>

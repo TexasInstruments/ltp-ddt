@@ -6,7 +6,7 @@
  */
 
 /*\
- * Check the basic functionality of the umount(2) system call.
+ * Check the basic functionality of the :manpage:`umount(2)` system call.
  */
 
 #include <sys/mount.h>

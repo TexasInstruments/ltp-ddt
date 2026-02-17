@@ -4,11 +4,9 @@
  */
 
 /*\
- * [Description]
+ * Test :manpage:`mmap(2)` with MAP_DROPPABLE flag.
  *
- * Test mmap(2) with MAP_DROPPABLE flag.
- *
- * Test base on kernel selftests/mm/droppable.c
+ * Test based on :kselftest:`mm/droppable.c`.
  *
  * Ensure that memory allocated with MAP_DROPPABLE can be reclaimed
  * under memory pressure within a cgroup.

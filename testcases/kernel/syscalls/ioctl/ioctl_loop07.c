@@ -6,7 +6,8 @@
  */
 
 /*\
- * Tests ioctl() on loopdevice with LOOP_SET_STATUS64 and LOOP_GET_STATUS64 flags.
+ * Tests :manpage:`ioctl(2)` on loopdevice with LOOP_SET_STATUS64 and
+ * LOOP_GET_STATUS64 flags.
  *
  * Tests lo_sizelimit field. If lo_sizelimit is 0, it means max
  * available. If sizelimit is less than loop_size, loopsize will
@@ -70,7 +71,7 @@ static void verify_ioctl_loop(unsigned int n)
 				loopinfoget.lo_sizelimit, tc->set_sizelimit);
 	/*Reset*/
 	if (tc->ioctl_flag == LOOP_CONFIGURE) {
-		tst_detach_device_by_fd(dev_path, dev_fd);
+		tst_detach_device_by_fd(dev_path, &dev_fd);
 		dev_fd = SAFE_OPEN(dev_path, O_RDWR);
 	} else {
 		loopinfo.lo_sizelimit = 0;
@@ -99,7 +100,7 @@ static void run(unsigned int n)
 		return;
 	}
 	if (attach_flag) {
-		tst_detach_device_by_fd(dev_path, dev_fd);
+		tst_detach_device_by_fd(dev_path, &dev_fd);
 		dev_fd = SAFE_OPEN(dev_path, O_RDWR);
 		attach_flag = 0;
 	}

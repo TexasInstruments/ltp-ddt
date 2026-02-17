@@ -5,7 +5,7 @@
  */
 
 /*\
- * Basic test for the BLKRRPART ioctl, it is the same as blockdev
+ * Basic test for :manpage:`ioctl(2)` with BLKRRPART, it is the same as blockdev
  * --rereadpt command.
  */
 
@@ -76,7 +76,7 @@ static void verify_ioctl(void)
 	check_partition(1, true);
 	check_partition(2, true);
 
-	tst_detach_device_by_fd(dev_path, dev_fd);
+	tst_detach_device_by_fd(dev_path, &dev_fd);
 	dev_fd = SAFE_OPEN(dev_path, O_RDWR);
 	attach_flag = 0;
 }
@@ -108,9 +108,9 @@ static struct tst_test test = {
 		"loop",
 		NULL
 	},
-	.needs_cmds = (const char *const []) {
-		"parted",
-		NULL
+	.needs_cmds = (struct tst_cmd[]) {
+		{.cmd = "parted"},
+		{}
 	},
 	.needs_tmpdir = 1,
 };

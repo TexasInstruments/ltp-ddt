@@ -4,7 +4,7 @@
  */
 
 /*\
- * Check if the ioctl() function allows retrieval of a child's exit code
+ * Check if the :manpage:`ioctl(2)` function allows retrieval of a child's exit code
  * using PIDFD_INFO_EXIT from a process that can be isolated or not from the
  * child.
  */
@@ -81,5 +81,10 @@ static struct tst_test test = {
 		{&info0, .size = sizeof(*info0)},
 		{&info1, .size = sizeof(*info1)},
 		{}
+	},
+	.needs_kconfigs = (const char *[]) {
+		"CONFIG_USER_NS",
+		"CONFIG_PID_NS",
+		NULL
 	}
 };

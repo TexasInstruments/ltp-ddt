@@ -146,8 +146,7 @@ int make_swapfile(const char *file, const int lineno,
 	size_t pg_size = sysconf(_SC_PAGESIZE);
 	char mnt_path[PATH_MAX];
 
-	if (statvfs(".", &fs_info) == -1)
-		tst_brk_(file, lineno, TBROK, "statvfs failed");
+	safe_statvfs(file, lineno, ".", &fs_info);
 
 	blk_size = fs_info.f_bsize;
 
@@ -169,8 +168,7 @@ int make_swapfile(const char *file, const int lineno,
 		blk_size = pg_size;
 	}
 
-	if (sscanf(swapfile, "%[^/]", mnt_path) != 1)
-		tst_brk_(file, lineno, TBROK, "sscanf failed");
+	safe_sscanf(file, lineno, swapfile, "%[^/]", mnt_path);
 
 	if (!tst_fs_has_free(mnt_path, blk_size * blocks, TST_BYTES))
 		tst_brk_(file, lineno, TCONF, "Insufficient disk space to create swap file");
@@ -239,70 +237,6 @@ bool is_swap_supported(const char *filename)
 	}
 
 	return true;
-}
-
-int tst_max_swapfiles(void)
-{
-	unsigned int swp_migration_num = 0, swp_hwpoison_num = 0,
-		     swp_device_num = 0, swp_pte_marker_num = 0,
-		     swp_swapin_error_num = 0;
-	struct tst_kconfig_var migration = TST_KCONFIG_INIT("CONFIG_MIGRATION");
-	struct tst_kconfig_var memory = TST_KCONFIG_INIT("CONFIG_MEMORY_FAILURE");
-	struct tst_kconfig_var device = TST_KCONFIG_INIT("CONFIG_DEVICE_PRIVATE");
-	struct tst_kconfig_var marker = TST_KCONFIG_INIT("CONFIG_PTE_MARKER");
-	struct tst_kern_exv kvers_marker_migration[] = {
-		/* RHEL9 kernel has patch 6c287605f and 679d10331 since 5.14.0-179 */
-		{ "RHEL9", "5.14.0-179" },
-		{ NULL, NULL},
-	};
-
-	struct tst_kern_exv kvers_marker_migration2[] = {
-		/* RHEL9 kernel has patch ca92ea3dc5a since 5.14.0-441 */
-		{ "RHEL9", "5.14.0-441" },
-		{ NULL, NULL},
-	};
-
-	struct tst_kern_exv kvers_device[] = {
-		/* SLES12-SP4 has patch 5042db43cc26 since 4.12.14-5.5 */
-		{ "SLES", "4.12.14-5.5" },
-		{ NULL, NULL},
-	};
-
-	tst_kconfig_read(&migration, 1);
-	tst_kconfig_read(&memory, 1);
-	tst_kconfig_read(&device, 1);
-	tst_kconfig_read(&marker, 1);
-
-	if (migration.choice == 'y') {
-		if (tst_kvercmp2(5, 19, 0, kvers_marker_migration) < 0)
-			swp_migration_num = 2;
-		else
-			swp_migration_num = 3;
-	}
-
-	if (memory.choice == 'y')
-		swp_hwpoison_num = 1;
-
-	if (device.choice == 'y') {
-		if (tst_kvercmp2(4, 14, 0, kvers_device) >= 0)
-			swp_device_num = 2;
-		if (tst_kvercmp(5, 14, 0) >= 0)
-			swp_device_num = 4;
-		if (tst_kvercmp(6, 15, 0) >= 0)
-			swp_device_num = 3;
-	}
-
-	if ((marker.choice == 'y' &&
-	     tst_kvercmp2(5, 19, 0, kvers_marker_migration) >= 0)
-	    || tst_kvercmp2(6, 2, 0, kvers_marker_migration2) >= 0) {
-		swp_pte_marker_num = 1;
-	}
-
-	if ((tst_kvercmp(5, 19, 0) >= 0) && (tst_kvercmp(6, 2, 0) < 0))
-		swp_swapin_error_num = 1;
-
-	return DEFAULT_MAX_SWAPFILE - swp_migration_num - swp_hwpoison_num
-		- swp_device_num - swp_pte_marker_num - swp_swapin_error_num;
 }
 
 int tst_count_swaps(void)

@@ -4,7 +4,7 @@
  */
 
 /*\
- * Verify that ioctl() doesn't allow to obtain the exit status of an isolated
+ * Verify that :manpage:`ioctl(2)` doesn't allow to obtain the exit status of an isolated
  * process via PIDFD_INFO_EXIT in within an another isolated process, which
  * doesn't have any parent connection.
  */
@@ -62,5 +62,10 @@ static struct tst_test test = {
 		{&args, .size = sizeof(*args)},
 		{&info, .size = sizeof(*info)},
 		{}
+	},
+	.needs_kconfigs = (const char *[]) {
+		"CONFIG_USER_NS",
+		"CONFIG_PID_NS",
+		NULL
 	}
 };

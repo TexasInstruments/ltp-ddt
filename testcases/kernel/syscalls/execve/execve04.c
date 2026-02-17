@@ -9,13 +9,12 @@
  */
 
 /*\
- * Attempt to execve(2) a file which is being opened by another process for
+ * Attempt to :manpage:`execve(2)` a file which is being opened by another process for
  * writing fails with ETXTBSY.
  */
 
-#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
-#endif
+
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <errno.h>

@@ -6,7 +6,7 @@
  */
 
 /*\
- * Verify that unlink(2) fails with EPERM when target file is marked as
+ * Verify that :manpage:`unlink(2)`: fails with EPERM when target file is marked as
  * immutable or append-only.
  */
 
