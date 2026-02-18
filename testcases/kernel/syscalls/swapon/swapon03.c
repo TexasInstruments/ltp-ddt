@@ -1,14 +1,17 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /*
+ * Copyright (c) Linux Test Project, 2009-2025
  * Copyright (c) International Business Machines Corp., 2007
  * Created by <rsalveti@linux.vnet.ibm.com>
- *
  */
 
 /*\
- * This test case checks whether swapon(2) system call returns:
+ * Test checks whether :manpage:`swapon(2)` system call returns EPERM when the maximum
+ * number of swap files are already in use.
  *
- *  - EPERM when there are more than MAX_SWAPFILES already in use.
+ * NOTE: test does not try to calculate MAX_SWAPFILES from the internal
+ * kernel implementation, instead make sure at least 15 swaps were created
+ * before the maximum of swaps was reached.
  */
 
 #include <stdio.h>
@@ -20,6 +23,13 @@
 #include "lapi/syscalls.h"
 #include "libswap.h"
 
+/*
+ * MAX_SWAPFILES from the internal kernel implementation is currently <23, 29>,
+ * depending on kernel configuration (see man swapon(2)). Chose small enough
+ * value for future changes.
+ */
+#define MIN_SWAP_FILES 15
+
 #define MNTPOINT	"mntpoint"
 #define TEST_FILE	MNTPOINT"/testswap"
 
@@ -27,41 +37,28 @@ static int swapfiles;
 
 static int setup_swap(void)
 {
-	pid_t pid;
-	int status;
-	int j, max_swapfiles, used_swapfiles;
+	int used_swapfiles, min_swapfiles;
 	char filename[FILENAME_MAX];
 
-	SAFE_SETEUID(0);
-
-	/* Determine how many more files are to be created */
-	max_swapfiles = tst_max_swapfiles();
 	used_swapfiles = tst_count_swaps();
-	swapfiles = max_swapfiles - used_swapfiles;
-	if (swapfiles > max_swapfiles)
-		swapfiles = max_swapfiles;
+	min_swapfiles = MIN_SWAP_FILES - used_swapfiles;
 
-	pid = SAFE_FORK();
-	if (pid == 0) {
-		/*create and turn on remaining swapfiles */
-		for (j = 0; j < swapfiles; j++) {
+	while (true) {
+		/* Create the swapfile */
+		snprintf(filename, sizeof(filename), "%s%02d", TEST_FILE, swapfiles);
+		MAKE_SMALL_SWAPFILE(filename);
 
-			/* Create the swapfile */
-			snprintf(filename, sizeof(filename), "%s%02d", TEST_FILE, j + 2);
-			MAKE_SMALL_SWAPFILE(filename);
+		/* Quit on a first swap file over max, check for EPERM */
+		if (swapon(filename, 0) == -1) {
+			if (errno == EPERM && swapfiles > min_swapfiles)
+				break;
 
-			/* turn on the swap file */
-			TST_EXP_PASS_SILENT(swapon(filename, 0));
+			tst_brk(TFAIL | TERRNO, "swapon(%s, 0)", filename);
 		}
-		exit(0);
-	} else
-		waitpid(pid, &status, 0);
-
-	if (WEXITSTATUS(status))
-		tst_brk(TFAIL, "Failed to setup swap files");
+		swapfiles++;
+	}
 
 	tst_res(TINFO, "Successfully created %d swap files", swapfiles);
-	MAKE_SMALL_SWAPFILE(TEST_FILE);
 
 	return 0;
 }
@@ -71,7 +68,7 @@ static int setup_swap(void)
  */
 static int check_and_swapoff(const char *filename)
 {
-	char cmd_buffer[256];
+	char cmd_buffer[FILENAME_MAX+28];
 	int rc = -1;
 
 	snprintf(cmd_buffer, sizeof(cmd_buffer), "grep -q '%s.*file' /proc/swaps", filename);
@@ -93,11 +90,9 @@ static void clean_swap(void)
 	char filename[FILENAME_MAX];
 
 	for (j = 0; j < swapfiles; j++) {
-		snprintf(filename, sizeof(filename), "%s%02d", TEST_FILE, j + 2);
+		snprintf(filename, sizeof(filename), "%s%02d", TEST_FILE, j);
 		check_and_swapoff(filename);
 	}
-
-	check_and_swapoff("testfile");
 }
 
 static void verify_swapon(void)
@@ -127,7 +122,6 @@ static struct tst_test test = {
 	.mount_device = 1,
 	.all_filesystems = 1,
 	.needs_root = 1,
-	.forks_child = 1,
 	.test_all = verify_swapon,
 	.setup = setup,
 	.cleanup = cleanup

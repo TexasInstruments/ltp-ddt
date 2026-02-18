@@ -1,5 +1,5 @@
 .. SPDX-License-Identifier: GPL-2.0-or-later
-.. Copyright (c) Linux Test Project, 2024
+.. Copyright (c) Linux Test Project, 2024-2025
 
 .. Include headers in this file with:
 .. .. kernel-doc:: ../../include/tst_test.h
@@ -25,6 +25,10 @@ Checkpoints
 
 .. kernel-doc:: ../../include/tst_checkpoint.h
 
+Commands
+--------
+.. kernel-doc:: ../../include/tst_cmd.h
+
 Crypto
 ------
 .. kernel-doc:: ../../include/tst_crypto.h
@@ -37,6 +41,12 @@ Guarded buffers
 Kernel
 ------
 .. kernel-doc:: ../../include/tst_kernel.h
+.. kernel-doc:: ../../include/tst_kvercmp.h
+
+Process state
+-------------
+
+.. kernel-doc:: ../../include/tst_process_state.h
 
 NUMA
 ----
@@ -46,6 +56,10 @@ Option parsing
 --------------
 
 .. kernel-doc:: ../../include/tst_parse.h
+
+Saving and restoring /proc|sys values
+-------------------------------------
+.. kernel-doc:: ../../include/tst_sys_conf.h
 
 Temporary directory
 -------------------

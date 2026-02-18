@@ -4,10 +4,9 @@
  */
 
 /*\
- * [Description]
+ * Test PROCMAP_QUERY :manpage:`ioctl(2)` for /proc/$PID/maps.
  *
- * Test PROCMAP_QUERY ioctl() for /proc/$PID/maps.
- * Test base on kernel selftests proc-pid-vm.c.
+ * Test based on :kselftest:`proc/proc-pid-vm.c`.
  *
  * - ioctl with exact match query_addr
  * - ioctl without match query_addr

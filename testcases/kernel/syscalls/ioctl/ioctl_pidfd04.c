@@ -4,8 +4,8 @@
  */
 
 /*\
- * Verify that ioctl() permits to obtain the exit code of an isolated signaled
- * child via PIDFD_INFO_EXIT from within a process.
+ * Verify that :manpage:`ioctl(2)` permits to obtain the exit code of an isolated
+ * signaled child via PIDFD_INFO_EXIT from within a process.
  */
 
 #include "ioctl_pidfd.h"
@@ -67,5 +67,10 @@ static struct tst_test test = {
 		{&args, .size = sizeof(*args)},
 		{&info, .size = sizeof(*info)},
 		{}
+	},
+	.needs_kconfigs = (const char *[]) {
+		"CONFIG_USER_NS",
+		"CONFIG_PID_NS",
+		NULL
 	}
 };

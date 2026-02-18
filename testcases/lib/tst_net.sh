@@ -42,10 +42,29 @@ tst_net_usage()
 	if [ -n "$TST_USAGE_CALLER" ]; then
 		$TST_USAGE_CALLER
 	else
-		echo "Usage: $0 [-6]"
-		echo "OPTIONS"
+	cat << EOF
+Usage: $0 [-6]
+
+OPTIONS (network tests only)
+----------------------------
+EOF
 	fi
-	echo "-6      IPv6 tests"
+
+	cat << EOF
+-6      IPv6 tests
+
+Environment Variables (network tests only)
+------------------------------------------
+TST_NET_RHOST_RUN_DEBUG=1
+Print commands used by tst_rhost_run()
+
+LTP_NET_FEATURES_IGNORE_PERFORMANCE_FAILURE=1
+Ignore performance failure and test only the network functionality in tests
+which use tst_netload_compare().
+
+OPTIONS
+-------
+EOF
 }
 
 tst_net_remote_tmpdir()
@@ -713,11 +732,21 @@ tst_wait_ipv6_dad()
 	done
 }
 
-tst_netload_brk()
+tst_netload_print_log()
 {
 	tst_rhost_run -c "cat $TST_TMPDIR/netstress.log"
 	cat tst_netload.log
-	tst_brk_ $1 $2
+}
+
+tst_netload_brk()
+{
+	tst_netload_print_log
+	if [ "$1" != TBROK -a "$1" != TCONF ]; then
+		tst_res_ $1 $2
+		tst_brk_ TBROK "quit due previous failures"
+	else
+		tst_brk_ $1 $2
+	fi
 }
 
 # Run network load test, see 'netstress -h' for option description
@@ -834,12 +863,12 @@ tst_netload()
 				tst_netload_brk TFAIL "expected '$expect_res' but ret: '$ret'"
 
 			tst_res_ TWARN "netstress failed, ret: $ret"
+			tst_netload_print_log
 			was_failure=1
 			continue
 		fi
 
-		[ ! -f $rfile ] && \
-			tst_netload_brk TFAIL "can't read $rfile"
+		[ ! -f $rfile ] && tst_netload_brk TBROK "can't read $rfile"
 
 		results="$results $(cat $rfile)"
 		passed=$((passed + 1))

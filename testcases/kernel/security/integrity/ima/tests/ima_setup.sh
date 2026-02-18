@@ -12,6 +12,7 @@ TST_CLEANUP="ima_cleanup"
 TST_NEEDS_ROOT=1
 TST_MOUNT_DEVICE=1
 TST_SKIP_LSM_WARNINGS=1
+TST_USAGE="usage"
 
 # TST_MOUNT_DEVICE can be unset, therefore specify explicitly
 TST_NEEDS_TMPDIR=1
@@ -22,6 +23,21 @@ TST_FS_TYPE="ext3"
 
 IMA_FAIL="TFAIL"
 IMA_BROK="TBROK"
+
+usage()
+{
+	echo "Test Specific Environment Variables"
+	echo "-----------------------------------"
+
+	cat >&2 << EOF
+LTP_IMA_LOAD_POLICY=1     Load IMA example policy which some tests require
+                          NOTE: This requires to reboot SUT unless kernel
+                          configured with CONFIG_IMA_WRITE_POLICY=y
+EOF
+	echo
+	echo "Options"
+	echo "-------"
+}
 
 # TODO: find support for rmd128 rmd256 rmd320 wp256 wp384 tgr128 tgr160
 compute_digest()
@@ -450,10 +466,11 @@ require_evmctl()
 }
 
 # 56dc986a6b20b ("ima: require signed IMA policy when UEFI secure boot is enabled") # v6.5-rc4
+# d958083a8f640 ("x86/ima: define arch_get_ima_policy() for x86") # v5.0
 check_need_signed_policy()
 {
-	tst_secureboot_enabled && tst_kvcmp -ge '6.5' && tst_require_kconfigs \
-		'CONFIG_IMA_KEYRINGS_PERMIT_SIGNED_BY_BUILTIN_OR_SECONDARY'
+	tst_secureboot_enabled && tst_kvcmp -ge '6.5' && tst_check_kconfigs \
+		'CONFIG_IMA_KEYRINGS_PERMIT_SIGNED_BY_BUILTIN_OR_SECONDARY,CONFIG_IMA_ARCH_POLICY'
 }
 
 # loop device is needed to use only for tmpfs

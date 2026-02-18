@@ -4,7 +4,7 @@
  */
 
 /*\
- * Basic test for the BLKROSET and BLKROGET ioctls.
+ * Basic test for :manpage:`ioctl(2)` with BLKROSET and BLKROGET .
  *
  * - Set the device read only, read the value back.
  * - Try to mount the device read write, expect failure.

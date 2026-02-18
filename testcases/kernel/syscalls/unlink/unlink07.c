@@ -5,7 +5,7 @@
  */
 
 /*\
- * Verify that unlink(2) fails with
+ * Verify that :manpage:`unlink(2)`: fails with:
  *
  * - ENOENT when file does not exist
  * - ENOENT when pathname is empty

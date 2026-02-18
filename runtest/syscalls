@@ -123,10 +123,13 @@ clone06 clone06
 clone07 clone07
 clone08 clone08
 clone09 clone09
+clone10 clone10
+clone11 clone11
 
 clone301 clone301
 clone302 clone302
 clone303 clone303
+clone304 clone304
 
 close01 close01
 close02 close02
@@ -250,6 +253,7 @@ file_attr01 file_attr01
 file_attr02 file_attr02
 file_attr03 file_attr03
 file_attr04 file_attr04
+file_attr05 file_attr05
 
 #posix_fadvise test cases
 posix_fadvise01                      posix_fadvise01
@@ -973,6 +977,7 @@ nanosleep04 nanosleep04
 
 name_to_handle_at01 name_to_handle_at01
 name_to_handle_at02 name_to_handle_at02
+name_to_handle_at03 name_to_handle_at03
 
 nftw01 nftw01
 nftw6401 nftw6401
@@ -1766,6 +1771,10 @@ umount2_01 umount2_01
 umount2_02 umount2_02
 
 userfaultfd01 userfaultfd01
+userfaultfd02 userfaultfd02
+userfaultfd03 userfaultfd03
+userfaultfd04 userfaultfd04
+userfaultfd05 userfaultfd05
 
 ustat01 ustat01
 ustat02 ustat02

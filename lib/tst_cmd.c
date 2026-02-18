@@ -27,6 +27,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <signal.h>
+#include <stdbool.h>
 #include "test.h"
 #include "tst_cmd.h"
 #include "tst_private.h"
@@ -249,7 +250,7 @@ static struct version_parser {
 	{},
 };
 
-int tst_check_cmd(const char *cmd, const int brk_nosupp)
+bool tst_check_cmd(const char *cmd, const int brk_nosupp)
 {
 	struct version_parser *p;
 	char *cmd_token, *op_token, *version_token, *next, *str;
@@ -264,11 +265,17 @@ int tst_check_cmd(const char *cmd, const int brk_nosupp)
 	version_token = strtok_r(NULL, " ", &next);
 	str = strtok_r(NULL, " ", &next);
 
-	if (tst_get_path(cmd_token, path, sizeof(path)))
-		tst_brkm(TCONF, NULL, "Couldn't find '%s' in $PATH", cmd_token);
+	if (tst_get_path(cmd_token, path, sizeof(path))) {
+		if (brk_nosupp) {
+			tst_brkm(TCONF, NULL, "Couldn't find '%s' in $PATH", cmd_token);
+		} else {
+			tst_resm(TCONF, "Couldn't find '%s' in $PATH", cmd_token);
+			return false;
+		}
+	}
 
 	if (!op_token)
-		return 0;
+		return true;
 
 	if (!version_token || str) {
 		tst_brkm(TCONF, NULL,
@@ -318,7 +325,7 @@ int tst_check_cmd(const char *cmd, const int brk_nosupp)
 		tst_brkm(TCONF, NULL, "Invalid op(%s)", op_token);
 	}
 
-	return 0;
+	return true;
 error:
 	if (brk_nosupp) {
 		tst_brkm(TCONF, NULL, "%s requires %s %d, but got %d",
@@ -328,5 +335,5 @@ error:
 			cmd, op_token, ver_get, ver_parser);
 	}
 
-	return 1;
+	return false;
 }

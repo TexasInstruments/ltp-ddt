@@ -239,9 +239,9 @@ uint64_t tst_get_device_size(const char *dev_path)
 	return size/1024/1024;
 }
 
-int tst_detach_device_by_fd(const char *dev, int dev_fd)
+static int detach_loop_fd(const char *dev, int *dev_fd)
 {
-	int ret, i;
+	int ret, i, retval = 1;
 
 	/* keep trying to clear LOOPDEV until we get ENXIO, a quick succession
 	 * of attach/detach might not give udev enough time to complete
@@ -250,19 +250,18 @@ int tst_detach_device_by_fd(const char *dev, int dev_fd)
 	 * device is detached only after last close.
 	 */
 	for (i = 0; i < 40; i++) {
-		ret = ioctl(dev_fd, LOOP_CLR_FD, 0);
+		ret = ioctl(*dev_fd, LOOP_CLR_FD, 0);
 
 		if (ret && (errno == ENXIO)) {
-			SAFE_CLOSE(NULL, dev_fd);
-			return 0;
+			retval = 0;
+			goto exit;
 		}
 
 		if (ret && (errno != EBUSY)) {
 			tst_resm(TWARN,
 				 "ioctl(%s, LOOP_CLR_FD, 0) unexpectedly failed with: %s",
 				 dev, tst_strerrno(errno));
-			SAFE_CLOSE(NULL, dev_fd);
-			return 1;
+			goto exit;
 		}
 
 		usleep(50000);
@@ -270,8 +269,87 @@ int tst_detach_device_by_fd(const char *dev, int dev_fd)
 
 	tst_resm(TWARN,
 		"ioctl(%s, LOOP_CLR_FD, 0) no ENXIO for too long", dev);
-	SAFE_CLOSE(NULL, dev_fd);
-	return 1;
+exit:
+	SAFE_CLOSE(NULL, *dev_fd);
+	*dev_fd = -1;
+	return retval;
+}
+
+static int find_loop_device_partition(const char *dev, char *part_path,
+	unsigned int path_size)
+{
+	int dev_num = -1;
+	unsigned int i;
+
+	snprintf(part_path, path_size, "%sp1", dev);
+
+	if (!access(part_path, F_OK))
+		return 1;
+
+	/* Parse loop device number */
+	for (i = 0; i < ARRAY_SIZE(dev_loop_variants); i++) {
+		if (sscanf(dev, dev_loop_variants[i], &dev_num) == 1)
+			break;
+
+		dev_num = -1;
+	}
+
+	if (dev_num < 0) {
+		tst_resm(TWARN, "Cannot parse %s device number", dev);
+		return 0;
+	}
+
+	snprintf(part_path, path_size, "/sys/block/loop%d/loop%dp1", dev_num,
+		dev_num);
+
+	if (!access(part_path, F_OK))
+		return 1;
+
+	/* The loop device has no leftover partitions */
+	return 0;
+}
+
+static int clear_loop_device_partitions(const char *dev)
+{
+	char part_path[PATH_MAX];
+	struct loop_info loopinfo = {};
+	int dev_fd;
+
+	if (!find_loop_device_partition(dev, part_path, PATH_MAX))
+		return 0;
+
+	tst_resm(TWARN, "Detached device %s has leftover partitions", dev);
+	tst_fill_file(DEV_FILE, 0, 1024 * 1024, 1);
+	tst_attach_device(dev, DEV_FILE);
+	dev_fd = open(dev, O_RDWR);
+
+	if (dev_fd < 0) {
+		tst_resm(TWARN | TERRNO,
+			"Cannot clear leftover partitions on %s", dev);
+		/* Do not detach device to prevent infinite recursion */
+		return 1;
+	}
+
+	loopinfo.lo_flags = LO_FLAGS_PARTSCAN;
+	ioctl(dev_fd, LOOP_SET_STATUS, &loopinfo);
+
+	if (!access(part_path, F_OK)) {
+		tst_resm(TWARN, "Cannot clear leftover partitions on %s", dev);
+		detach_loop_fd(dev, &dev_fd);
+		return 1;
+	}
+
+	return detach_loop_fd(dev, &dev_fd);
+}
+
+int tst_detach_device_by_fd(const char *dev, int *dev_fd)
+{
+	int ret = detach_loop_fd(dev, dev_fd);
+
+	if (!ret)
+		ret = clear_loop_device_partitions(dev);
+
+	return ret;
 }
 
 int tst_detach_device(const char *dev)
@@ -284,7 +362,7 @@ int tst_detach_device(const char *dev)
 		return 1;
 	}
 
-	ret = tst_detach_device_by_fd(dev, dev_fd);
+	ret = tst_detach_device_by_fd(dev, &dev_fd);
 	return ret;
 }
 

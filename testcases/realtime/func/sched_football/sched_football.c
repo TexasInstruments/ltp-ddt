@@ -201,11 +201,15 @@ static void do_test(void)
 
 static void do_setup(void)
 {
+	tst_check_rt_group_sched_support();
+
 	if (tst_parse_int(str_game_length, &game_length, 1, INT_MAX))
 		tst_brk(TBROK, "Invalid game length '%s'", str_game_length);
 
 	if (tst_parse_int(str_players_per_team, &players_per_team, 1, INT_MAX))
 		tst_brk(TBROK, "Invalid number of players '%s'", str_players_per_team);
+
+	tst_check_rt_group_sched_support();
 }
 
 static struct tst_test test = {

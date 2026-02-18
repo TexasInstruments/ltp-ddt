@@ -175,7 +175,9 @@ const char *tst_strsig(int sig);
 /**
  * tst_strstatus() - Returns string describing status as returned by wait().
  *
- * WARNING: Not thread safe.
+ * .. warning::
+ *
+ *   Not thread safe.
  *
  * @status: A status as returned by wait()
  * return: A string description for the status e.g. "killed by SIGKILL".
@@ -243,8 +245,8 @@ extern unsigned int tst_variant;
 /**
  * struct tst_ulimit_val - An ulimit resource and value.
  *
- * @resource: Which resource limits should be adjusted. See setrlimit(2) for
- *            the list of the RLIMIT_* constants.
+ * @resource: Which resource limits should be adjusted. See
+ * :manpage:`setrlimit(2)` for the list of the RLIMIT_* constants.
  * @rlim_cur: A limit value.
  */
 struct tst_ulimit_val {
@@ -269,11 +271,11 @@ struct tst_ulimit_val {
  * @mkfs_ver: mkfs tool version. The string format supports relational
  *            operators such as < > <= >= ==.
  *
- * @mnt_flags: MS_* flags passed to mount(2) when the test library mounts a
- *             device in the case of 'tst_test.mount_device'.
+ * @mnt_flags: MS_* flags passed to :manpage:`mount(2)` when the test library
+ *             * mounts a device in the case of 'tst_test.mount_device'.
  *
- * @mnt_data: The data passed to mount(2) when the test library mounts a device
- *            in the case of 'tst_test.mount_device'.
+ * @mnt_data: The data passed to :manpage:`mount(2)` when the test library
+ *            mounts a device in the case of 'tst_test.mount_device'.
  *
  * @min_kver: A minimum kernel version supporting the filesystem which has been
  *            created with mkfs.
@@ -296,7 +298,7 @@ struct tst_fs {
  *
  * @tcnt: A number of tests. If set the test() callback is called tcnt times
  *        and each time passed an increasing counter value.
- * @options: An NULL optstr terminated array of struct tst_option.
+ * @options: An NULL optstr terminated array of :ref:`struct tst_option`.
  *
  * @min_kver: A minimal kernel version the test can run on. e.g. "3.10".
  *
@@ -320,7 +322,7 @@ struct tst_fs {
  * @forks_child: Has to be set if the test intends to fork children.
  *
  * @needs_device: If set a block device is prepared for the test, the device
- *                path and size are set in the struct tst_device variable
+ *                path and size are set in the :ref:`struct tst_device` variable
  *                called tst_device. If $LTP_DEV variable exists in the test
  *                environment the test attempts to use that device first and
  *                only if that fails the test falls back to use loop devices.
@@ -355,11 +357,11 @@ struct tst_fs {
  *                     Testcases that modify system wallclock use this to
  *                     restore the system to the previous state.
  *
- * @all_filesystems: If set the test is executed for all supported filesytems,
+ * @all_filesystems: If set the test is executed for all supported filesystems,
  *                   i.e. file system that is supported by the kernel and has
  *                   mkfs installed on the system.The file system is mounted at
  *                   tst_test.mntpoint and file system details, e.g. type are set
- *                   in the struct tst_device. Each execution is independent,
+ *                   in the :ref:`struct tst_device`. Each execution is independent,
  *                   that means that for each iteration tst_test.setup() is
  *                   called at the test start and tst_test.cleanup() is called
  *                   at the end and tst_brk() only exits test for a single
@@ -432,7 +434,7 @@ struct tst_fs {
  *               and mount options. If tst_test.all_filesystems is not set
  *               the test iterates over file system types defined in the array.
  *               If there is only a single entry in the array with a NULL type,
- *               the test runs just once for the default file sytem i.e.
+ *               the test runs just once for the default file system i.e.
  *               $TST_FS_TYPE.
  *
  * @mntpoint: A mount point where the test library mounts requested file system.
@@ -502,7 +504,7 @@ struct tst_fs {
  *
  * @save_restore: A {} terminated array of /proc or /sys files that should
  *                saved at the start of the test and restored at the end. See
- *                tst_sys_conf_save() and struct tst_path_val for details.
+ *                tst_sys_conf_save() and :ref:`struct tst_path_val` for details.
  *
  * @ulimit: A {} terminated array of process limits RLIMIT_* to be adjusted for
  *          the test.
@@ -517,14 +519,14 @@ struct tst_fs {
  * @bufs: A description of guarded buffers to be allocated for the test. Guarded
  *        buffers are buffers with poisoned page allocated right before the start
  *        of the buffer and canary right after the end of the buffer. See
- *        struct tst_buffers and tst_buffer_alloc() for details.
+ *        :ref:`struct tst_buffers` and tst_buffer_alloc() for details.
  *
  * @caps: A {} terminated array of capabilities to change before the start of
- *        the test. See struct tst_cap and tst_cap_setup() for details.
+ *        the test. See :ref:`struct tst_cap` and tst_cap_setup() for details.
  *
- * @tags: A {} terminated array of test tags. See struct tst_tag for details.
+ * @tags: A {} terminated array of test tags. See :ref:`struct tst_tag` for details.
  *
- * @needs_cmds: A NULL terminated array of commands required for the test to run.
+ * @needs_cmds: A NULL terminated array of :ref:`struct tst_cmd` required for the test to run.
  *
  * @needs_cgroup_ver: If set the test will run only if the specified cgroup
  *                    version is present on the system.
@@ -617,7 +619,7 @@ struct tst_fs {
 
 	const struct tst_tag *tags;
 
-	const char *const *needs_cmds;
+	struct tst_cmd *needs_cmds;
 
 	const enum tst_cg_ver needs_cgroup_ver;
 
@@ -653,7 +655,10 @@ void tst_run_tcases(int argc, char *argv[], struct tst_test *self)
  * functions, checkpoint library, etc. This function re-initializes the test
  * library so that it can be used again.
  *
- * @important The LTP_IPC_PATH variable must be passed to the program environment.
+ * .. warning::
+ *
+ *   The ``LTP_IPC_PATH`` environment variable must be passed to the program
+ *   environment.
  */
 void tst_reinit(void);
 
@@ -720,6 +725,18 @@ int tst_creat_unlinked(const char *path, int flags, mode_t mode);
  * Returns path to the test temporary directory root (TMPDIR).
  */
 const char *tst_get_tmpdir_root(void);
+
+/**
+ * tst_cmd_present() - Check if a command is present
+ * @cmd: The name of the command to check for.
+ *
+ * This function iterates through the &tst_test->needs_cmds array. It compares
+ * the given command name with each entry in the array and returns the
+ * &tst_cmd->present flag for the matching command.
+ *
+ * Return: `true` if the command is present, `false` otherwise.
+ */
+bool tst_cmd_present(const char *cmd);
 
 /*
  * Validates exit status of child processes

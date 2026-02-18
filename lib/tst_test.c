@@ -1056,7 +1056,12 @@ static void do_exit(int ret)
 	exit(ret);
 }
 
-int check_kver(const char *min_kver, const int brk_nosupp)
+/*
+ * Check for the required kernel version.
+ *
+ * return: true if the kernel version is high enough, false otherwise.
+ */
+static bool check_kver(const char *min_kver, const int brk_nosupp)
 {
 	char *msg;
 	int v1, v2, v3;
@@ -1075,30 +1080,35 @@ int check_kver(const char *min_kver, const int brk_nosupp)
 		else
 			tst_res(TCONF, msg, min_kver);
 
-		return 1;
+		return false;
 	}
 
-	return 0;
+	return true;
 }
 
-static int results_equal(struct results *a, struct results *b)
+/*
+ * Checks if the struct results values are equal.
+ *
+ * return: true if results are equal, false otherwise.
+ */
+static bool results_equal(struct results *a, struct results *b)
 {
 	if (a->passed != b->passed)
-		return 0;
+		return false;
 
 	if (a->failed != b->failed)
-		return 0;
+		return false;
 
 	if (a->skipped != b->skipped)
-		return 0;
+		return false;
 
 	if (a->broken != b->broken)
-		return 0;
+		return false;
 
-	return 1;
+	return true;
 }
 
-static int needs_tmpdir(void)
+static bool needs_tmpdir(void)
 {
 	return tst_test->needs_tmpdir ||
 	       tst_test->needs_device ||
@@ -1365,6 +1375,24 @@ static const char *default_fs_type(void)
 	return tst_dev_fs_type();
 }
 
+bool tst_cmd_present(const char *cmd)
+{
+	struct tst_cmd *pcmd = tst_test->needs_cmds;
+
+	if (!cmd || cmd[0] == '\0')
+		tst_brk(TBROK, "Invalid cmd");
+
+	while (pcmd->cmd) {
+		if (!strcmp(pcmd->cmd, cmd))
+			return pcmd->present;
+
+		pcmd++;
+	}
+
+	tst_brk(TBROK, "'%s' not checked", cmd);
+	return false;
+}
+
 static void do_setup(int argc, char *argv[])
 {
 	char *tdebug_env = getenv("LTP_ENABLE_DEBUG");
@@ -1439,11 +1467,12 @@ static void do_setup(int argc, char *argv[])
 		tst_brk(TCONF, "%dbit ABI is not supported", tst_test->needs_abi_bits);
 
 	if (tst_test->needs_cmds) {
-		const char *cmd;
-		int i;
+		struct tst_cmd *pcmd = tst_test->needs_cmds;
 
-		for (i = 0; (cmd = tst_test->needs_cmds[i]); ++i)
-			tst_check_cmd(cmd, 1);
+		while (pcmd->cmd) {
+			pcmd->present = tst_check_cmd(pcmd->cmd, !pcmd->optional) ? 1 : 0;
+			pcmd++;
+		}
 	}
 
 	if (tst_test->needs_drivers) {
@@ -1547,6 +1576,10 @@ static void do_setup(int argc, char *argv[])
 		tdev.fs_type = default_fs_type();
 
 		if (!tst_test->all_filesystems && count_fs_descs() <= 1) {
+
+			if (!tst_fs_is_supported(tdev.fs_type))
+				tst_brk(TCONF, "The %s filesystem is not supported", tdev.fs_type);
+
 			if (tst_test->filesystems && tst_test->filesystems->mkfs_ver)
 				tst_check_cmd(tst_test->filesystems->mkfs_ver, 1);
 
@@ -1866,7 +1899,7 @@ void tst_set_runtime(int runtime)
 	heartbeat();
 }
 
-static int fork_testrun(void)
+static void fork_testrun(void)
 {
 	int status;
 
@@ -1897,8 +1930,8 @@ static int fork_testrun(void)
 	SAFE_SIGNAL(SIGINT, SIG_DFL);
 
 	if (tst_test->taint_check && tst_taint_check()) {
-		tst_res(TFAIL, "Kernel is now tainted.");
-		return TFAIL;
+		tst_res(TFAIL, "Kernel is now tainted");
+		return;
 	}
 
 	if (tst_test->forks_child && kill(-test_pid, SIGKILL) == 0)
@@ -1908,7 +1941,7 @@ static int fork_testrun(void)
 		tst_brk(TBROK, "Child returned with %i", WEXITSTATUS(status));
 
 	if (context->abort_flag)
-		return 0;
+		return;
 
 	if (WIFSIGNALED(status) && WTERMSIG(status) == SIGKILL) {
 		tst_res(TINFO, "If you are running on slow machine, "
@@ -1918,8 +1951,6 @@ static int fork_testrun(void)
 
 	if (WIFSIGNALED(status))
 		tst_brk(TBROK, "Test killed by %s!", tst_strsig(WTERMSIG(status)));
-
-	return 0;
 }
 
 static struct tst_fs *lookup_fs_desc(const char *fs_type, int all_filesystems)
@@ -1949,34 +1980,31 @@ ret:
 	return &tst_test->filesystems[0];
 }
 
-static int run_tcase_on_fs(struct tst_fs *fs, const char *fs_type)
+static void run_tcase_on_fs(struct tst_fs *fs, const char *fs_type)
 {
-	int ret;
-
 	tst_res(TINFO, "=== Testing on %s ===", fs_type);
 	tdev.fs_type = fs_type;
 
-	if (fs->mkfs_ver && tst_check_cmd(fs->mkfs_ver, 0))
-		return TCONF;
+	if (fs->mkfs_ver && !tst_check_cmd(fs->mkfs_ver, 0))
+		return;
 
-	if (fs->min_kver && check_kver(fs->min_kver, 0))
-		return TCONF;
+	if (fs->min_kver && !check_kver(fs->min_kver, 0))
+		return;
 
 	prepare_device(fs);
 
-	ret = fork_testrun();
+	fork_testrun();
 
 	if (context->mntpoint_mounted) {
 		tst_umount(tst_test->mntpoint);
 		context->mntpoint_mounted = 0;
 	}
 
-	return ret;
+	return;
 }
 
-static int run_tcases_per_fs(void)
+static void run_tcases_per_fs(void)
 {
-	int ret = 0;
 	unsigned int i;
 	bool found_valid_fs = false;
 	const char *const *filesystems = tst_get_supported_fs_types(tst_test->skip_filesystems);
@@ -1999,8 +2027,6 @@ static int run_tcases_per_fs(void)
 
 	if (!found_valid_fs)
 		tst_brk(TCONF, "No required filesystems are available");
-
-	return ret;
 }
 
 unsigned int tst_variant;
