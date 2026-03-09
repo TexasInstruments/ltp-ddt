@@ -7,7 +7,7 @@ FORMAT=""
 case "$CAM_INFO" in
 	*"imx390"*)
 		echo "IMX390 camera found"
-		FORMAT="video/x-bayer, framerate=30/1, width=1936, height=1100, format=rggb12"
+		FORMAT="video/x-bayer, framerate=30/1, width=1936, height=1100, format=rggb12le"
 		;;
 	*"imx219"*)
 		echo "IMX219 camera found"
