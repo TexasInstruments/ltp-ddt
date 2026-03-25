@@ -41,3 +41,15 @@ POWERMGR_L_STRESS_SUSPEND_STANDBY_OFF source 'functions.sh'; declare -a arr=("me
 POWERMGR_XL_STRESS_SUSPEND_STANDBY_OFF source 'functions.sh'; declare -a arr=("mem" "standby"); OM_PATH='/sys/kernel/debug/pm_debug/enable_off_mode'; do_cmd "echo 1 > ${OM_PATH}" && for i in `seq 1000`; do test_print_trc "Outer Loop: $i"; suspend -i 1 -p ${arr[$(( $RANDOM % 2 )) ]}; done && do_cmd "echo 0 > ${OM_PATH}" || ("echo 0 > ${OM_PATH}"; exit 1)
 
 POWERMGR_M_FUNC_CHECK_PWRDMS_STATE_IN_SUSPEND test_pwrdm_states_on_suspend.sh 3
+
+POWERMGR_XS_FUNC_SUSPEND_ABORT_SINGLE source 'functions.sh'; do_cmd "modprobe suspend_abort_test"; DBG_PATH='/sys/kernel/debug/suspend_abort_test/fail_suspend'; suspend -i 1 -p "mem"; do_cmd "echo 1 > ${DBG_PATH}"; suspend -i 2 -p "mem" -b 1; do_cmd "echo 0 > ${DBG_PATH}"; suspend -i 1 -p "mem" -b 0
+
+POWERMGR_XS_FUNC_SUSPEND_ABORT_SINGLE_LATE source 'functions.sh'; do_cmd "modprobe suspend_abort_test"; DBG_PATH='/sys/kernel/debug/suspend_abort_test/fail_suspend_late'; suspend -i 1 -p "mem"; do_cmd "echo 1 > ${DBG_PATH}"; suspend -i 2 -p "mem" -b 1; do_cmd "echo 0 > ${DBG_PATH}"; suspend -i 1 -p "mem" -b 0
+
+POWERMGR_XS_FUNC_SUSPEND_ABORT_SINGLE_NOIRQ source 'functions.sh'; do_cmd "modprobe suspend_abort_test"; DBG_PATH='/sys/kernel/debug/suspend_abort_test/fail_suspend_noirq'; suspend -i 1 -p "mem"; do_cmd "echo 1 > ${DBG_PATH}"; suspend -i 2 -p "mem" -b 1; do_cmd "echo 0 > ${DBG_PATH}"; suspend -i 1 -p "mem" -b 0
+
+POWERMGR_XS_FUNC_SUSPEND_ABORT_ALL source 'functions.sh'; do_cmd "modprobe suspend_abort_test"; DBG_PATH='/sys/kernel/debug/suspend_abort_test/fail_suspend'; declare -a arr=("" "_late" "_noirq"); for i in `seq 3`; do suspend -i 1 -p "mem" -b 0; do_cmd "echo 1 > ${DBG_PATH}${arr[$(( $i - 1 ))]}"; suspend -i 2 -p "mem" -b 1; do_cmd "echo 0 > ${DBG_PATH}${arr[$(( $i - 1 ))]}"; suspend -i 1 -p "mem" -b 0; done
+
+POWERMGR_S_FUNC_SUSPEND_ABORT source 'functions.sh'; do_cmd "modprobe suspend_abort_test"; DBG_PATH='/sys/kernel/debug/suspend_abort_test/fail_suspend'; declare -a arr=("" "_late" "_noirq"); for i in `seq 5`; do suspend -i $(( $RANDOM % 3 + 1 )) -p "mem" -b 0; RAND_IND=$(( $RANDOM % 3 )); do_cmd "echo 1 > ${DBG_PATH}${arr[$RAND_IND]}"; suspend -i $(( $RANDOM % 2 + 2 )) -p "mem" -b 1; do_cmd "echo 0 > ${DBG_PATH}${arr[$RAND_IND]}"; done; suspend -i $(( $RANDOM % 3 + 1 )) -p "mem" -b 0
+
+POWERMGR_M_FUNC_SUSPEND_ABORT source 'functions.sh'; do_cmd "modprobe suspend_abort_test"; DBG_PATH='/sys/kernel/debug/suspend_abort_test/fail_suspend'; declare -a arr=("" "_late" "_noirq"); for i in `seq 10`; do suspend -i $(( $RANDOM % 5 + 1 )) -p "mem" -b 0; RAND_IND=$(( $RANDOM % 3 )); do_cmd "echo 1 > ${DBG_PATH}${arr[$RAND_IND]}"; suspend -i $(( $RANDOM % 4 + 2 )) -p "mem" -b 1; do_cmd "echo 0 > ${DBG_PATH}${arr[$RAND_IND]}"; done; suspend -i $(( $RANDOM % 5 + 1 )) -p "mem" -b 0
