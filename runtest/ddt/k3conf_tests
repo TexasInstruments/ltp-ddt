@@ -6,3 +6,4 @@ K3CONF_AM62L_REV_KERNEL_CRASH source "common.sh"; k3conf_test.sh "k3conf --versi
 K3CONF_SOC_PD_TEST source "common.sh"; k3conf_pd_test.sh "0 53" "1" "37 52" "disable"
 K3CONF_SOC_CLK_EN_TEST source "common.sh"; k3conf_clk_en_test.sh "0 0" "0 1" "0 2" "0 3"
 K3CONF_SOC_CLK_SET_FREQ_TEST source "common.sh"; k3conf_clk_set_freq_test.sh "0 186 40000000 0x04060090" "0 186 20000000" "0 186 80000000"
+K3CONF_SOC_CLK_PARENT_TEST source "common.sh"; k3conf_clk_parent_test.sh "0 190"
