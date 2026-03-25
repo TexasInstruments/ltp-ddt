@@ -480,11 +480,13 @@ no_suspend()
 #   -m usb_module   optional; usb_module to indicate the name of usb module to be removed; default to ''
 #   -a max_atime    optional; maximum active time between suspend calls; default to 5s; it will be a random number
 #   -c suspend_console  optional; suspend console prints; default to '0' to keep console prints; '1' for suspending console prints
+#   -b _abort  optional; test abort functionality where kernel should fail to suspend; default to '0'
 suspend()
 {
     OPTIND=1 
     local _iterations
-    while getopts :p:t:a:i:u:m:c: arg
+    local _abort
+    while getopts :p:t:a:i:u:m:c:b: arg
     do case $arg in
       p)  power_state="$OPTARG";;
       t)  max_stime="$OPTARG";;
@@ -493,6 +495,7 @@ suspend()
       u)  usb_remove="$OPTARG";;
       m)  usb_module="$OPTARG";;
       c)  suspend_console="$OPTARG";;
+      b)  _abort="$OPTARG";;
 
       \?)  test_print_trc "Invalid Option -$OPTARG ignored." >&2
       exit 1
@@ -508,6 +511,7 @@ suspend()
     : ${usb_remove:='0'}
     : ${usb_module:=''}
     : ${suspend_console:='0'}
+    : ${_abort:='0'}
 
     case "$MACHINE" in        
         am335x-evm|am335x-sk|beaglebone|beaglebone-black|beaglebone_green_eco-gp)
@@ -524,6 +528,7 @@ suspend()
     test_print_trc "suspend function: usb_module: $usb_module"
     test_print_trc "suspend function: suspend_console: $suspend_console"
     test_print_trc "suspend function: rtc_dev: $rtc_dev"
+    test_print_trc "suspend function: _abort: $_abort"
 
     enable_pm_debug_messages
 
@@ -553,7 +558,12 @@ suspend()
       # clear dmesg before suspend
       dmesg -c > /dev/null
       local suspend_failures=`get_value_for_key_from_file /sys/kernel/debug/suspend_stats fail :`
-      if [ -e ${rtc_dev} ]; then
+
+      if [ -e ${rtc_dev} ] && [ $_abort = 1 ]; then
+          report "Use rtc to suspend resume, adding 10 secs to suspend time"
+          suspend_time=$((suspend_time+10))
+          rtcwake -d ${rtc_dev} -m ${power_state} -s ${suspend_time}
+      elif [ -e ${rtc_dev} ]; then
           report "Use rtc to suspend resume, adding 10 secs to suspend time"
           suspend_time=$((suspend_time+10))
           # sending twice in case a late interrupt aborted the suspend path.
@@ -568,7 +578,7 @@ suspend()
           die "There is no automated way (wakeup_timer or ${rtc_dev}) to wakeup the board. No suspend!" 
       fi
      
-      if [ $usb_remove = 2 ]; then
+      if [ $usb_remove = 2 ] || [ $_abort = 1 ]; then
          check_suspend_fail
       else
          check_suspend
@@ -605,8 +615,10 @@ check_suspend()
 # check if suspend/standby failed as expected by checking the kernel messages
 check_suspend_fail()
 {
-    local expect="PM: Some devices failed to suspend"
-    dmesg | grep -i "$expect" && report "suspend failed as expected" || die "suspend did not fail as expected"
+    local tisci_fail="Failed to prepare sleep"
+    local expect="PM: Some devices failed to suspend|PM: late suspend of devices failed|PM: noirq suspend of devices failed"
+    dmesg | grep -i "$tisci_fail" && die "TI SCI sleep failure, not failing as expected"
+    dmesg | egrep -i "$expect" && report "suspend failed as expected" || die "suspend did not fail as expected"
 }
 
 # check if resume is ok by checking the kernel messages
