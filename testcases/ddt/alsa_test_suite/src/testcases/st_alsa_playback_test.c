@@ -53,7 +53,7 @@ int st_audio_playback(tc_dev_params * pcm_param)
 
 	long loops;
 	long loop_index = 0;
-	int rc;
+	int rc = FAILURE;
 	int size;
 	unsigned int total_size = 0;
 	char *buffer = NULL;
@@ -115,6 +115,9 @@ int st_audio_playback(tc_dev_params * pcm_param)
 				rc = FAILURE;
 				goto free_mem;
 			}
+		} else if (rc == FAILURE) {
+			TEST_PRINT_ERR("Write error, aborting");
+			goto free_mem;
 		}
 	}
 	if (pcm_param->throughput_flag == TRUE) {

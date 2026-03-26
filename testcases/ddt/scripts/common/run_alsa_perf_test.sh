@@ -40,4 +40,5 @@ RATES=(11025 16000 22050 24000 32000 44100 48000 88200 96000)
 for i in "${RATES[@]}"
 do
         do_cmd run_alsa_perf.sh -${test_type} 0 -rate $i -periodsize ${PERIODSIZE} -performance
+        sleep 2  # allow codec hardware to settle before next rate change
 done
