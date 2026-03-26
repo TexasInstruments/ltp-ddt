@@ -75,10 +75,44 @@ cmd_set_clock_freq(){
     k3conf set clock $dev $clk $freq 2> /dev/null 1> /dev/null
 }
 
+# PARENT CLOCK DOMAIN
+
+cmd_get_possible_parents(){
+    dev=$1
+    clk=$2
+    k3conf dump parent_clock $dev $clk 2> /dev/null | awk -F'|' '
+    /Clock Parent information/,EOF {
+        if (NF == 7) {
+            clock_id=$3; gsub(/^ +| +$/, "", clock_id)
+            clock_name=$4; gsub(/^ +| +$/, "", clock_name)
+            if (clock_id ~ /^[0-9]+$/) {
+                print clock_id " : " clock_name
+            }
+        }
+    }'
+}
+
+cmd_get_parent_clock(){
+    dev=$1
+    clk=$2
+    k3conf dump parent_clock $dev $clk 2> /dev/null | awk -F'|' '
+    /Clock Parent information/,EOF {
+        if (NF == 7) {
+            selected=$2; gsub(/^ +| +$/, "", selected)
+            if (selected == "==>") {
+                clock_id=$3; gsub(/^ +| +$/, "", clock_id)
+                clock_name=$4; gsub(/^ +| +$/, "", clock_name)
+                print clock_id " : " clock_name
+                exit
+            }
+        }
+    }'
+}
+
 cmd_set_parent_clock(){
     dev=$1
     clk=$2
     parent_clk=$3
-    k3conf set parent_clock $dev $clk $parent 2> /dev/null 1> /dev/null
+    k3conf set parent_clock $dev $clk $parent_clk 2> /dev/null 1> /dev/null
 }
 
