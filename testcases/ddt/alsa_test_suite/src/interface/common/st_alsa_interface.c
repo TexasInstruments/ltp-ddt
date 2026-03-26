@@ -75,8 +75,14 @@ int st_audio_read(char *buffer, int access_type)
 	}
 	if (rc == -EPIPE)
 		return RUN_ERROR;
-	else
-		return SUCCESS;
+	if (rc == -EIO) {
+		if (snd_pcm_prepare(handle_capture) < 0)
+			return FAILURE;
+		rc = (access_type == PCM_ACCESS_RW_INTERLEAVED) ?
+			snd_pcm_readi(handle_capture, buffer, frames_capture) :
+			snd_pcm_mmap_readi(handle_capture, buffer, frames_capture);
+	}
+	return (rc < 0) ? FAILURE : SUCCESS;
 }
 
 /*
@@ -153,8 +159,14 @@ int st_audio_write(char *buffer, int access_type)
 
 	if (rc == -EPIPE)
 		return RUN_ERROR;
-	else
-		return SUCCESS;
+	if (rc == -EIO) {
+		if (snd_pcm_prepare(handle_playback) < 0)
+			return FAILURE;
+		rc = (access_type == PCM_ACCESS_RW_INTERLEAVED) ?
+			snd_pcm_writei(handle_playback, buffer, frames_playback) :
+			snd_pcm_mmap_writei(handle_playback, buffer, frames_playback);
+	}
+	return (rc < 0) ? FAILURE : SUCCESS;
 }
 
 /*

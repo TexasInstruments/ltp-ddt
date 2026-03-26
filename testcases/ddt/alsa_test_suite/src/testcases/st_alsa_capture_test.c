@@ -51,7 +51,7 @@ int st_audio_capture(tc_dev_params * pcm_param)
 {
 
 	long loops;
-	int rc;
+	int rc = FAILURE;
 	int size;
 	char *buffer = NULL;
 	unsigned int total_size = 0;
@@ -100,6 +100,9 @@ int st_audio_capture(tc_dev_params * pcm_param)
 				goto free_mem;
 
 			}
+		} else if (rc == FAILURE) {
+			TEST_PRINT_ERR("Read error, aborting");
+			goto free_mem;
 		}
 
 	}
