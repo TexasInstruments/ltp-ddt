@@ -15,6 +15,33 @@
 source "common.sh"
 source "blk_device_common.sh"
 
+############################# Functions #######################################
+
+# Perform a direct (non-cached) block I/O on the given MMC device.
+#   $1 - device type: "emmc" or "sd"/"mmc"
+#   $2 - direction: "r" for read, "w" for write
+mmc_do_io() {
+	local dev=$1
+	local direction=$2
+	local blk_node
+
+	if [[ "$dev" = "emmc" ]]; then
+		blk_node=$(find_emmc_basenode)
+	else
+		blk_node=$(find_mmc_basenode)
+	fi
+
+	[ -n "$blk_node" ] || die "Could not find block device node for $dev"
+
+	if [[ "$direction" = "w" ]]; then
+		do_cmd "dd if=/dev/zero of=$blk_node bs=512 count=1 oflag=direct"
+	else
+		do_cmd "dd if=$blk_node of=/dev/null bs=512 count=1 iflag=direct"
+	fi
+}
+
+############# Do the work ###########################################
+
 while [ $# -gt 0 ]
 do
 	case $1 in
@@ -33,8 +60,6 @@ do
 	esac
 	shift
 done
-
-############# Do the work ###########################################
 
 case $cmd in
 	rw)
@@ -55,6 +80,7 @@ esac
 
 if [[ "$exec_cmd" = "a" ]]; then
 	do_cmd  rtcwake -s 5 -m mem;
+	if [[ "$cmd" = "cs" ]]; then mmc_do_io "$dev" "r"; fi;
 	do_cmd "$command"
 elif [[ "$exec_cmd" = "d" ]]; then
 	(sleep 25; rtcwake -s 5 -m mem)&
