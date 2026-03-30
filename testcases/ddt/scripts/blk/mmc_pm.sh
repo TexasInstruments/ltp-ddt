@@ -48,8 +48,7 @@ case $cmd in
 		command="check_mmc_speed.sh $dev"
 		;;
 	*)
-		if [[ "$dev" = "mmc" ]]; then dev="sd"; fi
-		command="check_mmc_speed.sh $dev"
+		die "Unrecognized or missing command: '$cmd'. Valid commands: rw, cp, wbg, cs"
 		;;
 esac
 
