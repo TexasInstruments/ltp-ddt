@@ -61,13 +61,20 @@ do
 	shift
 done
 
+# Pre-discover device node before starting the suspend timer to avoid slow partition probing
+if [[ "$cmd" != "cs" ]]; then
+	dev_node=$(get_blk_device_node.sh "$dev") || die "Could not find device node for $dev: $dev_node"
+else
+	dev_node=""
+fi
+
 case $cmd in
 	rw)
-		command="blk_device_dd_readwrite_test.sh -f 'ext4' -b '1K' -c '10' -d $dev";;
+		command="blk_device_dd_readwrite_test.sh -f 'ext4' -b '1M' -c '200' -n '$dev_node' -d $dev";;
 	cp)
-		command="blk_device_dd_readwrite_test.sh -f 'ext4' -b '1K' -c '10' -i 'cp' -d $dev";;
+		command="blk_device_dd_readwrite_test.sh -f 'ext4' -b '1M' -c '200' -i 'cp' -n '$dev_node' -d $dev";;
 	wbg)
-		command="blk_device_dd_readwrite_test.sh -f 'ext4' -b '1K' -c '10' -i 'write_in_bg' -d $dev";;
+		command="blk_device_dd_readwrite_test.sh -f 'ext4' -b '1M' -c '200' -i 'write_in_bg' -n '$dev_node' -d $dev";;
 	cs)
 		if [[ "$dev" = "mmc" ]]; then dev="sd"; fi
 		command="check_mmc_speed.sh $dev"
@@ -83,7 +90,7 @@ if [[ "$exec_cmd" = "a" ]]; then
 	if [[ "$cmd" = "cs" ]]; then mmc_do_io "$dev" "r"; fi;
 	do_cmd "$command"
 elif [[ "$exec_cmd" = "d" ]]; then
-	(sleep 25; rtcwake -s 5 -m mem)&
+	(sleep 35; rtcwake -s 5 -m mem)&
 	do_cmd "$command"
 fi
 

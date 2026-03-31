@@ -3,7 +3,7 @@
 # @requires mmc_host
 # @setup_requires sd|mmc|sdhc
 
-MMC_S_FUNC_SDHC_SUSPEND_RESUME_RTC_CP source "common.sh"; do_cmd mmc_pm.sh -e 'd' -c 'cp' -d 'mmc'
-MMC_S_FUNC_SDHC_SUSPEND_RESUME_RTC_RW source "common.sh"; do_cmd mmc_pm.sh -e 'd' -c 'rw' -d 'mmc'
-MMC_S_FUNC_SDHC_SUSPEND_RESUME_RTC_WBG source "common.sh"; do_cmd mmc_pm.sh -e 'd' -c 'wbg' -d 'mmc'
+MMC_S_FUNC_SDHC_SUSPEND_RESUME_RTC_CP source "common.sh"; do_cmd mmc_pm.sh -e 'a' -c 'cp' -d 'mmc'
+MMC_S_FUNC_SDHC_SUSPEND_RESUME_RTC_RW source "common.sh"; do_cmd mmc_pm.sh -e 'a' -c 'rw' -d 'mmc'
+MMC_S_FUNC_SDHC_SUSPEND_RESUME_RTC_WBG source "common.sh"; do_cmd mmc_pm.sh -e 'a' -c 'wbg' -d 'mmc'
 MMC_S_FUNC_SDHC_SUSPEND_RESUME_RTC_CS source "common.sh"; do_cmd mmc_pm.sh -e 'a' -c 'cs' -d 'mmc'
