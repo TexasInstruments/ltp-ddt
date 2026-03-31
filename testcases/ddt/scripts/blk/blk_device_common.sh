@@ -288,11 +288,11 @@ is_part_boot_or_rootfs(){
   else
     # if not mounted yet, try to mount
     MNT_POINT="/mnt/partition_$( echo "$DEV_NODE" |sed s'/\/dev\///' )_$$"
-    do_cmd blk_device_do_mount.sh -n "$DEV_NODE" -d "$DEVICE_TYPE" -m "$MNT_POINT" > /dev/null 2>"$1"
+    do_cmd blk_device_do_mount.sh -n "$DEV_NODE" -d "$DEVICE_TYPE" -m "$MNT_POINT" > /dev/null 2>/dev/null
     mount |grep "$DEV_NODE" > /dev/null
     if [ $? -ne 0 ]; then
-      do_cmd mkfs.vfat -F32 "${DEV_NODE}" > /dev/null 2>"$1"
-      do_cmd blk_device_do_mount.sh -n "$DEV_NODE" -d "$DEVICE_TYPE" -m "$MNT_POINT" > /dev/null 2>"$1"
+      do_cmd mkfs.vfat -F32 "${DEV_NODE}" > /dev/null 2>/dev/null
+      do_cmd blk_device_do_mount.sh -n "$DEV_NODE" -d "$DEVICE_TYPE" -m "$MNT_POINT" > /dev/null 2>/dev/null
       mount |grep "$DEV_NODE" > /dev/null || die "Failed to mount $DEV_NODE when checking if it is rootfs/boot partition"
     fi
     NEED_UMOUNT="yes" #flag to tell if umount is needed at the end.
@@ -303,7 +303,7 @@ is_part_boot_or_rootfs(){
   fi
   #If it is mounted by me, umount it.
   if [ "$NEED_UMOUNT" == "yes" ]; then
-    do_cmd blk_device_umount.sh -m "$MNT_POINT" > /dev/null 2>"$1"
+    do_cmd blk_device_umount.sh -m "$MNT_POINT" > /dev/null 2>/dev/null
   fi
   echo "$RTN"
 }
