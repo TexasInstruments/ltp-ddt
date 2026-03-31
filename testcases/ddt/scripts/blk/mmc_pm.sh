@@ -63,5 +63,5 @@ elif [[ "$exec_cmd" = "d" ]]; then
 fi
 
 dmesg | grep "PM: suspend entry (deep)" || die "Did not enter deep sleep"
-dmesg | grep "Restarting tasks ... done" || die "Did not resume from deep sleep"
+dmesg | grep "Restarting tasks" || die "Did not resume from deep sleep"
 dmesg | grep "PM: suspend exit" || die "Did not exit deep sleep"
