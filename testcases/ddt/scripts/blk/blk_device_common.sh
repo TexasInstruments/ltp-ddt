@@ -69,11 +69,16 @@ create_three_partitions() {
       echo "Found partitions in $basenode"
       partitions=$(get_num_partitions "$basenode")
       if [ "$partitions" = "2" ]; then
-        echo "Found two partitions in $basenode, create third partition"
-        printf "%s\n" "p" "n" "p" "3" "" "" "p" "w" | fdisk "$basenode"
-        sleep 2
-        # making initial fs
-        mkfs.vfat -F32 "${basenode}p3"
+        disk_sectors=$(fdisk -l "$basenode" 2>/dev/null | awk -v dev="$basenode" '$0 ~ "^Disk " dev ":" {print $7}')
+        last_used_sector=$(fdisk -l "$basenode" 2>/dev/null | grep "^${basenode}" | awk '{end=($2=="*")?$4:$3; if(end>max) max=end} END{print max}')
+        if [ -n "$disk_sectors" ] && [ -n "$last_used_sector" ] && [ "$((disk_sectors - last_used_sector - 1))" -gt 2048 ]; then
+          echo "Found two partitions in $basenode, create third partition"
+          printf "%s\n" "p" "n" "p" "3" "" "" "p" "w" | fdisk "$basenode"
+          sleep 2
+          [ -b "${basenode}p3" ] && mkfs.vfat -F32 "${basenode}p3" || echo "Failed to create ${basenode}p3"
+        else
+          echo "Skipping creating a third partition since $basenode has no free space"
+        fi
       else
           echo "Skipping creating a third partition since there are $partitions partitions in $basenode"
       fi
