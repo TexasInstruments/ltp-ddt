@@ -148,8 +148,8 @@ gst-launch-1.0 audiotestsrc num-buffers="$NUM_BUFFERS" ! \
 	wavenc ! filesink location="$PLAY_FILE" || die "Failed to generate playback audio"
 
 # Start playback using hw: directly
-test_print_trc "Starting async playback: aplay -D $PLAY_DEVICE -f $PLAY_SAMPLEFORMAT -r $SAMPLERATE -c $PLAY_CHANNELS --buffer-size=$PLAY_BUFFERSIZE --period-size $PLAY_PERIODSIZE -d $DURATION $PLAY_FILE"
-aplay -D "$PLAY_DEVICE" -f "$PLAY_SAMPLEFORMAT" -r "$SAMPLERATE" -c "$PLAY_CHANNELS" \
+test_print_trc "Starting async playback: aplay -D $PLAY_DEVICE --buffer-size=$PLAY_BUFFERSIZE --period-size $PLAY_PERIODSIZE -d $DURATION $PLAY_FILE"
+aplay -D "$PLAY_DEVICE" \
 	--buffer-size="$PLAY_BUFFERSIZE" --period-size "$PLAY_PERIODSIZE" -d "$DURATION" "$PLAY_FILE" &
 PLAY_PID=$!
 
