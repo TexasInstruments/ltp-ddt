@@ -85,7 +85,8 @@ DEV_TYPE=`get_device_type_map.sh $DEVICE_TYPE` || die "error while translating d
 # if mount, umount it first before erase or format
 DEVNODE_ENTRY=`get_devnode_entry.sh "$DEV_NODE" "$DEVICE_TYPE"` || die "error getting devnode entry for $DEV_NODE"
 test_print_trc "Umount $DEV_NODE or $DEVNODE_ENTRY if it is mounted"
-sleep 60 #Workaround for LCPD-12383
+# LCPD-12383 workaround: umount fails if SATA is mounted as vfat without a sufficient delay after boot
+if [ "$DEVICE_TYPE" = "sata" ] && [ "$FS_TYPE" = "vfat" ]; then sleep 60; fi;
 do_cmd "mount" | grep $DEV_NODE && do_cmd "umount $DEV_NODE"
 do_cmd "mount" | grep "$DEVNODE_ENTRY' '" && do_cmd "umount $DEVNODE_ENTRY"
 

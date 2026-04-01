@@ -148,6 +148,7 @@ remove_testfiles()
 on_exit()
 {
   echo "clean up......."
+  wait
   remove_srcfile
   remove_testfiles
   echo "done with clean up"

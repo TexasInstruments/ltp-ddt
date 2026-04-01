@@ -69,11 +69,16 @@ create_three_partitions() {
       echo "Found partitions in $basenode"
       partitions=$(get_num_partitions "$basenode")
       if [ "$partitions" = "2" ]; then
-        echo "Found two partitions in $basenode, create third partition"
-        printf "%s\n" "p" "n" "p" "3" "" "" "p" "w" | fdisk "$basenode"
-        sleep 2
-        # making initial fs
-        mkfs.vfat -F32 "${basenode}p3"
+        disk_sectors=$(fdisk -l "$basenode" 2>/dev/null | awk -v dev="$basenode" '$0 ~ "^Disk " dev ":" {print $7}')
+        last_used_sector=$(fdisk -l "$basenode" 2>/dev/null | grep "^${basenode}" | awk '{end=($2=="*")?$4:$3; if(end>max) max=end} END{print max}')
+        if [ -n "$disk_sectors" ] && [ -n "$last_used_sector" ] && [ "$((disk_sectors - last_used_sector - 1))" -gt 2048 ]; then
+          echo "Found two partitions in $basenode, create third partition"
+          printf "%s\n" "p" "n" "p" "3" "" "" "p" "w" | fdisk "$basenode"
+          sleep 2
+          [ -b "${basenode}p3" ] && mkfs.vfat -F32 "${basenode}p3" || echo "Failed to create ${basenode}p3"
+        else
+          echo "Skipping creating a third partition since $basenode has no free space"
+        fi
       else
           echo "Skipping creating a third partition since there are $partitions partitions in $basenode"
       fi
@@ -288,11 +293,11 @@ is_part_boot_or_rootfs(){
   else
     # if not mounted yet, try to mount
     MNT_POINT="/mnt/partition_$( echo "$DEV_NODE" |sed s'/\/dev\///' )_$$"
-    do_cmd blk_device_do_mount.sh -n "$DEV_NODE" -d "$DEVICE_TYPE" -m "$MNT_POINT" > /dev/null 2>"$1"
+    do_cmd blk_device_do_mount.sh -n "$DEV_NODE" -d "$DEVICE_TYPE" -m "$MNT_POINT" > /dev/null 2>/dev/null
     mount |grep "$DEV_NODE" > /dev/null
     if [ $? -ne 0 ]; then
-      do_cmd mkfs.vfat -F32 "${DEV_NODE}" > /dev/null 2>"$1"
-      do_cmd blk_device_do_mount.sh -n "$DEV_NODE" -d "$DEVICE_TYPE" -m "$MNT_POINT" > /dev/null 2>"$1"
+      do_cmd mkfs.vfat -F32 "${DEV_NODE}" > /dev/null 2>/dev/null
+      do_cmd blk_device_do_mount.sh -n "$DEV_NODE" -d "$DEVICE_TYPE" -m "$MNT_POINT" > /dev/null 2>/dev/null
       mount |grep "$DEV_NODE" > /dev/null || die "Failed to mount $DEV_NODE when checking if it is rootfs/boot partition"
     fi
     NEED_UMOUNT="yes" #flag to tell if umount is needed at the end.
@@ -303,7 +308,7 @@ is_part_boot_or_rootfs(){
   fi
   #If it is mounted by me, umount it.
   if [ "$NEED_UMOUNT" == "yes" ]; then
-    do_cmd blk_device_umount.sh -m "$MNT_POINT" > /dev/null 2>"$1"
+    do_cmd blk_device_umount.sh -m "$MNT_POINT" > /dev/null 2>/dev/null
   fi
   echo "$RTN"
 }

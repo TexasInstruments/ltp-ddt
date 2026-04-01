@@ -31,6 +31,8 @@ exit 0
 
 ############################### CLI Params ###################################
 
+UNMOUNT_ALL=0
+
 while getopts  :m:d:f:n:ha arg
 do case $arg in
         m)      
