@@ -295,7 +295,7 @@ get_dhcp_server_ip () {
 		echo "";
 		return;
 	fi
-	dhcp_server_ip=$(journalctl | grep DHCP | grep $interface | grep via | tail -1 | awk '{ print $NF }')
+	dhcp_server_ip=$(journalctl | grep DHCP | grep $interface | grep -E "via|acquired from" | tail -1 | awk '{ print $NF }')
 	if [[ -n "$dhcp_server_ip" ]]
 	then
 		echo "${FUNCNAME[0]}: For $interface: DHCP server's IP Address is: $dhcp_server_ip" >&2;
