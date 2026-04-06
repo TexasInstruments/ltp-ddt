@@ -28,7 +28,7 @@ case $SOC in
 am6*|j722s*)
 	PERIODSIZE=256
 ;;
-j784s4*|j721*)
+j784s4*|j721*|tda54*)
 	PERIODSIZE=64
 ;;
 esac

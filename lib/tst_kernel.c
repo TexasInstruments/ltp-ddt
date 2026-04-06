@@ -56,7 +56,8 @@ int tst_kernel_bits(void)
 	 * s390x is 64bit but not contain 64 in the words.
 	 */
 	if (!strcmp(buf.machine, "armv8l") || !strcmp(buf.machine, "armv8b")
-			|| !strcmp(buf.machine, "s390x"))
+			|| !strcmp(buf.machine, "s390x") ||
+			!strcmp(buf.machine, "armv9"))
 		kernel_bits = 64;
 
 #ifdef __ANDROID__
