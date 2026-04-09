@@ -60,7 +60,7 @@ create_three_partitions() {
         "n" "p" "1" "" "${end_of_1st_partition}" \
         "n" "p" "2" "" "${end_of_2nd_partition}" \
         "n" "p" "3" "" "" \
-        "a" "1" "t" "1" "c" "p" "w" | fdisk /dev/mmcblk0
+        "a" "1" "t" "1" "c" "p" "w" | fdisk "$basenode"
       # making initial fs
       ls "${basenode}"* | grep "${basenode}"p1 && (mkfs.vfat -F32 "${basenode}"p1; mkfs.vfat -F32 "${basenode}"p2; mkfs.vfat -F32 "${basenode}"p3)
       ls "${basenode}"* | grep "${basenode}"1 && (mkfs.vfat -F32 "${basenode}"1; mkfs.vfat -F32 "${basenode}"2; mkfs.vfat -F32 "${basenode}"3)
