@@ -30,9 +30,12 @@ SOURCES := \
         src/testcases/st_wdt_open_close.c \
         src/testcases/st_wdt_write.c
 
-MAKE_TARGETS            := wdt_tests
+MAKE_TARGETS            := wdt_tests nwo_wwd_test
 
 wdt_tests:
-	$(CC) $(CFLAGS) $(LDFLAGS) -o wdt_tests ${INCLUDES} ${SOURCES} 
+	$(CC) $(CFLAGS) $(LDFLAGS) -o wdt_tests ${INCLUDES} ${SOURCES}
+
+nwo_wwd_test:
+	$(CC) $(CFLAGS) $(LDFLAGS) -o nwo_wwd_test src/testcases/nwo_wwd_test.c
 
 include $(top_srcdir)/include/mk/generic_leaf_target.mk
