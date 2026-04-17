@@ -37,6 +37,7 @@ IMX219_CAM_FMT="${IMX219_CAM_FMT:-[fmt:SRGGB8_1X8/1920x1080 field: none]}"
 IMX390_CAM_FMT="${IMX390_CAM_FMT:-[fmt:SRGGB12_1X12/1936x1100 field: none]}"
 OV2312_CAM_FMT="${OV2312_CAM_FMT:-[fmt:SBGGI10_1X10/1600x1300 field: none]}"
 OV5640_CAM_FMT="${OV5640_CAM_FMT:-[fmt:UYVY8_1X16/640x480 field:none]}"
+OX05B1S_CAM_FMT="${OX05B1S_CAM_FMT:-[fmt:SBGGI10_1X10/2592x1944 field:none colorspace:srgb]}"
 
 declare -A ALL_UB960_FMT_STR
 declare -A ALL_CDNS_FMT_STR
@@ -125,6 +126,12 @@ setup_routes(){
             CSI_BRIDGE_NAME=`media-ctl -d /dev/media$id -p -e "$UB960_NAME" | grep csi-bridge | cut -d "\"" -f 2`
             media-ctl -d /dev/media$id -V "'$CSI_BRIDGE_NAME':0/$CSI_PAD $OV5640_CAM_FMT"
         done
+
+        for name in `media-ctl -d $id -p | grep entity | grep "ox05b " | cut -d ' ' -f 5`; do
+            CSI_BRIDGE_NAME=`media-ctl -d $id -p -e "ox05b $name" | grep csi-bridge | cut -d "\"" -f 2`
+            media-ctl -d $id -V "'$CSI_BRIDGE_NAME':0/0 $OX05B1S_CAM_FMT"
+            media-ctl -d $id -V "'$CSI_BRIDGE_NAME':0/1 $OX05B1S_CAM_FMT"
+        done
     done
 
     #CSI2RX ROUTING
@@ -167,6 +174,11 @@ setup_routes(){
             UB960_PAD=`media-ctl -d /dev/media$id -p -e "$UB953_NAME" | grep ub960 | cut -d : -f 2 | awk '{print $1}'`
             CSI_PAD=`media-ctl -d /dev/media$id -p -e "$UB960_NAME" | grep $UB960_PAD/.*[ACTIVE] | cut -d "/" -f 3 | awk '{print $1}'`
             media-ctl -d /dev/media$id -V "'$CSI2RX_NAME':0/$CSI_PAD $OV5640_CAM_FMT"
+        done
+
+        for name in `media-ctl -d $id -p | grep entity | grep "ox05b " | cut -d ' ' -f 5`; do
+            media-ctl -d $id -V "'$CSI2RX_NAME':0/0 $OX05B1S_CAM_FMT"
+            media-ctl -d $id -V "'$CSI2RX_NAME':0/1 $OX05B1S_CAM_FMT"
         done
     done
 }
@@ -257,6 +269,69 @@ setup_imx390(){
         #echo "    isp_required = yes"
         #echo "    ldc_required = yes"
         echo $CAM_DEV_NAME,$IMX390_CAM_FMT,$CAM_SUBDEV_NAME,yes
+
+        ((i++))
+    done
+    done
+}
+
+setup_ox05b1s(){
+    i=0
+    for media_id in {0..3}; do
+    # OX05B1S FORMATS
+    CDNS_FMT_STR=""
+    CSI2RX_FMT_STR=""
+    for name in `media-ctl -d $media_id -p | grep entity | grep "ox05b " | cut -d ' ' -f 5`; do
+
+        CAM_SUBDEV=`media-ctl -d $media_id -p -e "ox05b $name" | grep v4l-subdev | awk '{print $4}'`
+
+        CSI_BRIDGE_NAME=`media-ctl -d $media_id -p -e "ox05b $name" | grep csi-bridge | cut -d "\"" -f 2`
+
+        CSI2RX_NAME=`media-ctl -d $media_id -p -e "$CSI_BRIDGE_NAME" | grep "ticsi2rx\"" | cut -d "\"" -f 2`
+
+        CSI2RX_CONTEXT_NAME_IR="$CSI2RX_NAME context 0"
+        CSI2RX_CONTEXT_NAME_RGB="$CSI2RX_NAME context 1"
+
+        CDNS_FMT_STR="0/0 -> 1/0 [1], 0/1 -> 1/1 [1]"
+        CSI2RX_FMT_STR="0/0 -> 1/0 [1], 0/1 -> 2/0 [1]"
+
+        # Append CDNS Routes
+        if [[ -v "ALL_CDNS_FMT_STR[$media_id,$CSI_BRIDGE_NAME]" ]] ; then
+            ALL_CDNS_FMT_STR[$media_id,$CSI_BRIDGE_NAME]="${ALL_CDNS_FMT_STR[$media_id,$CSI_BRIDGE_NAME]}, $CDNS_FMT_STR"
+        else
+            ALL_CDNS_FMT_STR[$media_id,$CSI_BRIDGE_NAME]="$CDNS_FMT_STR"
+        fi
+        # Append CSIRX Routes
+        if [[ -v "ALL_CSI2RX_FMT_STR[$media_id,$CSI2RX_NAME]" ]] ; then
+            ALL_CSI2RX_FMT_STR[$media_id,$CSI2RX_NAME]="${ALL_CSI2RX_FMT_STR[$media_id,$CSI2RX_NAME]}, $CSI2RX_FMT_STR"
+        else
+            ALL_CSI2RX_FMT_STR[$media_id,$CSI2RX_NAME]="$CSI2RX_FMT_STR"
+        fi
+
+        IR_CAM_DEV=`media-ctl -d $media_id -p -e "$CSI2RX_CONTEXT_NAME_IR" | grep video | awk '{print $4}'`
+        RGB_CAM_DEV=`media-ctl -d $media_id -p -e "$CSI2RX_CONTEXT_NAME_RGB" | grep video | awk '{print $4}'`
+        IR_CAM_DEV_NAME=/dev/video-ox05b1s-ir-cam$i
+        RGB_CAM_DEV_NAME=/dev/video-ox05b1s-rgb-cam$i
+
+        CAM_SUBDEV_NAME=/dev/v4l-ox05b1s-subdev$i
+
+        ln -snf $IR_CAM_DEV $IR_CAM_DEV_NAME
+        ln -snf $RGB_CAM_DEV $RGB_CAM_DEV_NAME
+        ln -snf $CAM_SUBDEV $CAM_SUBDEV_NAME
+
+        v4l2-ctl -d$IR_CAM_DEV -v width=2592,height=1944,pixelformat=BGI0
+        v4l2-ctl -d$RGB_CAM_DEV -v width=2592,height=1944,pixelformat=BGI0
+
+        # echo -e "${GREEN}OX05B1S Camera $i detected${NOCOLOR}"
+        # echo "    device IR = $IR_CAM_DEV_NAME"
+        # echo "    device RGB = $RGB_CAM_DEV_NAME"
+        # echo "    name = ox05b1s"
+        # echo "    format = $OX05B1S_CAM_FMT"
+        # echo "    subdev_id = $CAM_SUBDEV_NAME"
+        # echo "    isp_required = yes"
+        # echo "    ldc_required = no"
+        echo $IR_CAM_DEV_NAME,$OX05B1S_CAM_FMT,$CAM_SUBDEV_NAME,no
+        echo $RGB_CAM_DEV_NAME,$OX05B1S_CAM_FMT,$CAM_SUBDEV_NAME,no
 
         ((i++))
     done
@@ -612,5 +687,6 @@ setup_USB_camera(){
 setup_imx219
 setup_ov5640
 setup_ov2312
+setup_ox05b1s
 setup_imx390
 setup_routes
