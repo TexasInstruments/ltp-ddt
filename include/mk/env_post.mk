@@ -58,6 +58,7 @@ INSTALL_TARGETS			:= $(patsubst $(abs_srcdir)/%,%,$(INSTALL_TARGETS))
 # The large majority of the files that we install are going to be apps and
 # scripts, so let's chmod them like that.
 INSTALL_MODE			?= 00775
+INSTALL_MODE_DIR		?= 00775
 
 $(abspath $(addprefix $(DESTDIR)/$(INSTALL_DIR)/,$(sort $(dir $(INSTALL_TARGETS) $(MAKE_TARGETS))))):
 	mkdir -p "$@"
