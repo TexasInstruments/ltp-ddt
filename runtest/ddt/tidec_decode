@@ -225,7 +225,7 @@ TIDEC_GST_AHP_filesink_stockholm_p1280x720_vbr_6mbps.264 source 'ti_codecs.sh'; 
 
 ## Error Streams
 
-TIDEC_S_FUNC_GST_DECODE_KMSSINK_AV_TOYSTORY.264 source 'ti_codecs.sh'; stop_daemon emptty; get_media decoder CustomerErrorStreams/AV_001180_Toy_Story3Official_Trailer_in_FullHD1080p_h264_1920x1080_24fps_HP_L4_3Mbps_AAC_44100Hz.mp4; insert_video_modules; gst-launch-1.0 filesrc location=/usr/share/ti/tidec-decode/AV_001180_Toy_Story3Official_Trailer_in_FullHD1080p_h264_1920x1080_24fps_HP_L4_3Mbps_AAC_44100Hz.mp4 ! qtdemux ! h264parse ! v4l2h264dec capture-io-mode=4 ! kmssink driver-name=tidss || die "GStreamer operation did not complete successfully"; remove_media decoder
+TIDEC_S_FUNC_GST_DECODE_KMSSINK_AV_TOYSTORY.264 source 'ti_codecs.sh'; stop_daemon emptty; get_media decoder CustomerErrorStreams/AV_001180_Toy_Story3Official_Trailer_h264_1920x1080_24fps_HP_L4_3Mbps_AAC_44100Hz.mp4; insert_video_modules; gst-launch-1.0 filesrc location=/usr/share/ti/tidec-decode/AV_001180_Toy_Story3Official_Trailer_h264_1920x1080_24fps_HP_L4_3Mbps_AAC_44100Hz.mp4 ! qtdemux ! h264parse ! v4l2h264dec capture-io-mode=4 ! kmssink driver-name=tidss || die "GStreamer operation did not complete successfully"; remove_media decoder
 
 TIDEC_S_FUNC_GST_DECODE_KMSSINK_CRASH.265 source 'ti_codecs.sh'; stop_daemon emptty; get_media decoder CustomerErrorStreams/crash_h265_old.mp4; insert_video_modules; gst-launch-1.0 filesrc location=/usr/share/ti/tidec-decode/crash_h265_old.mp4 ! qtdemux ! h265parse ! v4l2h265dec capture-io-mode=4 !  kmssink driver-name=tidss || die "GStreamer operation did not complete successfully"; remove_media decoder
 
