@@ -42,11 +42,11 @@
    available in busybox.
  * Avoid hard-coding values that are specific to your platform, instead try to 
    determine the right value to use using the information provided by Linux
-   ( /sys and proc/ are your friends)
+   ( /sys and /proc/ are your friends)
  * When not possible to determine values dynamically, define default values and
    provide appropriate overrides based on either ARCH, DRIVER, SOC or MACHINE.
    Try to define the override value at the most generic level possible.
-   ARCH, DRIVER, SOC and MACHINE variables are exported by ltprun script. 
+   ARCH, DRIVER, SOC and MACHINE variables are exported by runltp script.
  * Avoid adding logic to define values dynamically in your c code. If the code
    needs to use different values depending on the platform being tested, then
    make that value a command line argument and write a shell script wraper
@@ -131,16 +131,9 @@
 ================================================================================
  * Copy the default platform file available at platforms/TEMPLATE to 
    platforms/<your platform>. <your platform> name is typically the evm name
- * Please use the following names for platform files and to compare against 
-   $MACHINE when writing ltp-ddt scripts:
-
-    am180x-evm   arago-armv7         dm355-evm    dm814x-evm
-    am181x-evm   dm365-evm           dm816x-evm
-    am3517-evm   beagleboard         dm368-evm    
-    am37x-evm    c6a814x-evm         dm37x-evm    omap3evm
-    am387x-evm   c6a816x-evm         dm6446-evm   tnetv107x-evm
-    am389x-evm   da830-omapl137-evm  dm6467-evm   am335x-evm
-    arago-armv5  da850-omapl138-evm  dm6467t-evm  beaglebone
+ * Platform file names must match the value of $MACHINE on the target device
+   (typically reported by uname -m combined with the board name). Refer to the
+   platforms/ directory for the full list of currently supported platforms.
 
  * Modify your platform file based on the capabilities supported by the new evm
    The platform file identifies the architecture, the SoC, the evm and the
@@ -171,88 +164,88 @@
 6) Building LTP-DDT
 ================================================================================
 
-6.1) Environment Setup for LTP-DDT build
+6.1) CONTAINER BUILD (recommended)
 ================================================================================
- In order to cross compile LTP-DDT, a cross-compiler tool-chain is required.
- We typically use either Linaro Toolchain or Arago Toolchain.
- To Install Linaro toolchain, please see http://arago-project.org/wiki/index.php/Setting_Up_Build_Environment#Cross-compile_toolchain
- To Install Arago toolchain:
- wget and untar http://software-dl.ti.com/sdoemb/sdoemb_public_sw/arago_toolchain/2011_09/exports/arago-2011.09-armv7a-linux-gnueabi-sdk.tar.bz2 
- Set the environment variable PATH to contain the binaries of the toolchain cross-compiler tool-chain.
-     For example, in bash: 
-	     $ export PATH=/opt/arago-2011.09/armv7a/bin:$PATH 
- Test if PATH is set properly by running following command 
-  * For Arago Toolchain
-    $ arm-arago-linux-gnueabi-gcc -v
-  * For Linaro Toolchain
-    $ arm-linux-gnueabihf-gcc -v
+ The build_container/ directory provides a fully reproducible build environment.
+ It includes the ARM GNU Toolchain (aarch64-none-linux-gnu), ALSA, libtirpc, and
+ kernel headers — no manual dependency setup required.
 
-6.2) HOW TO CROSS-COMPILE AND INSTALL
+ Requirements: Docker, a ti-linux-kernel checkout (optional, container will clone
+ one if not provided).
+
+ Usage:
+   cd build_container/
+   ./build_in_container.sh -d <base-distro> -t <install-dir> [-k <kernel-workspace>] [-b <kernel-branch>]
+
+ Example:
+   ./build_in_container.sh -d ubuntu:22.04 -t /tmp/ltp-ddt-install -b ti-linux-6.6.y
+
+ The container runs build.sh internally:
+   ./build.sh -c aarch64-none-linux-gnu-gcc -t cross -k <kernel-headers> -p <install-dir> -i
+
+ LTP-DDT is installed to <install-dir>/opt/ltp/.
+
+6.2) MANUAL CROSS-COMPILE AND INSTALL
 ================================================================================
- Note: CROSS_COMPILE may be set differently than the examples showing in this section.
-   for Arago Toolchain: CROSS_COMPILE=arm-none-linux-gnueabi-;
-   for Linaro Toolchain: CROSS_COMPILE=arm-linux-gnueabihf-
+ The following dependencies must be provided manually when building outside the
+ container:
 
- == Checks before compilation ==
- * Update testcases/ddt/alsa_test_suite/Makefile with alsa include and 
-   lib paths.
-   For example:
-	  ALSA_INCPATH=/home/useraccount/usr/include
-	  ALSA_LIBPATH=/home/useraccount/usr/lib
-   (In case the filesystem does not contain ALSA include and lib refer step 7 
-    for installation)
-    NOTE: Alternatively instead of updating the Makefile user can supply 
-          ALSA_INCPATH and  ALSA_LIBPATH as arguements to make 
- * cd to kernel diretory and then do headers_install in kernel install directory
-       e.g.
-        $cd linux-xx.xx.xx.xx
-        $make CROSS_COMPILE=arm-none-linux-gnueabi- distclean
-        $make CROSS_COMPILE=arm-none-linux-gnueabi- headers_install
+ * ARM GNU Toolchain (aarch64-none-linux-gnu):
+   Download from: https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads
+   The toolchain is installed to a versioned directory, e.g.:
+     /opt/arm-gnu-toolchain-15.2.rel1-x86_64-aarch64-none-linux-gnu/
 
- == Builds steps ==
-make autotools
+ * Kernel headers (required by some tests):
+   cd <ti-linux-kernel>
+   make CROSS_COMPILE=aarch64-none-linux-gnu- headers_install
+   # headers will be at <ti-linux-kernel>/usr/include
 
-export CROSS_COMPILER=arm-linux-gnueabihf-
-export CC=${CROSS_COMPILER}gcc
-export LD=${CROSS_COMPILER}ld
-export AR=${CROSS_COMPILER}ar
-export STRIP=${CROSS_COMPILER}strip
-export RANLIB=${CROSS_COMPILER}ranlib
+ * libtirpc (cross-compiled for aarch64):
+   See build_container/Dockerfile for the exact build steps.
 
-./configure --host=arm-linux-gnueabihf
+ * ALSA (cross-compiled for aarch64):
+   See build_container/Dockerfile for the exact build steps. After installation,
+   ALSA headers and libs will be in <toolchain-dir>/aarch64-none-linux-gnu/.
 
-make SKIP_IDCHECK=1 KERNEL_USR_INC=/opt/lcpd/git_repos/ti-linux-kernel/usr/include CROSS_COMPILE=arm-linux-gnueabihf- clean
+ == Build steps ==
+ The recommended way to invoke the build is via build.sh:
 
-make SKIP_IDCHECK=1 KERNEL_USR_INC=/opt/lcpd/git_repos/ti-linux-kernel/usr/include CROSS_COMPILE=arm-linux-gnueabihf-
+   export PATH=/opt/arm-gnu-toolchain-15.2.rel1-x86_64-aarch64-none-linux-gnu/bin:$PATH
+   ./build.sh -c aarch64-none-linux-gnu-gcc -t cross \
+              -k <ti-linux-kernel>/usr/include \
+              -p <install-dir> -i
 
- == Install Step ==
-   $ sudo make DESTDIR=<destination directory> SKIP_IDCHECK=1 PLATFORM=<Platform name> install
-   For example:
-   $sudo make DESTDIR=$HOME/ltp-ddt-install SKIP_IDCHECK=1 PLATFORM=am335x-evm install
+ This runs make autotools, configure (--host=aarch64-none-linux-gnu), make, and
+ make install in sequence. LTP-DDT is installed to <install-dir>/opt/ltp/.
 
-For more information about autotools, please check the tutorial to GNU MAKE tools
-http://www.gnu.org/software/automake/manual/html_node/index.html#SEC_Contents
+ For ALSA tests, supply ALSA_INCPATH and ALSA_LIBPATH if they are not in the
+ toolchain sysroot:
+   ALSA_INCPATH=<alsa-install>/include ALSA_LIBPATH=<alsa-install>/lib ./build.sh ...
+
+For more information see the INSTALL file or the GNU Automake manual:
+https://www.gnu.org/software/automake/manual/html_node/index.html
 
 7) HOW TO INSTALL ALSA INCLUDES AND LIBS
-   Install following packages on to your filesystem
-       	alsa-dev (e.g. alsa-dev_1.0.18-r0.1_armv5te.ipk)
-	alsa-lib-dev (e.g. alsa-lib-dev_1.0.18-r0.1_armv5te.ipk)
-	libasound2 (e.g. libasound2_1.0.18-r0.1_armv5te.ipk)
-   To unpack the .ipk files use following commands
-	$ ar -p alsa-dev_1.0.18-r0.1_armv5te.ipk data.tar.gz | tar -zx
-	$ ar -p libasound2_1.0.18-r0.1_armv5te.ipk data.tar.gz | tar -zx
-	$ ar -p alsa-lib-dev_1.0.18-r0.1_armv5te.ipk data.tar.gz | tar -zx
-   (http://arago-project.org/wiki/index.php/Crosscompiling_Outside_of_Arago)
+   When using the build container (section 6.1), ALSA is built automatically —
+   no action needed.
+
+   For manual cross-compilation, ALSA must be built from source targeting
+   aarch64-none-linux-gnu. See build_container/Dockerfile for the exact steps
+   (using alsa-lib-1.2.9). Pass the resulting paths via ALSA_INCPATH and
+   ALSA_LIBPATH as described in section 6.2.
+
+   For native builds on a Debian/Ubuntu host:
+       $ sudo apt install libasound2-dev
 
 8) HOW TO RUN TESTS
 ================================================================================
- * Run DDT tests the same way you run LTP tests. Use ltprun program and pass to
+ * Run DDT tests the same way you run LTP tests. Use runltp script and pass to
    it the test scenario file in the runtest directory (option -f) to run and the
    platform (option -P) to use. For example:
-     ./runltp -P am335x-evm -f ddt/lmbench
+     ./runltp -P am62xx_sk-fs -f ddt/emmc_perf_vfat
    The platform name specified with -P option must exist in the platforms/ dir.
-   It is also possible to run tests without -P option, in such case the ltprun
-   script won't filter test cases and it is possible that tests cases not 
+   It is also possible to run tests without -P option, in such case the runltp
+   script won't filter test cases and it is possible that test cases not
    supported by the platform you are running on will be called.
  * In addition to selecting test scenarios using -f option, users can also 
    filter test cases using -s PATTERN and -S SKIPFILE options. These options
@@ -265,13 +258,13 @@ http://www.gnu.org/software/automake/manual/html_node/index.html#SEC_Contents
    -D <options>: Run test under additional background load on Secondary storage
    -m <options>: Run test under additional background load on Main memory
    -i <options>: Run test under additional background load on IO Bus
-   -n          : Run test with network traffic in background.
+   -N          : Run all the networking tests.
 
 9) @setup_requires Naming Conventions
 ================================================================================
 As discussed in section 4.2 above, @setup_requires is used to highlight test scenarios' setup
 requirements. The following @setup_requires tags are currently defined.
-If required, please feel free to define a new tag below and send a patch to the Opentest mailing list.
+If required, please feel free to define a new tag below.
 
 * Video Related:
 usbhostmsc, usbhosthid_mouse, usbhosthid_keyboard, usbhostaudio, usbhostvideo, usbslavefbs, usbslavecdc, usbslaverndis, usbslaveasync
@@ -284,48 +277,39 @@ sd, sdhc, mmc, sata
 
 10) How to merge LTP to LTP-DDT
 ================================================================================
-* fetch LTP using LTP release label. Ex: ltp-20150119
-git fetch https://github.com/linux-test-project/ltp master:new_branch
-git checkout new_branch
-git checkout -b ltp-20150119 20150119
+LTP publishes yearly release tags at https://github.com/linux-test-project/ltp/releases.
 
-* merge LTP release into 'ltp' branch
-git checkout ltp
-git merge -X theirs ltp-20150119 
-git status
-resolve conflicts if there is any
-git commit
+Steps to merge a new LTP release (example tag: 20230127):
 
-* optional: delete files which were deleted in LTP from 'ltp' branch
-git diff ltp..ltp-20150119 --summary > diff_between_ltp_and_ltp-20150119.txt
-write a script to delete and 'git rm' the files which are being deleted by LTP
-git commit
+* Clone the ltp-ddt repository
+  git clone ssh://git@bitbucket.itg.ti.com/ltpddt/ltp-ddt.git
 
-* merge ltp branch to 'next' branch
-git checkout next
-git merge ltp
-git status
+* Create a migration branch
+  git checkout -b ltp-20230127-migration
 
-Usually, there are some conflicts. Copy 'Unmerged paths' part to a seperate file; 
-then
-# First, use the below to resolve the conflicts:
-# For 'testcases/ddt/Makefile' use 'git checkout --ours' to merge
-# For others, use 'git checkout --theirs' to resolove the conflicts
-#
-# Then, use 'git add/rm' to commit
-# For 'deleted by them', use 'git rm' to remove those files
-# For 'added by us', use 'git rm' to remove them if they are not added by ltp-ddt
-# For others, use 'git add' to add those files
-#
-# For 'runltp' and top 'Makefile', need manually resolve the conflict and add it.
-git commit
+* Pull the LTP release tag into the migration branch
+  git pull --log https://github.com/linux-test-project/ltp.git 20230127
 
-* optional: compare files between 'next' and 'ltp' and overwrite the files in 'next' for non-ddt files if there is any diff
+* Check for merge conflicts and resolve them
+  git status
+  # For testcases/ddt/Makefile: use 'git checkout --ours' to keep our version
+  # For runltp and top-level Makefile: resolve manually
+  # For other conflicts: use 'git checkout --theirs'
+  # For 'deleted by them': use 'git rm' to remove those files
+  git add <resolved files>
+  git commit
 
-* build/test new ltp-ddt
+* Build and test the result (see INSTALL for build instructions)
+
+* Push the branch and create a pull request into the cicd branch
+  git push origin ltp-20230127-migration
+
+* Fetch and push LTP release tags
+  git fetch --tags https://github.com/linux-test-project/ltp.git
+  git push origin --tags
 
 11) HELP/SUPPORT
 ================================================================================
-   Please submit your queries or comments to the opentest mailing list at 
-   opentest@arago-project.org
-   
+   Please submit bug reports and queries via the GitHub Issues tracker at
+   https://github.com/TexasInstruments/ltp-ddt/issues
+
