@@ -21,9 +21,10 @@ readonly ERR_PLAYBACK_FAILED=5           # video playback verification failed
 readonly ERR_COMMAND_NOT_FOUND=127       # command not found
 
 # Chromium constants
+readonly CHROMIUM_SCRIPTS_DIR=/opt/ltp/testcases/bin/ddt/chromium
 readonly CHROMIUM_LAUNCH_WAIT=15         # seconds to wait after launch for Chromium to load the page
 readonly CHROMIUM_SHUTDOWN_TIMEOUT=10    # max seconds to wait for Chromium processes to exit
-readonly EMPTTY_START_TIMEOUT=3          # max seconds to wait for emptty to reach active
+readonly EMPTTY_START_TIMEOUT=3          # seconds to wait after restarting emptty
 
 readonly HIGH_FPS_THRESHOLD=40           # minimum fps to be considered high fps
 
@@ -35,10 +36,7 @@ readonly CPU_THRESHOLD_A72=15            # j742s2, standard fps (j784s4 uses hal
 
 chromium_setup()
 {
-	export WAYLAND_DISPLAY="/run/user/1000/wayland-1"
-
-	systemctl restart emptty
-	sleep $EMPTTY_START_TIMEOUT
+	export WAYLAND_DISPLAY=/run/user/1000/wayland-1
 
 	# Check if chromium is already installed
 	if ! which chromium > /dev/null; then
@@ -70,7 +68,20 @@ chromium_setup()
 		return $ERR_NO_DISPLAY
 	fi
 
-	echo "Display connector check passed - found connected display"
+	local connector=$(echo "$kmsprint_output" | grep "(connected)" \
+		| sed -n 's/.*Connector [0-9]* ([0-9]*) \([^ ]*\) (connected).*/\1/p' | head -1)
+	python3 ./weston_setup.py "$connector"
+
+	# Enable debug mode for weston-screenshooter
+	# Weston does not support the screen capture protocol, and instead uses an internal helper to fetch and dump active display contents
+	if ! grep -q "Exec=.*--debug" /usr/share/wayland-sessions/weston.desktop 2>/dev/null; then
+		sed -i 's|Exec=.*|& --debug|' /usr/share/wayland-sessions/weston.desktop
+	fi
+	systemctl restart emptty
+	sleep $EMPTTY_START_TIMEOUT
+
+	systemctl is-active --quiet emptty || { echo "ERROR: emptty service is not active" >&2; return $ERR_NO_DISPLAY; }
+	kmsprint
 }
 
 close_chromium()
@@ -86,7 +97,7 @@ verify_video_playback()
 {
 	local __cdp_output
 	echo "Verifying video playback via CDP..."
-	__cdp_output=$(python3 "/opt/ltp/testcases/bin/ddt/chromium/chromium_cdp_util.py")
+	__cdp_output=$(python3 "${CHROMIUM_SCRIPTS_DIR}/chromium_cdp_util.py")
 	local __ret=$?
 	echo "$__cdp_output"
 	if [ $__ret -ne 0 ]; then
@@ -136,8 +147,8 @@ build_chromium_playback_cmd()
 	__cmd+=" chromium \"${__media_url}\""
 	__cmd+=" --start-fullscreen"
 	__cmd+=" --no-first-run"
+	__cmd+=" --hide-crash-restore-bubble"
 	__cmd+=" --enable-logging=stderr"
-	__cmd+=" --vmodule=*media/gpu*=2"
 	__cmd+=" --mute-audio"
 	__cmd+=" --remote-debugging-port=9222"  # enables CDP for video playback verification
 	__cmd+=" --remote-allow-origins=*"
@@ -155,8 +166,8 @@ chromium_playback()
 		return $__ret
 	fi
 
-	# Execute chromium command, filtering noisy dbus/ALSA errors from stderr
-	su -l weston -c "$__cmd" 2>&1 | grep -v -e "dbus" -e "ALSA" >&2 &
+	# Execute chromium command, suppressing all output
+	su -l weston -c "$__cmd" &
 	sleep $CHROMIUM_LAUNCH_WAIT  # allow Chromium to fully launch before checking for processes
 
 	# Verify Chromium processes are running
@@ -206,3 +217,121 @@ get_cpu_threshold()
 		return $ERR_GENERAL
 	fi
 }
+
+get_video_reference_url()
+{
+	local platform=$1
+	local video_file=$2
+	local base_url=""
+
+	if [ "$platform" = "VIMEO" ]; then
+		base_url="http://gtopentest-server.gt.design.ti.com/anonymous/common/Multimedia/ti-img-encode-decode-testvecs/decoder/chromium/vimeo"
+	elif [ "$platform" = "HTML" ]; then
+		base_url="http://gtopentest-server.gt.design.ti.com/anonymous/common/Multimedia/ti-img-encode-decode-testvecs/decoder/"
+	fi
+
+	# Return full URL if base_url exists, otherwise return video_file as-is
+	if [ -n "$base_url" ]; then
+		echo "$base_url/$video_file"
+	else
+		echo "$video_file"
+	fi
+}
+
+download_reference_video()
+{
+	local url=$1
+	local dest="/tmp/$(basename "${url%%\?*}")"
+
+	if [[ ! "$url" =~ ^https?:// ]]; then
+		echo "$url"
+		return 0
+	fi
+
+	echo "Downloading reference video to $dest..." >&2
+	if ! wget -q -O "$dest" "$url"; then
+		rm -f "$dest"
+		echo "ERROR: Failed to download $url" >&2
+		return $ERR_GENERAL
+	fi
+	local size_mb=$(( $(stat -c%s "$dest") / 1048576 ))
+	echo "Download complete (${size_mb} MB)" >&2
+	echo "$dest"
+}
+
+run_chromium_playback_compare_as_weston()
+{
+	local video_file=$1
+	local max_frames=${2:-20}
+	local output_dir=${3:-playback_comparison}
+	echo "Starting playback comparison test..."
+
+	# Check if Chromium is running
+	if ! pgrep -f "chromium-bin" > /dev/null; then
+		echo "ERROR: Chromium is not running. Start it first with chromium_playback()" >&2
+		return 1
+	fi
+
+	cd "${CHROMIUM_SCRIPTS_DIR}" && python3 chromium_playback_compare.py \
+		--video "$video_file" --output-dir "$output_dir" --max-frames "$max_frames"
+}
+
+chromium_playback_with_comparison()
+{
+	local platform=$1
+	local video_file_for_comparison
+	local max_frames=20
+	local media_id quality video_file
+
+	# Parse args first so we can download the reference video before Chromium playback
+	if [ "$platform" = "HTML" ]; then
+		video_file=$2
+		max_frames=${3:-$max_frames}
+		video_file_for_comparison="$video_file"
+	elif [ "$platform" = "VIMEO" ]; then
+		media_id=$2
+		quality=$3
+		local golden_video_file=$4
+		max_frames=${5:-$max_frames}
+		video_file_for_comparison="$golden_video_file"
+	else
+		echo "ERROR: Unsupported platform: $platform" >&2
+		return 1
+	fi
+
+	local video_reference
+	video_reference=$(get_video_reference_url "$platform" "$video_file_for_comparison")
+
+	local local_video
+	local_video=$(download_reference_video "$video_reference")
+	[ $? -ne 0 ] && return $ERR_GENERAL
+
+	echo "Starting Chromium playback..."
+	if [ "$platform" = "HTML" ]; then
+		chromium_playback "$platform" "$video_file"
+	elif [ "$platform" = "VIMEO" ]; then
+		chromium_playback "$platform" "$media_id" "$quality"
+	fi
+	local ret=$?
+	if [ $ret -ne 0 ]; then
+		rm -f "$local_video"
+		return $ret
+	fi
+
+	# Run playback comparison test (interval is calculated automatically from video duration)
+	run_chromium_playback_compare_as_weston "$local_video" "$max_frames"
+	local compare_ret=$?
+
+	# Stop Chromium
+	close_chromium
+	rm -f "$local_video"
+
+	if [ $compare_ret -eq 0 ]; then
+		echo "Test PASSED: Video quality meets thresholds (SSIM > 0.85, PSNR > 25 dB)"
+		return 0
+	else
+		echo "Test FAILED: Video quality below thresholds" >&2
+		return 1
+	fi
+}
+
