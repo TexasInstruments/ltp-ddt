@@ -145,3 +145,7 @@ TIENC_S_FUNC_FFMPEG_ENCODE_OLDTOWN_CROSS_H265 source 'ti_codecs.sh'; get_media e
 #TIENC_S_FUNC_ENCODE_PEDESTRIAN_1080P_RGBA_H264 source 'ti_codecs.sh'; get_media encoder; F=$(mktemp); run_tienc_encode -i /usr/share/ti/tienc-encode/pedestrain_1080p_rgba.rgb -w 1920 -h 1080 -f RGBA -c H264 -o $F || die "Encode operation did not complete successfully"; MD5=$(md5sum ${F}) ; echo $MD5 | grep xxxx || die "encoded file does not match expected md5sum"
 
 #TIENC_S_FUNC_ENCODE_VTC1NW_8BIT_352x288_RGBA_H264 source 'ti_codecs.sh'; get_media encoder; F=$(mktemp); run_tienc_encode -i /usr/share/ti/tienc-encode/vtc1nw_8bit_352x288.rgb -w 352 -h 288 -f RGBA -c H264 -o $F || die "Encode operation did not complete successfully"; MD5=$(md5sum ${F}) ; echo $MD5 | grep xxxx || die "encoded file does not match expected md5sum"
+
+# V4L2 Compliance Cases
+
+TIENC_S_FUNC_V4L2_COMPLIANCE source 'ti_codecs.sh'; insert_video_modules; DEV=$(for f in /sys/class/video4linux/video*/name; do grep -qi "encoder" "$f" 2>/dev/null && echo "/dev/$(basename $(dirname $f))"; done | head -1); [ -n "$DEV" ] || die "Could not find Wave5 encoder device"; Log=$(mktemp); v4l2-compliance -d "$DEV" 2>&1 | tee "$Log"; grep "Failed: 0" "$Log" || die "v4l2-compliance reported failures for encoder $DEV"; rm -f "$Log"
