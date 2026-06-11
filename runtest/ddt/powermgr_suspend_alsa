@@ -1,8 +1,11 @@
 # @name ALSA plus suspend/resume
-# @desc ALSA Loopback tests while doing power suspend/resume operations
-# @requires sound && power_mgr 
-# @setup_requires 
-
-POWERMGR_S_FUNC_ALSA-8K_SUSPEND source "common.sh"; run_processes.sh -c " /opt/ltp/runltp -f ddt/alsa_samplerate -P $PLATFORM -s 'ALSA_S_FUNC_LOOPBK_SMPRT_8000 '  # /opt/ltp/runltp -P $PLATFORM -f ddt/powermgr_suspend -s 'POWERMGR_S_FUNC_SIMPLE_SUSPEND ' "
-
-POWERMGR_S_FUNC_ALSA-44.1K_SUSPEND source "common.sh"; run_processes.sh -c " /opt/ltp/runltp -f ddt/alsa_samplerate -P $PLATFORM -s 'ALSA_S_FUNC_LOOPBK_SMPRT_44100 '  # /opt/ltp/runltp -P $PLATFORM -f ddt/powermgr_suspend -s 'POWERMGR_S_FUNC_SIMPLE_SUSPEND ' "
+# @desc ALSA and McASP tests across system suspend/resume via rtcwake.
+#       LOOPBACK tests use the board's default mem_sleep state (s2idle or deep).
+#       MCASP tests explicitly require S3 (deep) suspend-to-RAM and skip on
+#       boards where deep is not the active mem_sleep selection.
+# @requires sound && power_mgr
+# @setup_requires
+ALSA_S_FUNC_SUSPEND_LOOPBACK_44K source "common.sh"; run_processes.sh -c " /opt/ltp/runltp -f ddt/alsa_samplerate -P $PLATFORM -s 'ALSA_S_FUNC_LOOPBK_SMPRT_44100 '  # /opt/ltp/runltp -P $PLATFORM -f ddt/powermgr_suspend -s 'POWERMGR_XS_FUNC_SIMPLE_SUSPEND ' "
+ALSA_S_FUNC_SUSPEND_LOOPBACK_48K source "common.sh"; run_processes.sh -c " /opt/ltp/runltp -f ddt/alsa_samplerate -P $PLATFORM -s 'ALSA_S_FUNC_LOOPBK_SMPRT_48000 '  # /opt/ltp/runltp -P $PLATFORM -f ddt/powermgr_suspend -s 'POWERMGR_XS_FUNC_SIMPLE_SUSPEND ' "
+ALSA_S_FUNC_SUSPEND_MCASP_MIDSTREAM source 'alsa_funcs.sh'; do_cmd 'alsa_mcasp_suspend_test.sh -s midstream -t 10'
+ALSA_S_FUNC_SUSPEND_MCASP_NEWSTREAM source 'alsa_funcs.sh'; do_cmd 'alsa_mcasp_suspend_test.sh -s newstream -t 10'
