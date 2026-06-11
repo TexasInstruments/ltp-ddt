@@ -17,3 +17,8 @@ POWERMGR_S_FUNC_RUNTIME_ETHERNET source 'pm_runtime.sh'; notify_and_wait "Please
                                                              
 POWERMGR_S_FUNC_RUNTIME_USB source 'pm_runtime.sh'; notify_and_wait "Please make sure at least one USB interface is idle before test starts in 20 seconds" 20; notify_and_wait "Starting Test..." 0; is_pm_runtime_enabled '\.usb' || die "pm_runtime is not enabled for USB"; is_pm_runtime_suspending_device '\.usb' || die "pm_runtime is not suspending USB"
 
+POWERMGR_S_FUNC_RUNTIME_MCASP source 'alsa_funcs.sh'; do_cmd 'alsa_rtpm_test.sh -w 15'
+POWERMGR_S_FUNC_RUNTIME_MCASP_SUSPEND source 'alsa_funcs.sh'; do_cmd 'alsa_rtpm_test.sh -s idle -w 15'
+POWERMGR_S_FUNC_RUNTIME_MCASP_WAKE source 'alsa_funcs.sh'; do_cmd 'alsa_rtpm_test.sh -s wake'
+POWERMGR_S_FUNC_RUNTIME_MCASP_RESUSPEND source 'alsa_funcs.sh'; do_cmd 'alsa_rtpm_test.sh -s sleep -w 15'
+
