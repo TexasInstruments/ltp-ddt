@@ -119,7 +119,7 @@ PLAY_CARD_ID=${PLAY_DEVICE:3:1}
 REC_CARD_ID=${REC_DEVICE:3:1}
 
 audio_type='stereo'
-if [ $CHANNEL -eq 1 ] ; then
+if [ "${CHANNEL:-0}" -eq 1 ] ; then
   audio_type='mono'
 fi
 fmt_type=$(echo "${SAMPLEFORMAT/_/}" | tr [:upper:] [:lower:])
@@ -191,6 +191,31 @@ case $MACHINE in
 ;;           
 esac
 
+# Run an audio command, skipping the test gracefully if the hardware does not
+# support the requested sample rate or format.  Other failures still abort.
+# Only stderr is captured so that stdout pipes (loopback mode) are preserved.
+run_audio_cmd() {
+  local CMD="$*"
+  local tmp_err ret errmsg
+  tmp_err=$(mktemp)
+  eval "$CMD" 2>"$tmp_err"
+  ret=$?
+  errmsg=$(cat "$tmp_err")
+  rm -f "$tmp_err"
+  if [ $ret -ne 0 ]; then
+    test_print_trc "$errmsg"
+    if echo "$errmsg" | grep -qi "rate is not accurate"; then
+      skip_test "Hardware does not support exact rate=${SAMPLERATE}: $(echo "$errmsg" | grep -im1 'got = [0-9]*Hz')"
+    fi
+    if echo "$errmsg" | grep -qiE \
+        "sample format non available|sample format not available|cannot set sample rate|rate not available|cannot set hw params|unable to set hw params|hw params.*invalid|invalid.*hw params|invalid rate argument"; then
+      skip_test "Hardware does not support rate=${SAMPLERATE} format=${SAMPLEFORMAT}: $(echo "$errmsg" | grep -iEm1 'non available|not available|cannot set|invalid hw|invalid rate')"
+    fi
+    test_print_err "$CMD failed. Return code is $ret"
+    exit $ret
+  fi
+}
+
 ########################### REUSABLE TEST LOGIC ###############################
 # DO NOT HARDCODE any value. If you need to use a specific value for your setup
 # use USER-DEFINED Params section above.
@@ -226,8 +251,8 @@ test_print_trc " *************** END OF AUDIO DEV INFO ***************"
 case "$TYPE" in
 	
 	capture)
-		do_cmd arecord -D "$REC_DEVICE" -f "$SAMPLEFORMAT" $FILE -d "$DURATION" -r "$SAMPLERATE" -c "$CHANNEL" "$ACCESSTYPEARG" "$OPMODEARG" --buffer-size=$BUFFERSIZE --period-size $PERIODSIZE
-		;;		
+		run_audio_cmd arecord -D "$REC_DEVICE" -f "$SAMPLEFORMAT" $FILE -d "$DURATION" -r "$SAMPLERATE" -c "$CHANNEL" "$ACCESSTYPEARG" "$OPMODEARG" --buffer-size=$BUFFERSIZE --period-size $PERIODSIZE
+		;;
 	playback|check_buffer_time)
         if [ -n "$BLK_DEVICE" ]
         then
@@ -245,10 +270,10 @@ case "$TYPE" in
 		if [ $TYPE == "check_buffer_time" ] ; then
 			do_cmd check_buffer_time
 		else
-			do_cmd aplay -D "$DEVICE" -f "$SAMPLEFORMAT" $FILE -d "$DURATION" -r "$SAMPLERATE" -f "$SAMPLEFORMAT" -c "$CHANNEL" "$ACCESSTYPEARG" "$OPMODEARG" --buffer-size=$BUFFERSIZE --period-size $PERIODSIZE
+			run_audio_cmd aplay -D "$DEVICE" -f "$SAMPLEFORMAT" $FILE -d "$DURATION" -r "$SAMPLERATE" -f "$SAMPLEFORMAT" -c "$CHANNEL" "$ACCESSTYPEARG" "$OPMODEARG" --buffer-size=$BUFFERSIZE --period-size $PERIODSIZE
 		fi
-		;;		
+		;;
 	loopback)
-		do_cmd arecord -D "$REC_DEVICE" -f "$SAMPLEFORMAT" -d "$DURATION" -r "$SAMPLERATE" -c "$CHANNEL" "$ACCESSTYPEARG" "$OPMODEARG"  --buffer-size=$BUFFERSIZE --period-size $PERIODSIZE "|" aplay -D "$PLAY_DEVICE" -f "$SAMPLEFORMAT" -d "$DURATION" -r "$SAMPLERATE" -c "$CHANNEL" "$ACCESSTYPEARG" "$OPMODEARG"  --buffer-size=$BUFFERSIZE --period-size $PERIODSIZE
-		;;		
+		run_audio_cmd arecord -D "$REC_DEVICE" -f "$SAMPLEFORMAT" -d "$DURATION" -r "$SAMPLERATE" -c "$CHANNEL" "$ACCESSTYPEARG" "$OPMODEARG"  --buffer-size=$BUFFERSIZE --period-size $PERIODSIZE "|" aplay -D "$PLAY_DEVICE" -f "$SAMPLEFORMAT" -d "$DURATION" -r "$SAMPLERATE" -c "$CHANNEL" "$ACCESSTYPEARG" "$OPMODEARG"  --buffer-size=$BUFFERSIZE --period-size $PERIODSIZE
+		;;
 esac	
