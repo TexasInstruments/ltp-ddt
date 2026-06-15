@@ -1,0 +1,7 @@
+# @name Check MMCSD ADMA enumeration
+# @desc Check if ADMA (Advanced DMA) capability enumerated for MMCSD
+# @requires mmc_host
+
+MMC0_S_FUNC_CHECK_ADMA source "common.sh"; do_cmd check_mmc_adma.sh 'mmc0'
+MMC1_S_FUNC_CHECK_ADMA source "common.sh"; do_cmd check_mmc_adma.sh 'mmc1'
+MMC2_S_FUNC_CHECK_ADMA source "common.sh"; do_cmd check_mmc_adma.sh 'mmc2'
