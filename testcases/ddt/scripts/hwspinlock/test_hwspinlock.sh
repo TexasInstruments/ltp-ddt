@@ -12,7 +12,7 @@
 # GNU General Public License for more details.
 ###############################################################################
 
-source "common.sh"  # Import do_cmd(), die() and other functions
+. "common.sh"  # Import do_cmd(), die() and other functions
 
 ############################# Functions #######################################
 usage()
@@ -32,38 +32,38 @@ load_test_module()
   dmesg -n 4
   modprobe omap_hwspinlock_test
   log=$(dmesg -c)
-  lsmod | grep "omap_hwspinlock_test"
-  if [ $? -ne 0 ]; then die "Missing omap_hwspinlock_test out of tree module"; fi;
+  if ! lsmod | grep -q "omap_hwspinlock_test"; then die "Missing omap_hwspinlock_test out of tree module"; fi
   lock_tests=$(echo "$log" | grep -i -o 'Testing [0-9]\+ locks' | grep -o '[0-9]\+')
-  if [[ $? -ne 0 ]]
+  if [ -z "$lock_tests" ]
   then
-    echo "No lock tests detected, exiting ...."
+    echo "test_hwspinlock: No lock tests detected, exiting ...."
+    exit 1
   else
-    echo "Checking ${lock_tests} lock tests"
+    echo "test_hwspinlock: Checking ${lock_tests} lock tests"
   fi
   lock_attempts=$((lock_tests*2))
-  rc0_locks=$(echo "$log" | grep -i 'trylock #1 status\[[0-9]\+\] = 0' | wc -l)
-  rc16_locks=$(echo "$log" | grep -i 'trylock #2 status\[[0-9]\+\] = -16' | wc -l)
-  unlock_status=$(echo "$log" | grep -i 'trylock after unlock status\[[0-9]\+\] = 0' | wc -l)
-  if [[ $rc0_locks -ne $lock_attempts ]]
+  rc0_locks=$(echo "$log" | grep -ic 'trylock #1 status\[[0-9]\+\] = 0')
+  rc16_locks=$(echo "$log" | grep -ic 'trylock #2 status\[[0-9]\+\] = -16')
+  unlock_status=$(echo "$log" | grep -ic 'trylock after unlock status\[[0-9]\+\] = 0')
+  if [ "$rc0_locks" -ne "$lock_attempts" ]
   then
     die "Unexpected number of succesful locks ${rc0_locks} != ${lock_attempts}"
   else
-    echo "${rc0_locks} good lock attempts passed"
+    echo "test_hwspinlock: ${rc0_locks} good lock attempts passed"
   fi
-  if [[ $rc16_locks -ne $lock_attempts ]]
+  if [ "$rc16_locks" -ne "$lock_attempts" ]
   then
     die "Unexpected number of failed lock attempts ${rc16_locks} != ${lock_attempts}"
   else
-    echo "${rc16_locks} rc 16 locks attempts passed"
+    echo "test_hwspinlock: ${rc16_locks} rc 16 locks attempts passed"
   fi
-  if [[ $unlock_status -ne $lock_attempts ]]
+  if [ "$unlock_status" -ne "$lock_attempts" ]
   then
     die "Unexpected number try after lock tests ${unlock_status} != ${lock_attempts}"
   else
-    echo "${unlock_status} try after unlock attempts passed"
+    echo "test_hwspinlock: ${unlock_status} try after unlock attempts passed"
   fi
-  echo "$log" | grep -i -e 'hwspinlock tests failed on lock' -e 'hwspin_lock_free failed on lock' -e 'hwspinlock test failed on DT lock' && die "Lock test error message reported"
+  echo "$log" | grep "omap_hwspinlock:" | grep -i -e 'hwspinlock tests failed on lock' && die "Test all lock failed"
 }
 
 ############################ Script Variables ##################################
@@ -82,12 +82,12 @@ done
 # DO NOT HARDCODE any value. If you need to use a specific value for your setup
 # use USER-DEFINED Params section above.
 
-if [[ $TRIALS -le 0 ]]
+if [ "$TRIALS" -le 0 ]
 then
   usage
 fi
 
-for i in seq 1 $TRIALS
+for i in $(seq 1 "$TRIALS")
 do
   load_test_module
 done
