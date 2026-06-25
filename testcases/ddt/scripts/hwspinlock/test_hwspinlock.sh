@@ -28,7 +28,7 @@ exit 0
 load_test_module()
 {
   modprobe -r omap_hwspinlock_test
-  dmesg -c
+  dmesg -c > /dev/null
   dmesg -n 4
   modprobe omap_hwspinlock_test
   log=$(dmesg -c)
