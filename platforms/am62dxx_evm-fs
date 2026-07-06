@@ -3,6 +3,7 @@ am62dxx
 am62dxx_evm-fs
 adc/tscadc
 can
+counter/ecap
 counter/eqep
 crypto/sa2ul
 crypto/sa2ul/3des
