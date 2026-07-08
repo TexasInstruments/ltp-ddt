@@ -87,7 +87,8 @@ def query_video_state(ws_url):
 
 
 def calc_fps(v):
-    """Calculate fps as totalVideoFrames / currentTime."""
+    """Calculate average FPS from video start: totalVideoFrames / currentTime.
+    Returns 0 if currentTime is 0."""
     ct = v.get('currentTime') or 0
     return (v.get('totalFrames') or 0) / ct if ct > 0 else 0
 
@@ -107,6 +108,27 @@ def wait_for_stable_playback(ws_url):
             return v
         time.sleep(POLL_INTERVAL)
     return None
+
+
+def get_video_state(cdp):
+    """Returns video element state. Removes the controls attribute. Raises if no video element is found."""
+    js = """(() => {
+        const v = document.querySelector('video');
+        if (!v) throw new Error('No video element found');
+        v.removeAttribute('controls');
+        return { currentTime: v.currentTime, paused: v.paused,
+                 readyState: v.readyState, duration: v.duration };
+    })();"""
+    msg_id = cdp.send("Runtime.evaluate", {"expression": js, "returnByValue": True})
+    response = cdp.wait_for_response(msg_id)
+    if "exceptionDetails" in response.get("result", {}):
+        raise Exception("Failed to get video state")
+    return response["result"]["result"]["value"]
+
+
+def pause_video(cdp):
+    cdp.wait_for_response(cdp.send("Runtime.evaluate",
+        {"expression": "document.querySelector('video').pause();"}))
 
 
 def check_playback(port=9222):
