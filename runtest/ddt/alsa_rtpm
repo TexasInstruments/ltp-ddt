@@ -1,0 +1,21 @@
+# @name ALSA McASP Runtime PM Test
+# @desc Verifies that the McASP audio controller enters runtime suspend when
+#       idle and resumes when audio playback is requested. Three phases:
+#       idle suspend (with ratio threshold), wake on use, and re-suspend
+#       after use. Generic: discovers McASP via sysfs, no board-specific config.
+# @requires sound
+
+# All phases with 15s idle window.
+ALSA_S_FUNC_RTPM_MCASP source 'alsa_funcs.sh' ; do_cmd 'alsa_rtpm_test.sh -w 15'
+
+# Idle suspend only: >=90% of 15s idle window must be suspended.
+ALSA_S_FUNC_RTPM_MCASP_SUSPEND source 'alsa_funcs.sh' ; do_cmd 'alsa_rtpm_test.sh -s idle -w 15'
+
+# Wake only: device must become active within 3s of aplay start.
+ALSA_S_FUNC_RTPM_MCASP_WAKE source 'alsa_funcs.sh' ; do_cmd 'alsa_rtpm_test.sh -s wake'
+
+# Re-suspend only: device must re-suspend within 15s after playback stops.
+ALSA_S_FUNC_RTPM_MCASP_RESUSPEND source 'alsa_funcs.sh' ; do_cmd 'alsa_rtpm_test.sh -s sleep -w 15'
+
+# Longer idle window with higher threshold.
+ALSA_M_FUNC_RTPM_MCASP_30S source 'alsa_funcs.sh' ; do_cmd 'alsa_rtpm_test.sh -w 30 -t 95'
