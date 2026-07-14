@@ -1,6 +1,7 @@
 """Run a webgl demo on Chromium and capture the FPS"""
 
 import argparse
+import atexit
 import os
 import pathlib
 import re
@@ -20,6 +21,8 @@ def test_setup():
     """Restart weston in debug mode and set up enviroment variables"""
     # backup and modify the session entry for weston-screenshoter
     DESKTOP_PATH.copy(OLD_DESKTOP_PATH)
+    atexit.register(clean_up)
+
     subprocess.run(
         f"sed -i 's|Exec=.*|& --debug|' {DESKTOP_PATH}", shell=True, check=True
     )
@@ -91,11 +94,7 @@ def process_images(png_files):
 
 
 def get_test_execution_result(fps_not_found):
-    """See if the test results are reliable or not and clean up"""
-
-    png_files = pathlib.Path(".").glob("*.png")
-    clean_up(png_files)
-
+    """See if the test results are reliable or not"""
     # Test result to unreliable fail in order notify team team something needs to be checked
     # manually
     if fps_not_found > 2:
@@ -105,11 +104,14 @@ def get_test_execution_result(fps_not_found):
         sys.exit(1)
 
 
-def clean_up(png_files):
-    """Delete the .png screenshots"""
-    print("Cleaning up: ")
+def clean_up():
+    """Delete the .png screenshots and restore the weston session file"""
+    png_files = pathlib.Path(".").glob("*.png")
+    print("Cleaning up")
     for file in png_files:
         file.unlink()
+
+    OLD_DESKTOP_PATH.move(DESKTOP_PATH)
 
 
 def main():
