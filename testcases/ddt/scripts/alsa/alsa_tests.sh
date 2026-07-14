@@ -97,8 +97,8 @@ done
 ############################ Default Values for Params ###############################
 : ${TYPE:='loopback'}
 : ${FILE:='test.snd'}
-: ${REC_DEVICE:=$((get_audio_devnodes.sh -d pcm3168 -t record -e JAMR || get_audio_devnodes.sh -d aic -t record -e JAMR) | grep 'hw:[0-9]' || echo 'hw:0,0')}
-: ${PLAY_DEVICE:=$((get_audio_devnodes.sh -d pcm3168 -t play -e JAMR || get_audio_devnodes.sh -d aic -t play -e JAMR) | grep 'hw:[0-9]' || echo 'hw:0,0')}
+: ${REC_DEVICE:=$( { get_audio_devnodes.sh -d pcm3168 -t record -e JAMR 2>/dev/null || get_audio_devnodes.sh -d aic -t record -e JAMR 2>/dev/null || get_audio_devnodes.sh -d mcasp -t record -e JAMR 2>/dev/null || get_audio_devnodes.sh -t record -e JAMR 2>/dev/null; } | grep 'hw:[0-9]' | head -1 || echo 'hw:0,0')}
+: ${PLAY_DEVICE:=$( { get_audio_devnodes.sh -d pcm3168 -t play -e JAMR 2>/dev/null || get_audio_devnodes.sh -d aic -t play -e JAMR 2>/dev/null || get_audio_devnodes.sh -d mcasp -t play -e JAMR 2>/dev/null || get_audio_devnodes.sh -t play -e JAMR 2>/dev/null; } | grep 'hw:[0-9]' | head -1 || echo 'hw:0,0')}
 : ${DEVICE:=$PLAY_DEVICE}
 
 CAP_STRING=`dump_hw_params play $PLAY_DEVICE`
@@ -274,6 +274,11 @@ case "$TYPE" in
 		fi
 		;;
 	loopback)
-		run_audio_cmd arecord -D "$REC_DEVICE" -f "$SAMPLEFORMAT" -d "$DURATION" -r "$SAMPLERATE" -c "$CHANNEL" "$ACCESSTYPEARG" "$OPMODEARG"  --buffer-size=$BUFFERSIZE --period-size $PERIODSIZE "|" aplay -D "$PLAY_DEVICE" -f "$SAMPLEFORMAT" -d "$DURATION" -r "$SAMPLERATE" -c "$CHANNEL" "$ACCESSTYPEARG" "$OPMODEARG"  --buffer-size=$BUFFERSIZE --period-size $PERIODSIZE
+		run_audio_cmd arecord -D "$REC_DEVICE" -f "$SAMPLEFORMAT" -d "$DURATION" \
+			-r "$SAMPLERATE" -c "$CHANNEL" "$ACCESSTYPEARG" "$OPMODEARG" \
+			--buffer-size=$BUFFERSIZE --period-size $PERIODSIZE \
+			"|" aplay -D "$PLAY_DEVICE" -f "$SAMPLEFORMAT" -d "$DURATION" \
+			-r "$SAMPLERATE" -c "$CHANNEL" "$ACCESSTYPEARG" "$OPMODEARG" \
+			--buffer-size=$BUFFERSIZE --period-size $PERIODSIZE
 		;;
 esac	
