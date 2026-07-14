@@ -15,6 +15,8 @@ import pytesseract
 BACKENDS = ("gles-egl", "vulkan")
 DESKTOP_PATH = pathlib.Path("/usr/share/wayland-sessions/weston.desktop")
 OLD_DESKTOP_PATH = DESKTOP_PATH.with_suffix(DESKTOP_PATH.suffix + ".old")
+TEST_URL = "https://webglsamples.org/aquarium/aquarium.html"
+CHROMIUM_PACKAGE = "chromium-ozone-wayland"
 
 
 def test_setup():
@@ -29,16 +31,26 @@ def test_setup():
 
     subprocess.run("systemctl restart emptty", shell=True, check=True)
 
-    subprocess.run("opkg update", shell=True)
-    subprocess.run("opkg install chromium-ozone-wayland", shell=True, check=True)
+    # this may fail depending on the sources configured
+    # we care more about the next command
+    subprocess.run("opkg update", shell=True, check=False)
+
+    subprocess.run(f"opkg install {CHROMIUM_PACKAGE}", shell=True, check=True)
 
 
 def take_screenshots(backend):
     """Take screenshots utilizing weston-screenshoter"""
     os.environ["WAYLAND_DISPLAY"] = "/run/user/1000/wayland-1"
-    cmd = f"su -l weston -c 'export https_proxy=http://webproxy.ext.ti.com:80; \
-            export XDG_RUNTIME_DIR=/run/user/1000;\
-            export WAYLAND_DISPLAY=wayland-1; chromium --use-angle={backend} \"https://webglsamples.org/aquarium/aquarium.html\" --start-fullscreen --no-first-run' "
+    # do not use single quotes in this string
+    cmd_sub = "; ".join(
+        (
+            "export https_proxy=http://webproxy.ext.ti.com:80",
+            "export XDG_RUNTIME_DIR=/run/user/1000",
+            "export WAYLAND_DISPLAY=wayland-1",
+            f'chromium --use-angle={backend} "{TEST_URL}" --start-fullscreen --no-first-run',
+        )
+    )
+    cmd = f"su -l weston -c '{cmd_sub}'"
 
     with subprocess.Popen(cmd, shell=True) as chrome:
         try:
