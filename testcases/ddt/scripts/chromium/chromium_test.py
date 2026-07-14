@@ -12,12 +12,18 @@ from PIL import Image
 import pytesseract
 
 BACKENDS = ("gles-egl", "vulkan")
+DESKTOP_PATH = pathlib.Path("/usr/share/wayland-sessions/weston.desktop")
+OLD_DESKTOP_PATH = DESKTOP_PATH.with_suffix(DESKTOP_PATH.suffix + ".old")
 
 
 def test_setup():
     """Restart weston in debug mode and set up enviroment variables"""
-    cmd = "sed -i 's|Exec=.*|& --debug|' /usr/share/wayland-sessions/weston.desktop"
-    subprocess.run(cmd, shell=True, check=True)
+    # backup and modify the session entry for weston-screenshoter
+    DESKTOP_PATH.copy(OLD_DESKTOP_PATH)
+    subprocess.run(
+        f"sed -i 's|Exec=.*|& --debug|' {DESKTOP_PATH}", shell=True, check=True
+    )
+
     subprocess.run("systemctl restart emptty", shell=True, check=True)
 
     subprocess.run("opkg update", shell=True)
