@@ -1,4 +1,4 @@
-"""Required modules for test"""
+"""Run a webgl demo on Chromium and capture the FPS"""
 
 import argparse
 import os
