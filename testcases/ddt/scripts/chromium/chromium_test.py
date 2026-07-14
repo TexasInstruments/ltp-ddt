@@ -1,5 +1,6 @@
 """Required modules for test"""
 
+import argparse
 import os
 import pathlib
 import re
@@ -9,6 +10,8 @@ import time
 
 from PIL import Image
 import pytesseract
+
+BACKENDS = ("gles-egl", "vulkan")
 
 
 def test_setup():
@@ -106,18 +109,18 @@ def clean_up(png_files):
 def main():
     """Main function"""
 
-    try:
-        # Specify the backend as an argument : vulkan or gles-egl (default)
-        backend = sys.argv[1]
-    except IndexError:
-        sys.stderr.write("Error: Backend argument is missing\n")
-        sys.exit(1)
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "backend", help="specify the chromium backend to use", choices=BACKENDS
+    )
+
+    args = parser.parse_args()
 
     test_setup()
 
     print("Start waiting for Chromium and the benchmark itself to stabolize")
 
-    take_screenshots(backend)
+    take_screenshots(args.backend)
 
     # Get list of .png pictures
     png_files = pathlib.Path(".").glob("*.png")
