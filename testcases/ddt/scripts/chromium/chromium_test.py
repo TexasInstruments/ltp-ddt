@@ -78,8 +78,8 @@ def process_images(png_files):
         average_fps = total_fps / fps_found
 
     print(f"FPS_AVERAGE: {average_fps} FPS_AVERAGE")
-    print(f"The number of succesful fps detections: {fps_found}")
-    print(f"The number of unsuccesful fps detections: {fps_not_found}")
+    print(f"The number of successful fps detections: {fps_found}")
+    print(f"The number of unsuccessful fps detections: {fps_not_found}")
 
     get_test_execution_result(fps_not_found)
 
@@ -118,7 +118,7 @@ def main():
 
     test_setup()
 
-    print("Start waiting for Chromium and the benchmark itself to stabolize")
+    print("Start waiting for Chromium and the benchmark to stabilize")
 
     take_screenshots(args.backend)
 
