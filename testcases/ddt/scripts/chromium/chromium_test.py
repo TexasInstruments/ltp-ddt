@@ -25,17 +25,28 @@ def test_setup():
     DESKTOP_PATH.copy(OLD_DESKTOP_PATH)
     atexit.register(clean_up)
 
-    subprocess.run(
-        f"sed -i 's|Exec=.*|& --debug|' {DESKTOP_PATH}", shell=True, check=True
+    sed = subprocess.run(
+        f"sed -i 's|Exec=.*|& --debug|' {DESKTOP_PATH}", shell=True, check=False
     )
+    if sed.returncode != 0:
+        print("Unable to switch weston into debug mode")
+        sys.exit(1)
 
-    subprocess.run("systemctl restart emptty", shell=True, check=True)
+    restart = subprocess.run("systemctl restart emptty", shell=True, check=False)
+    if restart.returncode != 0:
+        print("Failed to restart emptty")
+        sys.exit(1)
 
     # this may fail depending on the sources configured
     # we care more about the next command
     subprocess.run("opkg update", shell=True, check=False)
 
-    subprocess.run(f"opkg install {CHROMIUM_PACKAGE}", shell=True, check=True)
+    install = subprocess.run(
+        f"opkg install {CHROMIUM_PACKAGE}", shell=True, check=False
+    )
+    if install.returncode != 0:
+        print("Failed to install chromium")
+        sys.exit(1)
 
 
 def take_screenshots(backend):
@@ -63,7 +74,9 @@ def take_screenshots(backend):
         time.sleep(15)
         print("Taking screenshots")
         for _ in range(0, 10):
-            subprocess.run("weston-screenshooter", shell=True, check=True)
+            wss = subprocess.run("weston-screenshooter", shell=True, check=False)
+            if wss.returncode != 0:
+                print("Failed to take screenshot")
             time.sleep(1)
         print("Finished taking screenshots")
 
@@ -124,6 +137,7 @@ def clean_up():
         file.unlink()
 
     OLD_DESKTOP_PATH.move(DESKTOP_PATH)
+    subprocess.run("systemctl restart emptty", shell=True, check=False)
 
 
 def main():
