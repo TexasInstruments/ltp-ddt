@@ -385,30 +385,26 @@ dump_ale_sorted () {
 }
 
 
-### Try to get the IP Address to ping for the purpose of checking outgoing packet length
-### Three ways to do that.
-### 1. Try getting the IPERF server if IPERFHOST variable is exported by host.
-### 2. Try getting the DHCP server if journalctl log captures IP of DHCP server.
-### 3. Try broadcast IP Address.
+### Try to get the IP Address to ping for the purpose of checking outgoing packet length.
+### Resolution order per interface:
+### 1. DHCP server IP from journalctl.
+### 2. Broadcast IP.
 get_destip () {
 	interface=$1
-	if [[ -n "$IPERFHOST" ]]
+
+	### Parse journalctl for the DHCP server IP assigned to this interface.
+	### Matches systemd-networkd log: "<iface>: DHCPv4 address ... acquired from <server_ip>"
+	dhcp_server_ip=$(journalctl | grep DHCP | grep "$interface" | grep -E "via|acquired from" | tail -1 | awk '{ print $NF }')
+	if [[ -n "$dhcp_server_ip" ]]
 	then
-		echo "${FUNCNAME[0]}: IPERF server's IP Address is: $IPERFHOST" >&2;
-		dest_ip=$IPERFHOST;
-	else
-		### IPERF server IP is not exported by host.
-		dhcp_server_ip=$(get_dhcp_server_ip $interface);
-		if [[ -n "$dhcp_server_ip" ]]
-		then
-			echo "${FUNCNAME[0]}: DHCP server's IP Address is: $dhcp_server_ip" >&2;
-			dest_ip=$dhcp_server_ip;
-		else
-			### Journalctl log did not capture DHCP server's IP.
-			dest_ip=$(get_broadcast_ip $interface);
-			echo "${FUNCNAME[0]}: Attempting broadcast ping to : $dest_ip" >&2;
-		fi
+		echo "${FUNCNAME[0]}: For $interface: DHCP server IP: $dhcp_server_ip" >&2;
+		echo $dhcp_server_ip;
+		return;
 	fi
+
+	### Fall back to broadcast IP.
+	dest_ip=$(get_broadcast_ip $interface);
+	echo "${FUNCNAME[0]}: For $interface: DHCP server not found in journalctl, using broadcast: $dest_ip" >&2;
 	echo $dest_ip;
 }
 
