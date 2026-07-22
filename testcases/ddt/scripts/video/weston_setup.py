@@ -19,7 +19,7 @@ def configure_weston(connector):
     cfg["shell"]["panel-location"] = '""'
 
     with open(WESTON_INI, "w") as f:
-        cfg.write(f)
+        cfg.write(f, space_around_delimiters=False)
 
 if __name__ == "__main__":
     configure_weston(sys.argv[1] if len(sys.argv) > 1 else None)
