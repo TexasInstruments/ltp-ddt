@@ -2,56 +2,55 @@
 """Simple Chromium video playback checker via CDP"""
 
 import sys
-import os
 import json
 import time
 import websocket
 import requests
-from contextlib import contextmanager
 
 TIMEOUT             = 10  # seconds to wait for a single CDP response
 VIDEO_TIMEOUT       = 30  # total seconds to poll for active video playback
 POLL_INTERVAL       = 5   # seconds between each playback state poll
 STABLE_PLAYBACK_MIN = 5   # minimum currentTime (s) before calculating fps
 
-# JS injected via CDP to return the state of the first <video> element found.
 # currentTime > 0 and not paused confirms that decoding has actually started.
-_JS_CHECK = ('(function(){'
-             'var v=document.querySelector("video");'
-             'if(!v)return null;'
-             'var q=v.getVideoPlaybackQuality();'
-             'return{'
-             'duration:v.duration,'
-             'currentTime:v.currentTime,'
-             'paused:v.paused,'
-             'error:v.error?v.error.code:null,'
-             'totalFrames:q.totalVideoFrames'
-             '};'
-             '})()')
+_JS_VIDEO_CHECK = """(function() {
+    var v = document.querySelector("video");
+    if (!v) return null;
+    var q = v.getVideoPlaybackQuality();
+    return {
+        duration:    v.duration,
+        currentTime: v.currentTime,
+        paused:      v.paused,
+        error:       v.error ? v.error.code : null,
+        totalFrames: q.totalVideoFrames
+    };
+})()"""
 
-@contextmanager
-def no_proxy():
-    """Temporarily clear proxy environment variables."""
-    proxy_vars = ['HTTP_PROXY', 'HTTPS_PROXY', 'http_proxy', 'https_proxy', 'ALL_PROXY', 'all_proxy']
-    saved = {var: os.environ.pop(var) for var in proxy_vars if var in os.environ}
-    try:
-        yield
-    finally:
-        os.environ.update(saved)
+_JS_WEBGL_FPS_INJECT = """
+    window.__fps = { frames: 0, t0: performance.now() };
+    const _raf = window.requestAnimationFrame.bind(window);
+    window.requestAnimationFrame = function(cb) {
+        return _raf(function(t) { window.__fps.frames++; cb(t); });
+    };
+"""
+
+_JS_WEBGL_FPS_READ = """(function() {
+    const elapsed = (performance.now() - window.__fps.t0) / 1000;
+    return elapsed > 0 ? window.__fps.frames / elapsed : 0;
+})()"""
 
 
 class CDPClient:
     """Chrome DevTools Protocol client"""
     def __init__(self, ws_url):
-        with no_proxy():
-            self.ws = websocket.WebSocket()
-            self.ws.connect(ws_url)
-            self.next_id = 1
+        self.ws = websocket.WebSocket()
+        self.ws.connect(ws_url)
+        self.next_id = 1
 
     def __enter__(self):
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, *_):
         try:
             self.ws.close()
         except Exception:
@@ -79,10 +78,28 @@ class CDPClient:
         return resp.get('result', {}).get('result', {}).get('value')
 
 
+def get_page_ws_url(port=9222):
+    """Polls until a non-blank page is available. Returns its WebSocket URL."""
+    deadline = time.time() + VIDEO_TIMEOUT
+    while time.time() <= deadline:
+        try:
+            resp = requests.get(f'http://localhost:{port}/json', timeout=5)
+            resp.raise_for_status()
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
+            pass
+        else:
+            targets = resp.json()
+            page = targets[0] if targets else None
+            if page and page.get('url') not in ('about:blank', '', None):
+                return page['webSocketDebuggerUrl']
+        time.sleep(1)
+    raise TimeoutError(f"Chromium not ready on port {port} after {VIDEO_TIMEOUT}s")
+
+
 def query_video_state(ws_url):
     """Query a CDP target and return the video element state, or None."""
     with CDPClient(ws_url) as client:
-        result = client.evaluate(_JS_CHECK)
+        result = client.evaluate(_JS_VIDEO_CHECK)
     return result if isinstance(result, dict) else None
 
 
@@ -114,16 +131,15 @@ def get_video_state(cdp):
     """Returns video element state. Removes the controls attribute. Raises if no video element is found."""
     js = """(() => {
         const v = document.querySelector('video');
-        if (!v) throw new Error('No video element found');
+        if (!v) return null;
         v.removeAttribute('controls');
         return { currentTime: v.currentTime, paused: v.paused,
                  readyState: v.readyState, duration: v.duration };
     })();"""
-    msg_id = cdp.send("Runtime.evaluate", {"expression": js, "returnByValue": True})
-    response = cdp.wait_for_response(msg_id)
-    if "exceptionDetails" in response.get("result", {}):
-        raise Exception("Failed to get video state")
-    return response["result"]["result"]["value"]
+    result = cdp.evaluate(js)
+    if result is None:
+        raise Exception("No video element found")
+    return result
 
 
 def pause_video(cdp):
@@ -134,23 +150,7 @@ def pause_video(cdp):
 def check_playback(port=9222):
     """Check if video is playing."""
     try:
-        with no_proxy():
-            targets = requests.get(f'http://localhost:{port}/json', timeout=2).json()
-
-        page = next((t for t in targets
-                     if t.get('type') == 'page'
-                     and t.get('url') not in ('about:blank', '', None)), None)
-        if not page:
-            print("ERROR: No page loaded or page still loading", file=sys.stderr)
-            return False
-
-        print(f"Video page loaded: {page['url']}")
-
-        ws_url = page.get('webSocketDebuggerUrl')
-        if not ws_url:
-            print("ERROR: WebSocket URL not available", file=sys.stderr)
-            return False
-
+        ws_url = get_page_ws_url(port)
         v = wait_for_stable_playback(ws_url)
         if not isinstance(v, dict):
             print("ERROR: No video element found within timeout", file=sys.stderr)
@@ -171,7 +171,7 @@ def check_playback(port=9222):
             return False
 
         if duration > 0 and ct > 0 and not paused:
-            print("✓ Video is playing")
+            print("Video is playing")
             return True
 
         print("ERROR: Video is not playing", file=sys.stderr)
@@ -180,6 +180,36 @@ def check_playback(port=9222):
     except Exception as e:
         print(f"ERROR: {e}", file=sys.stderr)
         return False
+
+
+def measure_webgl_fps(cdp, warmup, duration, num_samples):
+    """Injects an rAF counter, waits warmup seconds, then takes num_samples evenly
+    spaced over duration seconds. Returns the average FPS, or 0.0 if no samples collected."""
+    deadline = time.time() + VIDEO_TIMEOUT
+    while cdp.evaluate("document.readyState") != 'complete':
+        if time.time() > deadline:
+            raise TimeoutError("Page did not finish loading")
+        time.sleep(1)
+
+    cdp.evaluate(_JS_WEBGL_FPS_INJECT)
+    print(f"Warming up for {warmup}s...")
+    time.sleep(warmup)
+
+    # Re-inject in case the page reloaded during warmup
+    if cdp.evaluate("typeof window.__fps === 'undefined'") is not False:
+        cdp.evaluate(_JS_WEBGL_FPS_INJECT)
+
+    interval = duration / num_samples
+    print(f"Measuring {num_samples} samples over {duration}s ({interval:.2f}s per sample)...")
+    samples = []
+    for i in range(num_samples):
+        cdp.evaluate("window.__fps = { frames: 0, t0: performance.now() };")
+        time.sleep(interval)
+        fps = cdp.evaluate(_JS_WEBGL_FPS_READ)
+        if fps is not None:
+            samples.append(fps)
+            print(f"  [{i+1}/{num_samples}] {fps:.1f} fps")
+    return sum(samples) / len(samples) if samples else 0.0
 
 
 if __name__ == '__main__':
