@@ -139,12 +139,11 @@ build_chromium_playback_cmd()
 	# Build the command with appropriate environment variables
 	local __cmd="export WAYLAND_DISPLAY=/run/user/1000/wayland-1;"
 
+	__cmd+=" chromium \"${__media_url}\""
 	# Add proxy settings if needed
 	if [ "$__use_proxy" = true ]; then
-		__cmd+=" export HTTPS_PROXY='http://webproxy.ext.ti.com:80';"
-		__cmd+=" export HTTP_PROXY='http://webproxy.ext.ti.com:80';"
+		__cmd+=" --proxy-server='http://webproxy.ext.ti.com:80'"
 	fi
-	__cmd+=" chromium \"${__media_url}\""
 	__cmd+=" --start-fullscreen"
 	__cmd+=" --no-first-run"
 	__cmd+=" --hide-crash-restore-bubble"
