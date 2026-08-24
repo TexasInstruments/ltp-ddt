@@ -4,21 +4,21 @@ Chromium playback comparison - samples frames during natural playback
 and compares against reference video using SSIM and PSNR.
 """
 
-import time
-import sys
 import argparse
-import requests
-import subprocess
+import os
 import shutil
+import subprocess
+import sys
+import time
 import traceback
-import numpy as np
-from pathlib import Path
-from PIL import Image, ImageFilter
 from collections import Counter
-import chromium_cdp_util
-from chromium_cdp_util import CDPClient
+from pathlib import Path
 
-CHROME_DEBUG = "http://localhost:9222"
+import numpy as np
+from PIL import Image, ImageFilter
+from chromium_cdp_util import chromium_cdp, get_video_state, pause_video
+from chromium_common import XDG_RUNTIME_DIR, WAYLAND_DISPLAY
+
 NEARBY_OFFSETS   = [-1, 1]  # Frame offsets to try for timing mismatch
 SSIM_THRESHOLD   = 0.85     # Structural Similarity Index (0-1)
 PSNR_THRESHOLD   = 25.0     # Peak Signal-to-Noise Ratio in dB
@@ -34,11 +34,11 @@ _OFFSETS_BY_PROXIMITY = sorted(NEARBY_OFFSETS, key=abs)
 
 
 def is_gray(color):
-    if isinstance(color, tuple) and len(color) >= 3:
-        r, g, b = color[:3]
-        avg = (r + g + b) / 3
-        return 80 < avg < 200 and abs(r - avg) < 30 and abs(g - avg) < 30 and abs(b - avg) < 30
-    return False
+    if not (isinstance(color, tuple) and len(color) >= 3):
+        return False
+    r, g, b = color[:3]
+    avg = (r + g + b) / 3
+    return 80 < avg < 200 and all(abs(c - avg) < 30 for c in (r, g, b))
 
 
 def dominant_color(img_half):
@@ -70,7 +70,8 @@ def detect_video_display_side(image_path):
 
 def take_screenshot(output_path):
     """Captures a weston screenshot and moves it to output_path."""
-    subprocess.run(["weston-screenshooter"], check=True, capture_output=True)
+    subprocess.run(["weston-screenshooter"], check=True, capture_output=True,
+                   env=os.environ | {"XDG_RUNTIME_DIR": XDG_RUNTIME_DIR, "WAYLAND_DISPLAY": WAYLAND_DISPLAY})
     screenshots = list(Path.cwd().glob("wayland-screenshot-*.png"))
     if not screenshots:
         raise Exception("No screenshot found")
@@ -82,9 +83,8 @@ def preprocess(img):
     iw, ih = img.size
     fw, fh = int(iw * CENTER_CROP), int(ih * CENTER_CROP)
     left, top = (iw - fw) // 2, (ih - fh) // 2
-    img = img.crop((left, top, left + fw, top + fh))
-    img = img.resize((int(img.width * PREPROCESS_SCALE), int(img.height * PREPROCESS_SCALE)), Image.BOX)
-    return img
+    return img.crop((left, top, left + fw, top + fh)).resize(
+        (int(fw * PREPROCESS_SCALE), int(fh * PREPROCESS_SCALE)), Image.BOX)
 
 
 def calculate_metrics(ref, test):
@@ -130,26 +130,15 @@ def get_video_info(video_file):
             fp = parts[2].split('/')
             fps = float(fp[0]) / float(fp[1]) if len(fp) == 2 else float(parts[2])
             dur = float(parts[3]) if len(parts) >= 4 else None
+            if dur is None:
+                raise ValueError("Could not get video duration")
+            if fps <= 0:
+                raise ValueError("Invalid fps")
             return w, h, fps, dur
-    except Exception:
-        pass
-    return None, None, None, None
-
-
-def connect_to_chromium():
-    """Returns the WebSocket debugger URL of the first open Chromium page."""
-    try:
-        session = requests.Session()
-        session.trust_env = False
-        session.proxies = {'http': None, 'https': None}
-        pages = session.get(f"{CHROME_DEBUG}/json").json()
-        page = next((p for p in pages if p["type"] == "page"), None)
-        if not page:
-            sys.exit("ERROR: No Chromium page found")
-        print(f"Connected to: {page['title']}")
-        return page["webSocketDebuggerUrl"]
+    except (subprocess.CalledProcessError, ValueError):
+        raise
     except Exception as e:
-        sys.exit(f"ERROR: Failed to connect to Chromium: {e}")
+        raise ValueError(f"Could not read video info from {video_file}") from e
 
 
 def capture_chromium_frame(cdp, output_path, video_side, target_timestamp):
@@ -159,10 +148,10 @@ def capture_chromium_frame(cdp, output_path, video_side, target_timestamp):
         cdp.evaluate(f"document.querySelector('video').currentTime = {target_timestamp}")
         deadline = time.monotonic() + PAUSE_DELAY
         while time.monotonic() < deadline:
-            if chromium_cdp_util.get_video_state(cdp)['readyState'] >= 2:
+            if get_video_state(cdp)['readyState'] >= 2:
                 break
             time.sleep(0.1)
-    timestamp = chromium_cdp_util.get_video_state(cdp)['currentTime']
+    timestamp = get_video_state(cdp)['currentTime']
     take_screenshot(output_path)
     if video_side:
         img = Image.open(output_path)
@@ -176,9 +165,8 @@ def extract_reference_frames(video_url, timestamp, frame_duration, reference_fra
                              target_w, target_h):
     """Extracts NEARBY_OFFSETS + exact frame in one keyframe-seek pass, pre-processed to
     match the chromium frame size (center-cropped and downsampled). Returns offset->Path dict."""
-    earliest = min(NEARBY_OFFSETS)
-    latest   = max(NEARBY_OFFSETS)
-    count    = abs(earliest) + max(latest, 0) + 1
+    all_offsets  = sorted(set(NEARBY_OFFSETS) | {0})
+    earliest     = all_offsets[0]
     frame_prefix = reference_frames_dir / f"frame_{frame_num:04d}"
     # Center-crop and scale; blur is applied in PIL after extraction for consistency
     vf = (f"crop=iw*{CENTER_CROP}:ih*{CENTER_CROP}"
@@ -187,12 +175,11 @@ def extract_reference_frames(video_url, timestamp, frame_duration, reference_fra
     result = subprocess.run(
         ["ffmpeg", "-nostdin", "-v", "error",
          "-ss", str(timestamp + earliest * frame_duration),
-         "-i", video_url, "-frames:v", str(count), "-vsync", "0",
+         "-i", video_url, "-frames:v", str(len(all_offsets)), "-vsync", "0",
          "-vf", vf, "-compression_level", "0", "-y", str(frame_prefix) + "_%d.png"],
         capture_output=True, text=True)
     if result.returncode != 0 or result.stderr.strip():
         print(f"  [ref frames] ffmpeg error (rc={result.returncode}): {result.stderr.strip()}")
-    all_offsets = sorted(set(NEARBY_OFFSETS) | {0})
     return {offset: frame_prefix.parent / f"{frame_prefix.name}_{i}.png"
             for i, offset in enumerate(all_offsets, start=1)}
 
@@ -260,12 +247,8 @@ def process_frame(frame_num, timestamp, chromium_frame, crop,
         if status == 'FAIL':
             ssim, psnr, status, passed_offset = try_offset_frames(ref_frames, chromium_arr, ssim, psnr, blur)
 
-        if status == 'FAIL':
-            print(f"  FAIL - SSIM: {ssim:.6f}, PSNR: {psnr:.2f}")
-        elif passed_offset is not None:
-            print(f"  PASS (offset {passed_offset:+d}) - SSIM: {ssim:.6f}, PSNR: {psnr:.2f}")
-        else:
-            print(f"  PASS - SSIM: {ssim:.6f}, PSNR: {psnr:.2f}")
+        offset_str = f" (offset {passed_offset:+d})" if passed_offset is not None else ""
+        print(f"  {status}{offset_str} - SSIM: {ssim:.6f}, PSNR: {psnr:.2f}")
 
         chromium_frame.unlink(missing_ok=True)
         for f in ref_frames.values():
@@ -280,6 +263,22 @@ def process_frame(frame_num, timestamp, chromium_frame, crop,
         results.append({'frame_num': frame_num, 'timestamp': timestamp, 'status': 'ERROR'})
 
 
+def _resolve_crop(detected, img_w, img_h, video_w, video_h):
+    """Return the crop box for the video region, accounting for black bars."""
+    cx, cy, cw, ch = detected
+    if cw == video_w and ch == video_h:
+        # crop_detect matches video resolution - trust its position
+        return detected
+    # Mismatch - the video likely has black bars (letterbox/pillarbox)
+    # encoded into the stream itself, so center crop to the known
+    # video resolution to exclude them before comparison
+    cx0, cy0 = (img_w - video_w) // 2, (img_h - video_h) // 2
+    if cx0 >= 0 and cy0 >= 0 and cx0 + video_w <= img_w and cy0 + video_h <= img_h:
+        return (cx0, cy0, video_w, video_h)
+    # video too large for display when centered - use crop_detect region directly
+    return detected
+
+
 def detect_display(output_dir, video_w, video_h):
     """Takes an initial screenshot to detect dual-display setup and crop region.
     Returns (video_side, crop) where video_side is 'left', 'right', or None,
@@ -287,42 +286,27 @@ def detect_display(output_dir, video_w, video_h):
     The temporary screenshot is deleted after use.
     The half-crop is applied before crop_detect so that the weston desktop
     side is excluded, and crop coordinates are relative to the video half."""
+    screenshot = output_dir / "initial_screenshot.png"
     try:
-        screenshot = output_dir / "initial_screenshot.png"
         take_screenshot(screenshot)
         side = detect_video_display_side(screenshot)
+        img = Image.open(screenshot)
         if side:
-            img = Image.open(screenshot)
             w, h = img.size
             half = (0, 0, w // 2, h) if side == 'left' else (w // 2, 0, w, h)
-            img.crop(half).save(screenshot)
-        img_w, img_h = Image.open(screenshot).size
+            img = img.crop(half)
+            img.save(screenshot)
+        img_w, img_h = img.size
         detected = crop_detect(screenshot)
-        if detected:
-            cx, cy, cw, ch = detected
-            if cw == video_w and ch == video_h:
-                # crop_detect matches video resolution - trust its position
-                crop = (cx, cy, cw, ch)
-            else:
-                # mismatch - the video likely has black bars (letterbox/pillarbox)
-                # encoded into the stream itself, so center crop to the known
-                # video resolution to exclude them before comparison
-                cx0, cy0 = (img_w - video_w) // 2, (img_h - video_h) // 2
-                if cx0 >= 0 and cy0 >= 0 and cx0 + video_w <= img_w and cy0 + video_h <= img_h:
-                    crop = (cx0, cy0, video_w, video_h)
-                else:
-                    # video too large for display when centered - use crop_detect region directly
-                    crop = detected
-        else:
-            crop = None
+        crop = _resolve_crop(detected, img_w, img_h, video_w, video_h) if detected else None
         print(f"Display: {'dual - video on ' + side if side else 'single'}")
         print(f"Crop region: {crop}")
-        screenshot.unlink()
         return side, crop
     except Exception as e:
         print(f"Warning: Display detection failed: {e}")
-        screenshot.unlink(missing_ok=True)
         return None, None
+    finally:
+        screenshot.unlink(missing_ok=True)
 
 
 def print_summary(results):
@@ -347,40 +331,33 @@ def main():
     output_dir           = Path(args.output_dir).resolve()
     chromium_frames_dir  = output_dir / "chromium_frames"
     reference_frames_dir = output_dir / "reference_frames"
-    for d in (output_dir, chromium_frames_dir, reference_frames_dir):
-        try:
+    try:
+        for d in (output_dir, chromium_frames_dir, reference_frames_dir):
             d.mkdir(exist_ok=True)
-        except OSError as e:
-            print(f"ERROR: could not create directory {d}: {e}", file=sys.stderr)
-            sys.exit(1)
+    except OSError as e:
+        sys.exit(f"ERROR: could not create output directory: {e}")
 
-    ws_url = connect_to_chromium()
-
-    video_local = args.video
-
-    video_w, video_h, video_fps, video_duration = get_video_info(video_local)
-    if video_duration is None:
-        sys.exit("ERROR: Could not get video duration")
-    if video_fps is None or video_fps <= 0:
-        sys.exit("ERROR: Invalid fps")
+    try:
+        video_w, video_h, video_fps, video_duration = get_video_info(args.video)
+    except ValueError as e:
+        sys.exit(f"ERROR: {e}")
     print(f"Video: {video_w}x{video_h}, {video_fps:.2f}fps, {video_duration:.1f}s")
 
     results = []
 
-    with CDPClient(ws_url) as cdp:
-        chromium_cdp_util.pause_video(cdp)
-        first_timestamp = chromium_cdp_util.get_video_state(cdp)['currentTime']
-        timestamps = list(np.linspace(first_timestamp, video_duration, args.max_frames))
+    with chromium_cdp() as cdp:
+        pause_video(cdp)
+        first_timestamp = get_video_state(cdp)['currentTime']
+        timestamps = np.linspace(first_timestamp, video_duration, args.max_frames)
         print(f"Sampling {args.max_frames} frames from {timestamps[0]:.1f}s to {timestamps[-1]:.1f}s\n")
 
         video_side, crop = detect_display(output_dir, video_w, video_h)
 
-        for frame_num in range(1, args.max_frames + 1):
+        for frame_num, target_ts in enumerate(timestamps, start=1):
             chromium_frame = chromium_frames_dir / f"frame_{frame_num:04d}.png"
 
             try:
-                timestamp = capture_chromium_frame(cdp, chromium_frame, video_side,
-                                                   timestamps[frame_num - 1])
+                timestamp = capture_chromium_frame(cdp, chromium_frame, video_side, target_ts)
                 print(f"[{frame_num}/{args.max_frames}] Timestamp: {timestamp:.3f}s")
             except Exception as e:
                 print(f"[{frame_num}/{args.max_frames}] ERROR during capture: {e}")
@@ -388,7 +365,7 @@ def main():
                 continue
 
             process_frame(frame_num, timestamp, chromium_frame, crop,
-                          video_local, video_fps, reference_frames_dir, results)
+                          args.video, video_fps, reference_frames_dir, results)
 
     rc = print_summary(results)
     shutil.rmtree(output_dir, ignore_errors=True)
