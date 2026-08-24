@@ -1,0 +1,17 @@
+# @name CAN latency tests
+# @desc
+# CAN_S_LATENCY_EXT_LBK_*: MCAN to MCAN latency external loopback test
+# @requires can
+
+CAN_S_LATENCY_EXTLBK_MAIN_MCAN0_TO_MAIN_MCAN1_250000 source 'common.sh'; tx='main_mcan0'; rx='main_mcan1'; bitrate=250000; do_cmd "cantest.sh -e -t $tx -r $rx -b $bitrate"
+CAN_S_LATENCY_EXTLBK_MAIN_MCAN0_TO_MAIN_MCAN1_1000000 source 'common.sh'; tx='main_mcan0'; rx='main_mcan1'; bitrate=1000000; do_cmd "cantest.sh -e -t $tx -r $rx -b $bitrate"
+CAN_S_LATENCY_EXTLBK_MAIN_MCAN0_TO_MAIN_MCAN1_CANFD_2M_5M source 'common.sh'; tx='main_mcan0'; rx='main_mcan1'; bitrate=2000000; dbitrate=5000000; do_cmd "cantest.sh -e -t $tx -r $rx -b $bitrate -d $dbitrate -f"
+CAN_S_LATENCY_EXTLBK_MCU_MCAN0_TO_MCU_MCAN1_250000 source 'common.sh'; tx='mcu_mcan0'; rx='mcu_mcan1'; bitrate=250000; do_cmd "cantest.sh -e -t $tx -r $rx -b $bitrate"
+CAN_S_LATENCY_EXTLBK_MCU_MCAN0_TO_MCU_MCAN1_1000000 source 'common.sh'; tx='mcu_mcan0'; rx='mcu_mcan1'; bitrate=1000000; do_cmd "cantest.sh -e -t $tx -r $rx -b $bitrate"
+CAN_S_LATENCY_EXTLBK_MCU_MCAN0_TO_MCU_MCAN1_CANFD_2M_5M source 'common.sh'; tx='mcu_mcan0'; rx='mcu_mcan1'; bitrate=2000000; dbitrate=5000000; do_cmd "cantest.sh -e -t $tx -r $rx -b $bitrate -d $dbitrate -f"
+CAN_S_LATENCY_EXTLBK_MAIN_MCAN0_TO_MCU_MCAN0_250000 source 'common.sh'; tx='main_mcan0'; rx='mcu_mcan0'; bitrate=250000; do_cmd "cantest.sh -e -t $tx -r $rx -b $bitrate"
+CAN_S_LATENCY_EXTLBK_MAIN_MCAN0_TO_MCU_MCAN0_1000000 source 'common.sh'; tx='main_mcan0'; rx='mcu_mcan0'; bitrate=1000000; do_cmd "cantest.sh -e -t $tx -r $rx -b $bitrate"
+CAN_S_LATENCY_EXTLBK_MAIN_MCAN0_TO_MCU_MCAN0_CANFD_2M_5M source 'common.sh'; tx='main_mcan0'; rx='mcu_mcan0'; bitrate=2000000; dbitrate=5000000; do_cmd "cantest.sh -e -t $tx -r $rx -b $bitrate -d $dbitrate -f"
+CAN_S_LATENCY_EXTLBK_MCU_MCAN0_TO_MAIN_MCAN0_250000 source 'common.sh'; tx='mcu_mcan0'; rx='main_mcan0'; bitrate=250000; do_cmd "cantest.sh -e -t $tx -r $rx -b $bitrate"
+CAN_S_LATENCY_EXTLBK_MCU_MCAN0_TO_MAIN_MCAN0_1000000 source 'common.sh'; tx='mcu_mcan0'; rx='main_mcan0'; bitrate=1000000; do_cmd "cantest.sh -e -t $tx -r $rx -b $bitrate"
+CAN_S_LATENCY_EXTLBK_MCU_MCAN0_TO_MAIN_MCAN0_CANFD_2M_5M source 'common.sh'; tx='mcu_mcan0'; rx='main_mcan0'; bitrate=2000000; dbitrate=5000000; do_cmd "cantest.sh -e -t $tx -r $rx -b $bitrate -d $dbitrate -f"

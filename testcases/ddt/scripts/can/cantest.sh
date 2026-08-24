@@ -15,6 +15,7 @@
 DEFAULT_BITRATE='1000000'
 DEFAULT_CAN_IFACE='mcu_mcan0'
 TEST_ALL_INTERFACES=false
+FD=false
 
 INIT_STAT_RX=0;
 INIT_STAT_TX=0;
@@ -254,7 +255,120 @@ modular()
 	else
 		modular_one "$can_iface"
 	fi
+}
 
+latency_extlbk()
+{
+	can_rx="$1"
+	can_tx="$2"
+	bitrate="$3"
+	dbitrate="$4"
+	fd_flag="$5"
+	num_frames="${6:-20}"
+	received_frames=0
+	total_latency_us=0
+	min_latency_us=999999999
+	max_latency_us=0
+	candump_log="/tmp/candump_$$.log"
+	cansend_log="/tmp/cansend_$$.log"
+	timeout=$((num_frames / 5 + 15))
+
+	if [ "$fd_flag" = "true" ]; then fd_flag="-f"; else fd_flag=""; fi
+
+	trap '[ -n "$candump_pid" ] && kill $candump_pid 2>/dev/null; [ -n "$can_rx" ] && set_can_interface "$can_rx" "down"; [ -n "$can_tx" ] && set_can_interface "$can_tx" "down"; [ -f "$candump_log" ] && rm -f "$candump_log"; [ -f "$cansend_log" ] && rm -f "$cansend_log"' EXIT
+
+	set_can_interface "$can_rx" 'down';
+	do_cmd config_can_interface.sh -i "$can_rx" -c 'ip_link' -b "$bitrate" -d "$dbitrate" "$fd_flag";
+	set_can_interface "$can_rx" 'up';
+	set_can_interface "$can_tx" 'down';
+	do_cmd config_can_interface.sh -i "$can_tx" -c 'ip_link' -b "$bitrate" -d "$dbitrate" "$fd_flag";
+	set_can_interface "$can_tx" 'up';
+	sleep 1
+
+	do_cmd "timeout $timeout candump -t A $can_rx > $candump_log 2>&1 &";
+	candump_pid=$!
+
+	sleep 0.5
+
+	echo ""
+	echo "Sending $num_frames test frames..."
+	for i in $(seq 1 "$num_frames"); do
+		can_id=$(printf "%03X" $((0x600 + i)))
+		data="0102030405060708"
+		tx_time_float="${EPOCHREALTIME}"
+
+		do_cmd "cansend $can_tx $can_id#$data"
+
+		# Save TX time in human-readable format (microsecond precision)
+		tx_sec="${tx_time_float%.*}"
+		tx_us="${tx_time_float#*.}"
+		tx_time=$(date -d @"$tx_sec" "+%Y-%m-%d %H:%M:%S.$tx_us")
+		echo "  Frame $i: $can_id#$data - TX time: $tx_time"
+		echo "$i $can_id $tx_time" >> "$cansend_log"
+
+		sleep 0.2
+	done
+
+	sleep 1
+
+	pkill candump
+	wait $candump_pid 2>/dev/null
+
+	echo ""
+	echo "==============================================================";
+	echo "Latency Measurement Results"
+	echo "==============================================================";
+
+	if [ ! -f "$candump_log" ] || [ ! -s "$candump_log" ]; then echo "FAILED: No frames captured on RX interface"; exit 1; fi;
+
+	echo ""
+	echo "Candump captured frames:"
+	cat "$candump_log"
+
+	echo ""
+	echo "TX-to-RX Latencies:"
+
+	while read -r tx_frame_num tx_can_id tx_date tx_time; do
+		tx_timestamp="$tx_date $tx_time"
+
+		rx_line=$(grep "[[:space:]]${tx_can_id}[[:space:]]" "$candump_log" | head -1)
+		if [ -z "$rx_line" ]; then echo "  Frame $tx_frame_num ($tx_can_id): NOT RECEIVED"; continue; fi;
+		# Extract RX timestamp (format: YYYY-MM-DD HH:MM:SS.SSSSSS)
+		rx_timestamp=$(echo "$rx_line" | sed -n 's/^[[:space:]]*(\([^)]*\)).*/\1/p')
+		if [ -z "$rx_timestamp" ]; then echo "  Frame $tx_frame_num ($tx_can_id): Could not parse timestamp"; continue; fi;
+
+		# Convert timestamps to microseconds
+		tx_time=$(date -d "$tx_timestamp" +%s%N 2>/dev/null | sed 's/...$//')
+		rx_time=$(date -d "$rx_timestamp" +%s%N 2>/dev/null | sed 's/...$//')
+		if [ -z "$tx_time" ] || [ "$tx_time" -eq 0 ]; then echo "  Frame $tx_frame_num ($tx_can_id): Could not convert TX timestamp"; continue; fi;
+		if [ -z "$rx_time" ] || [ "$rx_time" -eq 0 ]; then echo "  Frame $tx_frame_num ($tx_can_id): Could not convert RX timestamp"; continue; fi;
+
+		latency_us=$((rx_time - tx_time))
+		[ $latency_us -lt 0 ] && { echo "Frame $tx_frame_num: Invalid negative latency, skipping"; continue; }
+		latency_ms=$(echo "scale=3; $latency_us / 1000" | bc 2>/dev/null || echo "N/A")
+		echo "  Frame $tx_frame_num ($tx_can_id): ${latency_us} us (${latency_ms} ms)"
+		total_latency_us=$((total_latency_us + latency_us))
+		if [ $latency_us -lt $min_latency_us ]; then min_latency_us=$latency_us; fi;
+		if [ $latency_us -gt $max_latency_us ]; then max_latency_us=$latency_us; fi;
+		received_frames=$((received_frames + 1))
+
+	done < "$cansend_log"
+
+	echo ""
+	if [ "$received_frames" -eq 0 ]; then
+		echo "Test FAILED: No frames received"; exit 1;
+	else
+		avg_latency_us=$((total_latency_us / received_frames))
+		avg_latency_ms=$(echo "scale=3; $avg_latency_us / 1000" | bc 2>/dev/null || echo "N/A")
+		min_latency_ms=$(echo "scale=3; $min_latency_us / 1000" | bc 2>/dev/null || echo "N/A")
+		max_latency_ms=$(echo "scale=3; $max_latency_us / 1000" | bc 2>/dev/null || echo "N/A")
+		echo "Test PASSED: $received_frames/$num_frames frames received"
+		echo "Min latency:     $min_latency_us us (${min_latency_ms} ms)"
+		echo "Max latency:     $max_latency_us us (${max_latency_ms} ms)"
+		echo "Average latency: $avg_latency_us us (${avg_latency_ms} ms)"
+	fi
+	echo "==============================================================";
+	echo ""
 }
 
 ################################ CLI Params ####################################
@@ -270,14 +384,22 @@ do
 		test="modular_suspend" ;;
 	-l|--loopback)
 		test="loopback" ;;
+	-e|--latency_extlbk)
+		test="latency_extlbk" ;;
 	--all_interfaces)
 		TEST_ALL_INTERFACES=true ;;
 	-i|--interface)
 		interface="$2" ; shift;;
+	-r|--rx_iface)
+		rx_iface="$2" ; shift;;
+	-t|--tx_iface)
+		tx_iface="$2" ; shift;;
 	-b|--bitrate)
 		bitrate="$2" ; shift;;
 	-d|--dbitrate)
 		dbitrate="$2" ; shift;;
+	-f|--fd)
+		FD="true" ;;
 	(--)
 	  shift; break;;
 	(-*)
@@ -289,6 +411,8 @@ do
 done
 
 interface=$(echo "$interface" | tr -d "\"\'\`");
+rx_iface=$(echo "$rx_iface" | tr -d "\"\'\`");
+tx_iface=$(echo "$tx_iface" | tr -d "\"\'\`");
 bitrate=$(echo "$bitrate" | tr -d "\"\'\`");
 dbitrate=$(echo "$dbitrate" | tr -d "\"\'\`");
 iface="${iface:=$DEFAULT_CAN_IFACE}"
@@ -309,6 +433,10 @@ case $test in
 	;;
   loopback)
 	loopback "$iface" "$brate" "$dbrate"
+	;;
+  latency_extlbk)
+	if [ -z "$rx_iface" ] || [ -z "$tx_iface" ]; then echo "$0: Error: Test requires both RX & TX CAN interfaces" 1>&2; usage; fi;
+	latency_extlbk "$rx_iface" "$tx_iface" "$brate" "$dbrate" "$FD"
 	;;
   *)
 	end 1
