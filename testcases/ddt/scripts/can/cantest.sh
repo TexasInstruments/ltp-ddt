@@ -31,7 +31,20 @@ FINAL_ERRSTAT_TX=0;
 ############################# Functions #######################################
 usage()
 {
-	echo "cantest.sh <interface - mcu_mcan0> <bitrate> <dbitrate> <test to run - loopback or modular> "
+	echo "Usage: cantest.sh [options]"
+	echo "Options:"
+	echo "  -b, --bitrate                 Bitrate in bps (default: 1000000)"
+	echo "  -d, --dbitrate                Data bitrate for CAN FD in bps (default: 1000000)"
+	echo "  -i, --interface               CAN interface (default: mcu_mcan0)"
+	echo "  -r, --rx_iface                RX interface for latency test"
+	echo "  -t, --tx_iface                TX interface for latency test"
+	echo "  -f, --fd                      Enable CAN FD mode"
+	echo "  -m, --modular                 Run modular test"
+	echo "  -s, --suspend                 Run suspend test"
+	echo "  -c, --modular_suspend         Run modular_suspend test"
+	echo "  -l, --loopback                Run internal loopback test"
+	echo "  -e, --latency_extlbk          Run external loopback latency test"
+	echo "  -a, --all_interfaces          Test all available interfaces"
 	exit 1
 }
 
@@ -39,8 +52,12 @@ set_can_interface()
 {
 	can_iface="$1"
 	status="$2"
-	do_cmd "ip link set $can_iface down";
-	do_cmd "ip link set $can_iface $status";
+	if [ "$status" == "down" ]; then
+		do_cmd "ip link set $can_iface down";
+	else
+		do_cmd "ip link set $can_iface down";
+		do_cmd "ip link set $can_iface $status";
+	fi
 }
 
 send_packets()
@@ -66,7 +83,6 @@ wait_for_stats()
 
 	while [ ! -e "$stat" ] && [ "$loop" -le "5" ]; do do_cmd "sleep 1"; echo "Waiting for $stat" ; loop=$((loop+1)); done;
 	if [ ! -e "$stat" ]; then set_can_interface "$can_iface" 'down'; die "Failed to find stats in $stat"; fi;
-
 }
 
 get_stats()
@@ -134,7 +150,7 @@ compare_stats()
 			else exit 1; fi;
 			;;
 		*)
-		end 1;;
+			exit 1;;
 	esac
 }
 
@@ -200,7 +216,7 @@ loopback_all()
 	bitrate="$1"
 	dbitrate="$2"
 	echo "Getting CAN Interfaces for $MACHINE"
-	cans=$(get_can_interfaces.sh $MACHINE)
+	cans=$(get_can_interfaces.sh "$MACHINE")
 
 	if [ -z "$cans" ]; then	die "No CAN Interface found for the platform $MACHINE";	fi;
 
@@ -236,7 +252,7 @@ modular_one()
 modular_all()
 {
 	echo "Getting CAN Interfaces for $MACHINE"
-	cans=$(get_can_interfaces.sh $MACHINE)
+	cans=$(get_can_interfaces.sh "$MACHINE")
 
 	if [ -z "$cans" ]; then	die "No CAN Interface found for the platform $MACHINE";	fi;
 
@@ -386,10 +402,10 @@ do
 		test="loopback" ;;
 	-e|--latency_extlbk)
 		test="latency_extlbk" ;;
-	--all_interfaces)
+	-a|--all_interfaces)
 		TEST_ALL_INTERFACES=true ;;
 	-i|--interface)
-		interface="$2" ; shift;;
+		iface="$2" ; shift;;
 	-r|--rx_iface)
 		rx_iface="$2" ; shift;;
 	-t|--tx_iface)
@@ -403,42 +419,41 @@ do
 	(--)
 	  shift; break;;
 	(-*)
-	  echo "$0: error - unrecognized option $1" 1>&2; exit 1;;
+	  echo "$0: Error: unrecognized option $1" 1>&2; usage;;
 	(*)
 	  break;;
 	esac
 	shift
 done
 
-interface=$(echo "$interface" | tr -d "\"\'\`");
+iface=$(echo "$iface" | tr -d "\"\'\`");
 rx_iface=$(echo "$rx_iface" | tr -d "\"\'\`");
 tx_iface=$(echo "$tx_iface" | tr -d "\"\'\`");
 bitrate=$(echo "$bitrate" | tr -d "\"\'\`");
 dbitrate=$(echo "$dbitrate" | tr -d "\"\'\`");
+
 iface="${iface:=$DEFAULT_CAN_IFACE}"
 brate="${bitrate:=$DEFAULT_BITRATE}"
 dbrate="${dbitrate:=$DEFAULT_BITRATE}"
 
-if [ -n "$interface" ]; then iface=$interface; fi;
-
 case $test in
-  modular)
-	modular "$iface"
-	;;
-  suspend)
-	suspend "$iface" "$brate"
-	;;
-  modular_suspend)
-	modular_suspend "$iface" "$brate"
-	;;
-  loopback)
-	loopback "$iface" "$brate" "$dbrate"
-	;;
-  latency_extlbk)
-	if [ -z "$rx_iface" ] || [ -z "$tx_iface" ]; then echo "$0: Error: Test requires both RX & TX CAN interfaces" 1>&2; usage; fi;
-	latency_extlbk "$rx_iface" "$tx_iface" "$brate" "$dbrate" "$FD"
-	;;
-  *)
-	end 1
-	;;
+	modular)
+		modular "$iface"
+		;;
+	suspend)
+		suspend "$iface" "$brate"
+		;;
+	modular_suspend)
+		modular_suspend "$iface" "$brate"
+		;;
+	loopback)
+		loopback "$iface" "$brate" "$dbrate"
+		;;
+	latency_extlbk)
+		if [ -z "$rx_iface" ] || [ -z "$tx_iface" ]; then echo "$0: Error: Test requires both RX & TX CAN interfaces" 1>&2; usage; fi;
+		latency_extlbk "$rx_iface" "$tx_iface" "$brate" "$dbrate" "$FD"
+		;;
+	*)
+		echo "$0: Error: Invalid test type" 1>&2; usage
+		;;
 esac
