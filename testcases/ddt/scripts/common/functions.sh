@@ -513,10 +513,10 @@ suspend()
     : ${suspend_console:='0'}
     : ${_abort:='0'}
 
-    case "$MACHINE" in        
-        am335x-evm|am335x-sk|beaglebone|beaglebone-black|beaglebone_green_eco-gp)
-                rtc_dev="/dev/rtc1";;                                          
-        *)                                                              
+    case "$MACHINE" in
+        am335x-evm|am335x-hsevm|am335x-sk|am335x-ice)
+                rtc_dev="/dev/rtc1";;
+        *)
                 rtc_dev="/dev/rtc0";;
     esac 
 
