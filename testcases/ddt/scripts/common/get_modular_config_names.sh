@@ -119,6 +119,8 @@ for DRIVER in $DRIVERS
 			crypto="CONFIG_CRYPTO_DEV_SA2UL:sa2ul";;
 		*dthev2)
 			crypto="CONFIG_CRYPTO_DEV_TI_DTHEV2:dthev2";;
+		*cmh)
+			crypto="CONFIG_CRYPTO_DEV_CMH:cmh";;
 		esac
 	done
 IFS=$IFS_ORIG

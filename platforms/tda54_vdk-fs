@@ -3,12 +3,10 @@ tda54
 tda54_vdk-fs
 adc/tscadc
 can
-crypto/sa2ul
-crypto/sa2ul/3des
-crypto/sa2ul/aes
-crypto/sa2ul/sha1
-crypto/sa2ul/sha256
-crypto/sa2ul/sha512
+crypto/cmh
+crypto/cmh/aes
+crypto/cmh/sha256
+crypto/cmh/sha512
 gpio
 graphics/
 hwrng
