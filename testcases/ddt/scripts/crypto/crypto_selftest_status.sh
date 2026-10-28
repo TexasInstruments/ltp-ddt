@@ -84,10 +84,11 @@ check_crypto_selftest_config() {
 }
 
 # Determine the source type of the crypto algorithm
-# Returns: "built-in", "kernel-module:<name>", or "hardware:<driver-hint>"
+# Sets CRYPTO_SOURCE_INFO to "built-in:<x>", "hardware:<driver>", "kernel-module:<name>" or "hardware-module:<name>"
 get_algo_source() {
     local module="$1"
     local driver="$2"
+    CRYPTO_SOURCE_INFO=""
 
     # Check if it's built into kernel
     if [ "$module" = "kernel" ]; then
@@ -95,15 +96,15 @@ get_algo_source() {
         # Common hardware driver patterns for TI platforms
         case "$driver" in
             *-omap*|*omap-*|*-sa2ul*|*sa2ul*|*-ce|*-neon|*-hw|*_hw|*-accel*)
-                echo "hardware:$driver"
+                CRYPTO_SOURCE_INFO="hardware:$driver"
                 return
                 ;;
             *-generic|*_generic)
-                echo "built-in:software"
+                CRYPTO_SOURCE_INFO="built-in:software"
                 return
                 ;;
             *)
-                echo "built-in:$driver"
+                CRYPTO_SOURCE_INFO="built-in:$driver"
                 return
                 ;;
         esac
@@ -112,11 +113,11 @@ get_algo_source() {
         # Check if module name suggests hardware
         case "$module" in
             *omap*|*sa2ul*|*crypto_engine*|*caam*|*ccree*|*hisi*|*qce*|*sun*|*rockchip*)
-                echo "hardware-module:$module"
+                CRYPTO_SOURCE_INFO="hardware-module:$module"
                 return
                 ;;
             *)
-                echo "kernel-module:$module"
+                CRYPTO_SOURCE_INFO="kernel-module:$module"
                 return
                 ;;
         esac
@@ -163,8 +164,8 @@ parse_proc_crypto() {
     # Read /proc/crypto line by line
     while IFS=: read -r key value; do
         # Trim whitespace
-        key=$(echo "$key" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
-        value=$(echo "$value" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+        key="${key#"${key%%[![:space:]]*}"}"; key="${key%"${key##*[![:space:]]}"}"
+        value="${value#"${value%%[![:space:]]*}"}"; value="${value%"${value##*[![:space:]]}"}"
 
         case "$key" in
             "name")
@@ -190,9 +191,7 @@ parse_proc_crypto() {
                 if [ -n "$name" ]; then
                     total_count=$((total_count + 1))
 
-                    # Get source information
-                    local source_info
-                    source_info=$(get_algo_source "$module" "$driver")
+                    get_algo_source "$module" "$driver"
 
                     # Count by status
                     case "$selftest" in
@@ -229,7 +228,7 @@ parse_proc_crypto() {
                                 ;;
                         esac
 
-                        printf "%-30s %-12s %-25s %s\n" "$name" "$status_display" "$source_info" "$type"
+                        printf "%-30s %-12s %-25s %s\n" "$name" "$status_display" "$CRYPTO_SOURCE_INFO" "$type"
 
                         if [ "$VERBOSE" -eq 1 ]; then
                             echo "    Driver: $driver"
@@ -254,8 +253,7 @@ parse_proc_crypto() {
     # Handle last entry if file doesn't end with empty line
     if [ -n "$name" ]; then
         total_count=$((total_count + 1))
-        local source_info
-        source_info=$(get_algo_source "$module" "$driver")
+        get_algo_source "$module" "$driver"
 
         case "$selftest" in
             "passed") passed_count=$((passed_count + 1)) ;;
@@ -275,7 +273,7 @@ parse_proc_crypto() {
                 "failed") status_display="FAILED" ;;
                 *) status_display="UNKNOWN" ;;
             esac
-            printf "%-30s %-12s %-25s %s\n" "$name" "$status_display" "$source_info" "$type"
+            printf "%-30s %-12s %-25s %s\n" "$name" "$status_display" "$CRYPTO_SOURCE_INFO" "$type"
         fi
     fi
 
