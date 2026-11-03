@@ -95,7 +95,7 @@ get_algo_source() {
         # Check if driver name suggests hardware acceleration
         # Common hardware driver patterns for TI platforms
         case "$driver" in
-            *-omap*|*omap-*|*-sa2ul*|*sa2ul*|*-ce|*-neon|*-hw|*_hw|*-accel*)
+            *-omap*|*omap-*|*-sa2ul*|*sa2ul*|*cmh*|*-ce|*-neon|*-hw|*_hw|*-accel*)
                 CRYPTO_SOURCE_INFO="hardware:$driver"
                 return
                 ;;
@@ -112,9 +112,9 @@ get_algo_source() {
         # It's a loadable module
         # Check if module name suggests hardware
         case "$module" in
-            *omap*|*sa2ul*|*crypto_engine*|*caam*|*ccree*|*hisi*|*qce*|*sun*|*rockchip*)
-                CRYPTO_SOURCE_INFO="hardware-module:$module"
-                return
+            *omap*|*sa2ul*|*cmh*|*crypto_engine*|*caam*|*ccree*|*hisi*|*qce*|*sun*|*rockchip*)
+            	CRYPTO_SOURCE_INFO="hardware-module:$module"
+		return
                 ;;
             *)
                 CRYPTO_SOURCE_INFO="kernel-module:$module"
