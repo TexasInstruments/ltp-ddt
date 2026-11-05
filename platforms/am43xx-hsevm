@@ -2,6 +2,7 @@ armv7l
 am43xx
 am43xx-gpevm
 adc/tscadc
+can
 crypto/crypto-omap
 crypto/crypto-omap/aes
 crypto/crypto-omap/des
@@ -46,6 +47,7 @@ sound/playback/alsa
 sound/capture/alsa/hisamplingrate
 sound/playback/alsa/hisamplingrate
 spi_master/mtd/spi-omap2-mcspi
+touchscreen
 usb/host/msc/xhci-hcd         
 usb/host/hid/xhci-hcd         
 usb/host/iso/xhci-hcd 
