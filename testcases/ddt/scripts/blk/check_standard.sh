@@ -102,7 +102,7 @@ if [[ "$DEVICE_TYPE" = "mmc" ]]; then
 
   # Get Expected Register Value
   case $MACHINE in
-    j7* | am62* | am64xx*)
+    j7* | am62* | beagleplay* | am64xx*)
       expected_val="4";;
     *)
       die "No expected value specified for MMCSD1_HOST_CONTROLLER_VER register for this platform in ltp-ddt/testcases/ddt/scripts/blk/check_standard.sh";;

@@ -73,7 +73,7 @@ while [ $i -lt $t_iteration ]; do
   suspend -p "$power_state" -t "$max_stime" -i 1 -c 1
 
   case "$MACHINE" in
-    am62pxx_sk-fs|am62axx_sk-fs|am62pxx_sk-fs|am62lxx_evm-fs|am62dxx_evm-fs|am62xx*)
+    am62pxx_sk-fs|am62axx_sk-fs|am62pxx_sk-fs|am62lxx_evm-fs|am62dxx_evm-fs|am62xx*|beagleplay*)
       r_start_expect="Enabling non-boot CPUs";;
     *)
       r_start_expect="PM: Wakeup source";;

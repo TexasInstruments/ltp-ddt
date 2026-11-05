@@ -1130,7 +1130,7 @@ list_pru_devs()
     am64*)
       list_rpmsg_prus
     ;;
-    am62*)
+    am62*|beagleplay*)
       list_rpmsg_prus
     ;;
     *)

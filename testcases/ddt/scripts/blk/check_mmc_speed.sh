@@ -89,7 +89,7 @@ if [ "$expected_mode" = "" ]; then
 	if [ "$device_type" = "sd" ]; then
 		# Get sd expected speed based on platform
 		case $MACHINE in
-			am62lxx* | am62xxsip* | am62xx* | am62axx* | am62dxx* | am64xx-evm | am64xx-hsevm | am62pxx* | j7200* | j721s* | j722s* | j784* | j742* | am69*| am68*)
+			am62lxx* | am62xxsip* | am62xx* | beagleplay* | am62axx* | am62dxx* | am64xx-evm | am64xx-hsevm | am62pxx* | j7200* | j721s* | j722s* | j784* | j742* | am69*| am68*)
 				expected_mode="SDR104";;
 			j721e)
 				expected_mode="DDR50";;
