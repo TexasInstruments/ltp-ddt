@@ -24,7 +24,6 @@
 #
 
 THERMAL_PATH="/sys/devices/virtual/thermal"
-MAX_ZONE=0-12
 MAX_CDEV=0-50
 ALL_ZONE=
 ALL_CDEV=
@@ -57,7 +56,7 @@ for_each_thermal_zone() {
     local func=$1
     shift 1
 
-    zones=$(ls $THERMAL_PATH | grep "thermal_zone['$MAX_ZONE']")
+    zones=$(ls $THERMAL_PATH | grep -E "^thermal_zone[0-9]+$")
     if [ -z "$zones" ]; then
         log_end "fail";
         return 1;
@@ -77,7 +76,7 @@ get_total_trip_point_of_zone() {
     local zone_path=$THERMAL_PATH/$1
     local count=0
     shift 1
-    trips=$(ls $zone_path | grep "trip_point_['$MAX_ZONE']_temp")
+    trips=$(ls $zone_path | grep -E "^trip_point_[0-9]+_temp$")
     for trip in $trips; do
 	count=$((count + 1))
     done
@@ -91,7 +90,7 @@ for_each_trip_point_of_zone() {
     local func=$2
     local zone_name=$1
     shift 2
-    trips=$(ls $zone_path | grep "trip_point_['$MAX_ZONE']_temp")
+    trips=$(ls $zone_path | grep -E "^trip_point_[0-9]+_temp$")
     for trip in $trips; do
 	$func $zone_name $count
 	count=$((count + 1))
@@ -222,7 +221,7 @@ disable_all_thermal_zones() {
     mode_list=
     local index=0
 
-    local th_zones=$(ls $THERMAL_PATH | grep "thermal_zone['$MAX_ZONE']")
+    local th_zones=$(ls $THERMAL_PATH | grep -E "^thermal_zone[0-9]+$")
     for zone in $th_zones; do
 	mode_list[$index]=$(cat $THERMAL_PATH/$zone/mode)
         index=$((index + 1))
@@ -235,7 +234,7 @@ enable_all_thermal_zones() {
 
     local index=0
 
-    local th_zones=$(ls $THERMAL_PATH | grep "thermal_zone['$MAX_ZONE']")
+    local th_zones=$(ls $THERMAL_PATH | grep -E "^thermal_zone[0-9]+$")
     for zone in $th_zones; do
 	echo $mode_list[$index] > $THERMAL_PATH/$zone/mode
         index=$((index + 1))

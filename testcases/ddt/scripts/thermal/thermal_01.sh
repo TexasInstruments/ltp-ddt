@@ -62,7 +62,7 @@ check_thermal_zone_mode() {
 
 check_thermal_zone_trip_level() {
 
-    local all_zones=$(ls $THERMAL_PATH | grep "thermal_zone['$MAX_ZONE']")
+    local all_zones=$(ls $THERMAL_PATH | grep -E "^thermal_zone[0-9]+$")
     for i in $all_zones; do
 	for_each_trip_point_of_zone $i "validate_trip_level" || return 1
     done
@@ -70,7 +70,7 @@ check_thermal_zone_trip_level() {
 
 check_thermal_zone_bindings() {
 
-    local all_zones=$(ls $THERMAL_PATH | grep "thermal_zone['$MAX_ZONE']")
+    local all_zones=$(ls $THERMAL_PATH | grep -E "^thermal_zone[0-9]+$")
     for i in $all_zones; do
 	for_each_binding_of_zone $i "validate_trip_bindings" || return 1
     done

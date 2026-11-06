@@ -57,14 +57,14 @@ check_trip_point_change() {
     check "start gpu heat binary" "test $gpu_pid -ne 0" || exit 1
 
     local index=0
-    for trip in $(ls $dirpath | grep "trip_point_['$MAX_ZONE']_temp"); do
+    for trip in $(ls $dirpath | grep -E "^trip_point_[0-9]+_temp$"); do
 	trip_cross[$index]=0
 	index=$((index + 1))
     done
     while (test $count -lt $TEST_LOOP); do
 	index=0
 	sleep 1
-	for trip in $(ls $dirpath | grep "trip_point_['$MAX_ZONE']_temp"); do
+	for trip in $(ls $dirpath | grep -E "^trip_point_[0-9]+_temp$"); do
 	    cur_temp=$(cat $dirpath/temp)
 	    trip_temp=$(cat $dirpath/$trip)
 	    if [ $cur_temp -gt $trip_temp ]; then
@@ -76,7 +76,7 @@ check_trip_point_change() {
 	count=$((count + 1))
     done
     index=0
-    for trip in $(ls $dirpath | grep "trip_point_['$MAX_ZONE']_temp"); do
+    for trip in $(ls $dirpath | grep -E "^trip_point_[0-9]+_temp$"); do
 	get_trip_id $trip
 	trip_id=$?
 	trip_type=$(cat $dirpath/trip_point_$((trip_id))_type)
