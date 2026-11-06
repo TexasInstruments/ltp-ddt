@@ -1,0 +1,6 @@
+# @name dmtimer LED suspend/resume test
+# @desc Set heartbeat LED trigger to none and brightness to 1, suspend/resume, then check both are unchanged
+# @requires power_mgr
+
+POWERMGR_XS_FUNC_DMTIMER_LED_SUSPEND source 'common.sh'; source 'functions.sh'; do_cmd "dmtimer_led.sh setup heartbeat none"; suspend -i 1 -p "mem" || die "suspend failed"; do_cmd "dmtimer_led.sh verify heartbeat none"
+POWERMGR_S_FUNC_DMTIMER_LED_SUSPEND source 'common.sh'; source 'functions.sh'; do_cmd "dmtimer_led.sh setup heartbeat none"; suspend -i 3 -p "mem" || die "suspend failed"; do_cmd "dmtimer_led.sh verify heartbeat none"
