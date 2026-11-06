@@ -41,7 +41,7 @@ check_valid_temp() {
     local descr="'$zone_name'/'$file' ='$temp_val'"
     log_begin "checking $descr"
 
-    if [ $temp_val > 0 ]; then
+    if [ $temp_val -gt 0 ]; then
         log_end "pass"
         return 0
     fi
