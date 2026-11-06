@@ -62,13 +62,14 @@ for_each_thermal_zone() {
         return 1;
     fi
 
+    local ret=0
     ALL_ZONE=$zone
     for zone in $zones; do
 	INC=0
-	$func $zone $@
+	$func $zone $@ || ret=1
     done
 
-    return 0
+    return $ret
 }
 
 get_total_trip_point_of_zone() {
