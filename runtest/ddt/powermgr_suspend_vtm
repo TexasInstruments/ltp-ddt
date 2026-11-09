@@ -1,0 +1,6 @@
+# @name VTM suspend resume test
+# @desc Check that VTM thermal zone temperatures are readable before and after one suspend/resume cycle
+# @requires power_mgr && vtm
+
+POWERMGR_XS_FUNC_VTM_SUSPEND source 'functions.sh'; source 'thermal_functions.sh'; check_zone() { check_valid_temp temp $1; }; for_each_thermal_zone check_zone || die "invalid temp before suspend"; suspend -i 1 -p "mem" || die "suspend failed"; for_each_thermal_zone check_zone || die "invalid temp after resume"
+POWERMGR_S_FUNC_VTM_SUSPEND source 'functions.sh'; source 'thermal_functions.sh'; check_zone() { check_valid_temp temp $1; }; for_each_thermal_zone check_zone || die "invalid temp before suspend"; suspend -i 3 -p "mem" || die "suspend failed"; for_each_thermal_zone check_zone || die "invalid temp after resume"
