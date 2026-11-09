@@ -169,7 +169,8 @@ case $MACHINE in
 		ehrpwm_inst=5
 		;;
 	beagleplay*)
-		ecap_isnt=1
+		ecap_inst=1
+		ehrpwm_inst=1
 		;;
 esac
 

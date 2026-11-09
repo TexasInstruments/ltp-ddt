@@ -1,6 +1,6 @@
 armv7l
 am43xx
-am43xx-gpevm
+am43xx-sk
 adc/tscadc
 crypto/crypto-omap
 crypto/crypto-omap/aes

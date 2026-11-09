@@ -1,6 +1,6 @@
 armv7l
 am335x
-am335x-evm
+beaglebone_green_eco-gp
 adc/tscadc
 crypto/crypto-omap
 crypto/crypto-omap/aes

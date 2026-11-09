@@ -76,6 +76,10 @@ case $MACHINE in
 		ecap_instance=0
 		ehrpwm_instance=0
 	;;
+	beagleplay*)
+		ecap_instance=2
+		ehrpwm_instance=0
+	;;
 	am64*)
 		ecap_instance=0
 		ehrpwm_instance=0
